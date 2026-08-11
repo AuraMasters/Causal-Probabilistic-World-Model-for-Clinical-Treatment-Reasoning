@@ -1,0 +1,34 @@
+{
+    "dataset": "ACTG175",
+    "representation": "sparse",
+    "selection_method": "Constrained Hill Climbing",
+    "algorithm_agreement": {
+        "hill_climbing_edges": 22,
+        "tabu_edges": 22,
+        "common_edges": 22,
+        "hc_only_edges": 0,
+        "tabu_only_edges": 0,
+        "jaccard": 1.0
+    },
+    "bootstrap_support": {
+        "edges_ge_75_percent": 7,
+        "edges_ge_50_percent": 12,
+        "edges_25_to_49_percent": 0,
+        "edges_lt_25_percent": 10
+    },
+    "final_graph": {
+        "edges": 22,
+        "maximum_indegree": 2,
+        "total_cpt_entries": 139
+    },
+    "constraints": {
+        "temporal_order": "Baseline -> Treatment -> Outcome",
+        "forbidden_edge": "label -> trt"
+    },
+    "validation": {
+        "is_dag": true,
+        "temporal_constraints": true,
+        "forbidden_edges": true
+    },
+    "status": "FINAL DAG SELECTED AND VALIDATED"
+}
