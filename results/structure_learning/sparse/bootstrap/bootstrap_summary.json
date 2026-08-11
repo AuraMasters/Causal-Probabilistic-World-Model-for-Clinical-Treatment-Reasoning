@@ -1,0 +1,19 @@
+{
+    "dataset": "ACTG175",
+    "representation": "sparse",
+    "algorithm": "Constrained Hill Climbing",
+    "bootstrap_replicates": 100,
+    "random_seed": 42,
+    "development_rows": 1711,
+    "variables": 17,
+    "maximum_indegree": 3,
+    "scoring_method": "bic-d",
+    "test_set_used": false,
+    "unique_edges_observed": 128,
+    "stable_edges_50_percent": 15,
+    "stable_edges_75_percent": 7,
+    "mean_edges_per_bootstrap": 22.42,
+    "std_edges_per_bootstrap": 1.164977131608907,
+    "mean_cpt_entries": 145.49,
+    "total_elapsed_seconds": 138.93691301345825
+}
