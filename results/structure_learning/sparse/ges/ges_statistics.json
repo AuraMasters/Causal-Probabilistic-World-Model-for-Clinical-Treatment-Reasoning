@@ -1,0 +1,174 @@
+{
+    "representation": "sparse",
+    "algorithm": "Native GES",
+    "implementation": "pgmpy 1.1.2 GES",
+    "purpose": "Algorithmic sensitivity comparison",
+    "optimization_score": "BIC",
+    "secondary_score": "BDeu",
+    "min_improvement": 1e-06,
+    "bdeu_equivalent_sample_size": 10,
+    "constraints": {
+        "used_during_learning": false,
+        "reason": "pgmpy 1.1.2 GES does not expose ExpertKnowledge",
+        "temporal_rule_checked_after_learning": "baseline -> treatment -> outcome"
+    },
+    "scores": {
+        "bic_score": -18890.601315873115,
+        "bdeu_score": -18836.1871171481
+    },
+    "temporal_violations": [
+        {
+            "source": "label",
+            "target": "cd40"
+        },
+        {
+            "source": "label",
+            "target": "trt"
+        }
+    ],
+    "graph_statistics": {
+        "number_of_edges": 21,
+        "maximum_indegree": 3,
+        "total_cpt_entries": 127
+    },
+    "cpt_information": {
+        "z30": {
+            "parents": [],
+            "node_states": 2,
+            "parent_configurations": 1,
+            "cpt_entries": 2
+        },
+        "label": {
+            "parents": [
+                "z30",
+                "symptom"
+            ],
+            "node_states": 2,
+            "parent_configurations": 4,
+            "cpt_entries": 8
+        },
+        "hemo": {
+            "parents": [
+                "strat"
+            ],
+            "node_states": 2,
+            "parent_configurations": 3,
+            "cpt_entries": 6
+        },
+        "homo": {
+            "parents": [
+                "hemo",
+                "drugs",
+                "gender"
+            ],
+            "node_states": 2,
+            "parent_configurations": 8,
+            "cpt_entries": 16
+        },
+        "race": {
+            "parents": [
+                "hemo",
+                "homo"
+            ],
+            "node_states": 2,
+            "parent_configurations": 4,
+            "cpt_entries": 8
+        },
+        "symptom": {
+            "parents": [
+                "homo"
+            ],
+            "node_states": 2,
+            "parent_configurations": 2,
+            "cpt_entries": 4
+        },
+        "age": {
+            "parents": [
+                "hemo",
+                "z30"
+            ],
+            "node_states": 3,
+            "parent_configurations": 4,
+            "cpt_entries": 12
+        },
+        "preanti": {
+            "parents": [
+                "z30",
+                "oprior"
+            ],
+            "node_states": 4,
+            "parent_configurations": 4,
+            "cpt_entries": 16
+        },
+        "strat": {
+            "parents": [
+                "preanti"
+            ],
+            "node_states": 3,
+            "parent_configurations": 4,
+            "cpt_entries": 12
+        },
+        "gender": {
+            "parents": [
+                "hemo"
+            ],
+            "node_states": 2,
+            "parent_configurations": 2,
+            "cpt_entries": 4
+        },
+        "drugs": {
+            "parents": [
+                "gender"
+            ],
+            "node_states": 2,
+            "parent_configurations": 2,
+            "cpt_entries": 4
+        },
+        "trt": {
+            "parents": [
+                "label"
+            ],
+            "node_states": 4,
+            "parent_configurations": 2,
+            "cpt_entries": 8
+        },
+        "oprior": {
+            "parents": [],
+            "node_states": 2,
+            "parent_configurations": 1,
+            "cpt_entries": 2
+        },
+        "karnof": {
+            "parents": [
+                "symptom"
+            ],
+            "node_states": 2,
+            "parent_configurations": 2,
+            "cpt_entries": 4
+        },
+        "cd40": {
+            "parents": [
+                "label"
+            ],
+            "node_states": 3,
+            "parent_configurations": 2,
+            "cpt_entries": 6
+        },
+        "cd80": {
+            "parents": [
+                "cd40"
+            ],
+            "node_states": 3,
+            "parent_configurations": 3,
+            "cpt_entries": 9
+        },
+        "wtkg": {
+            "parents": [
+                "gender"
+            ],
+            "node_states": 3,
+            "parent_configurations": 2,
+            "cpt_entries": 6
+        }
+    }
+}

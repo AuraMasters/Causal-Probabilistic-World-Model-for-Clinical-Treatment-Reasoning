@@ -1,0 +1,4 @@
+algorithm,bic_score,bdeu_score,edges,total_cpt_entries,constraints_used
+Constrained Hill Climbing,-18895.618762642596,-18848.171394022007,22,139,True
+Tabu Search,-18895.618762642596,-18848.171394022007,22,139,True
+Native GES,-18890.601315873115,-18836.1871171481,21,127,False
