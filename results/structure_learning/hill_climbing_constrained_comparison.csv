@@ -1,0 +1,3 @@
+representation,edges,max_indegree,total_cpt_entries,bic_score,bdeu_score
+sparse,22,2,139,-18895.618762642596,-18848.171394022007
+rich,19,2,140,-21316.037158685172,-21257.428150750777

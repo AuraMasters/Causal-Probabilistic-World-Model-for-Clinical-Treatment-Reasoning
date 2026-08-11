@@ -1,0 +1,40 @@
+{
+    "raw_dataset": "data\\raw\\AIDS_ClinicalTrial_GroupStudy175.csv",
+    "raw_rows": 2139,
+    "raw_columns": 24,
+    "development_rows": 1711,
+    "test_rows": 428,
+    "random_state": 42,
+    "test_size": 0.2,
+    "baseline_variables": [
+        "age",
+        "wtkg",
+        "hemo",
+        "homo",
+        "drugs",
+        "karnof",
+        "oprior",
+        "z30",
+        "preanti",
+        "race",
+        "gender",
+        "strat",
+        "symptom",
+        "cd40",
+        "cd80"
+    ],
+    "decision_variable": "trt",
+    "outcome_variable": "label",
+    "supporting_variables": [
+        "time"
+    ],
+    "excluded_variables": [
+        "zprior",
+        "str2",
+        "treat",
+        "cd420",
+        "cd820",
+        "offtrt"
+    ],
+    "note": "Continuous variables are retained in their original form at Phase 1. Discretization is performed separately in Phase 2 using development data only."
+}

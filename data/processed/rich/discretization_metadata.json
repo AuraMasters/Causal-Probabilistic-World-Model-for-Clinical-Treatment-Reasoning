@@ -1,0 +1,71 @@
+{
+    "representation": "rich",
+    "n_bins": 4,
+    "fit_dataset": "development_only",
+    "variables": {
+        "age": {
+            "method": "quantile",
+            "bins": 4,
+            "edges": [
+                -Infinity,
+                29.0,
+                35.0,
+                40.0,
+                Infinity
+            ]
+        },
+        "wtkg": {
+            "method": "quantile",
+            "bins": 4,
+            "edges": [
+                -Infinity,
+                66.6792,
+                74.5,
+                82.5552,
+                Infinity
+            ]
+        },
+        "karnof": {
+            "method": "quantile",
+            "bins": 4,
+            "edges": [
+                -Infinity,
+                90.0,
+                Infinity
+            ]
+        },
+        "cd40": {
+            "method": "quantile",
+            "bins": 4,
+            "edges": [
+                -Infinity,
+                266.0,
+                341.0,
+                425.0,
+                Infinity
+            ]
+        },
+        "cd80": {
+            "method": "quantile",
+            "bins": 4,
+            "edges": [
+                -Infinity,
+                651.0,
+                894.0,
+                1206.0,
+                Infinity
+            ]
+        },
+        "preanti": {
+            "method": "zero_plus_positive_quantiles",
+            "positive_bins": 4,
+            "edges": [
+                0.0,
+                249.0,
+                625.5,
+                924.5,
+                Infinity
+            ]
+        }
+    }
+}

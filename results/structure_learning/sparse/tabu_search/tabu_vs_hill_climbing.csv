@@ -1,0 +1,3 @@
+algorithm,bic_score,bdeu_score,edges,common_edges,edge_jaccard,total_cpt_entries
+Constrained Hill Climbing,-18895.618762642596,-18848.171394022007,22,,,139
+Tabu Search,-18895.618762642596,-18848.171394022007,22,22.0,1.0,139

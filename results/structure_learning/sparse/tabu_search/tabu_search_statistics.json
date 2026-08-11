@@ -1,0 +1,175 @@
+{
+    "representation": "sparse",
+    "algorithm": "Tabu Search",
+    "implementation": "pgmpy HillClimbSearch with tabu_length",
+    "optimization_score": "BIC",
+    "secondary_score": "BDeu",
+    "max_indegree": 3,
+    "tabu_length": 100,
+    "max_iterations": 1000000,
+    "epsilon": 0.0001,
+    "bdeu_equivalent_sample_size": 10,
+    "constraints": {
+        "temporal_order": [
+            "baseline",
+            "treatment",
+            "outcome"
+        ],
+        "forbidden_edges": [
+            [
+                "label",
+                "trt"
+            ]
+        ]
+    },
+    "scores": {
+        "bic_score": -18895.618762642596,
+        "bdeu_score": -18848.171394022007
+    },
+    "graph_statistics": {
+        "number_of_edges": 22,
+        "maximum_indegree": 2,
+        "total_cpt_entries": 139
+    },
+    "cpt_information": {
+        "age": {
+            "parents": [
+                "hemo",
+                "z30"
+            ],
+            "node_states": 3,
+            "parent_configurations": 4,
+            "cpt_entries": 12
+        },
+        "wtkg": {
+            "parents": [
+                "gender"
+            ],
+            "node_states": 3,
+            "parent_configurations": 2,
+            "cpt_entries": 6
+        },
+        "hemo": {
+            "parents": [
+                "strat"
+            ],
+            "node_states": 2,
+            "parent_configurations": 3,
+            "cpt_entries": 6
+        },
+        "homo": {
+            "parents": [
+                "hemo",
+                "race"
+            ],
+            "node_states": 2,
+            "parent_configurations": 4,
+            "cpt_entries": 8
+        },
+        "drugs": {
+            "parents": [
+                "homo",
+                "hemo"
+            ],
+            "node_states": 2,
+            "parent_configurations": 4,
+            "cpt_entries": 8
+        },
+        "karnof": {
+            "parents": [
+                "symptom"
+            ],
+            "node_states": 2,
+            "parent_configurations": 2,
+            "cpt_entries": 4
+        },
+        "oprior": {
+            "parents": [
+                "strat",
+                "z30"
+            ],
+            "node_states": 2,
+            "parent_configurations": 6,
+            "cpt_entries": 12
+        },
+        "z30": {
+            "parents": [
+                "preanti"
+            ],
+            "node_states": 2,
+            "parent_configurations": 4,
+            "cpt_entries": 8
+        },
+        "preanti": {
+            "parents": [],
+            "node_states": 4,
+            "parent_configurations": 1,
+            "cpt_entries": 4
+        },
+        "race": {
+            "parents": [
+                "preanti"
+            ],
+            "node_states": 2,
+            "parent_configurations": 4,
+            "cpt_entries": 8
+        },
+        "gender": {
+            "parents": [
+                "homo",
+                "hemo"
+            ],
+            "node_states": 2,
+            "parent_configurations": 4,
+            "cpt_entries": 8
+        },
+        "strat": {
+            "parents": [
+                "preanti"
+            ],
+            "node_states": 3,
+            "parent_configurations": 4,
+            "cpt_entries": 12
+        },
+        "symptom": {
+            "parents": [
+                "homo",
+                "cd40"
+            ],
+            "node_states": 2,
+            "parent_configurations": 6,
+            "cpt_entries": 12
+        },
+        "cd40": {
+            "parents": [
+                "cd80"
+            ],
+            "node_states": 3,
+            "parent_configurations": 3,
+            "cpt_entries": 9
+        },
+        "cd80": {
+            "parents": [
+                "homo"
+            ],
+            "node_states": 3,
+            "parent_configurations": 2,
+            "cpt_entries": 6
+        },
+        "trt": {
+            "parents": [],
+            "node_states": 4,
+            "parent_configurations": 1,
+            "cpt_entries": 4
+        },
+        "label": {
+            "parents": [
+                "cd40",
+                "z30"
+            ],
+            "node_states": 2,
+            "parent_configurations": 6,
+            "cpt_entries": 12
+        }
+    }
+}
