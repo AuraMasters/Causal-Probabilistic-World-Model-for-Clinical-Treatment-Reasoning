@@ -1,0 +1,14 @@
+{
+    "phase": "Phase 10 - Probabilistic Inference",
+    "dataset": "ACTG175",
+    "representation": "sparse",
+    "rows": 1711,
+    "variables": 17,
+    "dag_edges": 22,
+    "inference_algorithm": "Variable Elimination",
+    "parameter_estimator": "BayesianEstimator",
+    "prior": "BDeu",
+    "equivalent_sample_size": 10,
+    "queries_executed": 20,
+    "model_check": true
+}
