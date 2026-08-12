@@ -1,0 +1,34 @@
+{
+    "phase": 20,
+    "validation": "Treatment decision validation",
+    "development_shape": [
+        1711,
+        17
+    ],
+    "test_shape": [
+        428,
+        17
+    ],
+    "parameter_learning": "development_only",
+    "test_used_for_parameter_learning": false,
+    "final_dag_edges": 23,
+    "test_patients": 428,
+    "treatments_evaluated": 4,
+    "recommended_better_than_observed_rate": 0.75,
+    "recommended_same_as_observed_rate": 0.25,
+    "best_average_treatment": 1,
+    "best_average_treatment_name": "Zidovudine + Didanosine",
+    "recommendation_counts": {
+        "0": 0,
+        "1": 143,
+        "2": 179,
+        "3": 106
+    },
+    "observed_treatment_counts": {
+        "0": 106,
+        "1": 104,
+        "2": 105,
+        "3": 113
+    },
+    "interpretation": "The observed treatment is not treated as the true optimal treatment. Validation compares model-based interventional rankings with the observed treatment and observed outcomes without claiming individual-level causal ground truth."
+}

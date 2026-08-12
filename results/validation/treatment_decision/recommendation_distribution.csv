@@ -1,0 +1,5 @@
+treatment,treatment_name,recommended_count,recommended_rate,observed_count,observed_rate
+0,Zidovudine (ZDV/AZT),0,0.0,106,0.24766355140186916
+1,Zidovudine + Didanosine,143,0.3341121495327103,104,0.24299065420560748
+2,Zidovudine + Zalcitabine,179,0.4182242990654206,105,0.24532710280373832
+3,Didanosine (ddI),106,0.24766355140186916,113,0.26401869158878505
