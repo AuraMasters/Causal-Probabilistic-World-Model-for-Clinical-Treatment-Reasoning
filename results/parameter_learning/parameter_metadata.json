@@ -1,0 +1,131 @@
+{
+    "project": "Probability-Reasoning",
+    "dataset": "ACTG175",
+    "phase": "Phase 9 - Parameter Learning",
+    "representation": "sparse",
+    "development_rows": 1711,
+    "number_of_variables": 17,
+    "number_of_edges": 22,
+    "variables": [
+        "age",
+        "wtkg",
+        "hemo",
+        "homo",
+        "drugs",
+        "karnof",
+        "oprior",
+        "z30",
+        "preanti",
+        "race",
+        "gender",
+        "strat",
+        "symptom",
+        "cd40",
+        "cd80",
+        "trt",
+        "label"
+    ],
+    "target": "label",
+    "estimator": "BayesianEstimator",
+    "prior_type": "BDeu",
+    "equivalent_sample_size": 10,
+    "dag_valid": true,
+    "temporal_constraints_valid": true,
+    "forbidden_label_to_trt": true,
+    "cpts_valid": true,
+    "cpt_statistics": {
+        "total_cpt_entries": 139,
+        "zero_probability_entries": 0,
+        "nonzero_probability_entries": 139
+    },
+    "final_dag": [
+        {
+            "source": "cd40",
+            "target": "label"
+        },
+        {
+            "source": "cd40",
+            "target": "symptom"
+        },
+        {
+            "source": "cd80",
+            "target": "cd40"
+        },
+        {
+            "source": "gender",
+            "target": "wtkg"
+        },
+        {
+            "source": "hemo",
+            "target": "age"
+        },
+        {
+            "source": "hemo",
+            "target": "drugs"
+        },
+        {
+            "source": "hemo",
+            "target": "gender"
+        },
+        {
+            "source": "hemo",
+            "target": "homo"
+        },
+        {
+            "source": "homo",
+            "target": "cd80"
+        },
+        {
+            "source": "homo",
+            "target": "drugs"
+        },
+        {
+            "source": "homo",
+            "target": "gender"
+        },
+        {
+            "source": "homo",
+            "target": "symptom"
+        },
+        {
+            "source": "preanti",
+            "target": "race"
+        },
+        {
+            "source": "preanti",
+            "target": "strat"
+        },
+        {
+            "source": "preanti",
+            "target": "z30"
+        },
+        {
+            "source": "race",
+            "target": "homo"
+        },
+        {
+            "source": "strat",
+            "target": "hemo"
+        },
+        {
+            "source": "strat",
+            "target": "oprior"
+        },
+        {
+            "source": "symptom",
+            "target": "karnof"
+        },
+        {
+            "source": "z30",
+            "target": "age"
+        },
+        {
+            "source": "z30",
+            "target": "label"
+        },
+        {
+            "source": "z30",
+            "target": "oprior"
+        }
+    ]
+}
