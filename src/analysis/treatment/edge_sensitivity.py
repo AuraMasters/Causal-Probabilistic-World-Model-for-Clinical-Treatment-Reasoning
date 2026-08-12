@@ -1,41 +1,38 @@
 from pathlib import Path
 import json
+import warnings
 
 import numpy as np
 import pandas as pd
+import networkx as nx
+
+from sklearn.metrics import (
+    accuracy_score,
+    brier_score_loss,
+    log_loss,
+    roc_auc_score,
+)
 
 from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.estimators import BayesianEstimator
 from pgmpy.inference import VariableElimination
 
-from sklearn.metrics import (
-    log_loss,
-    brier_score_loss,
-    roc_auc_score,
-    accuracy_score,
-)
-
 
 # ============================================================
-# PATHS
+# CONFIGURATION
 # ============================================================
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
+PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
+RESULTS_DIR = PROJECT_ROOT / "results" / "analysis" / "treatment"
+
 DEVELOPMENT_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "processed"
-    / "sparse"
-    / "development.csv"
+    PROCESSED_DIR / "sparse" / "development.csv"
 )
 
 TEST_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "processed"
-    / "sparse"
-    / "test.csv"
+    PROCESSED_DIR / "sparse" / "test.csv"
 )
 
 FINAL_DAG_PATH = (
@@ -46,30 +43,24 @@ FINAL_DAG_PATH = (
     / "final_dag_edges.csv"
 )
 
-OUTPUT_DIR = (
+# Fallback for the earlier nested directory structure.
+FINAL_DAG_FALLBACK = (
     PROJECT_ROOT
     / "results"
-    / "analysis"
-    / "treatment"
-    / "edge_sensitivity"
+    / "structure_learning"
+    / "final"
+    / "final_dag"
+    / "final_dag_edges.csv"
 )
 
-OUTPUT_DIR.mkdir(
-    parents=True,
-    exist_ok=True,
-)
-
-
-# ============================================================
-# CONFIGURATION
-# ============================================================
+ESS = 10
 
 TARGET = "label"
 TREATMENT = "trt"
 
-ESS = 10
+RANDOM_STATE = 42
 
-BASELINE_VARS = [
+EXPECTED_COLUMNS = [
     "age",
     "wtkg",
     "hemo",
@@ -85,178 +76,427 @@ BASELINE_VARS = [
     "symptom",
     "cd40",
     "cd80",
-]
-
-ALL_VARS = BASELINE_VARS + [
-    TREATMENT,
-    TARGET,
-]
-
-FORBIDDEN_EDGE = (
-    "label",
     "trt",
-)
+    "label",
+]
 
 
 # ============================================================
-# HELPERS
+# DISPLAY HELPERS
 # ============================================================
 
-def load_edges(path):
-    df = pd.read_csv(path)
+def print_header(title):
+    print()
+    print("=" * 70)
+    print(title)
+    print("=" * 70)
 
-    required = {"source", "target"}
 
-    if not required.issubset(df.columns):
-        raise ValueError(
-            f"DAG file must contain columns: {required}"
-        )
+def print_section(title):
+    print()
+    print("=" * 70)
+    print(title)
+    print("=" * 70)
 
-    return [
-        (row["source"], row["target"])
-        for _, row in df.iterrows()
+
+# ============================================================
+# PATH DISCOVERY
+# ============================================================
+
+def find_final_dag():
+    candidates = [
+        FINAL_DAG_PATH,
+        FINAL_DAG_FALLBACK,
     ]
 
+    # Also search recursively if the exact location changed.
+    candidates.extend(
+        PROJECT_ROOT.glob(
+            "results/structure_learning/**/final_dag_edges.csv"
+        )
+    )
 
-def validate_dag(model):
-    """
-    pgmpy 1.1.2 compatibility:
-    use nx.is_directed_acyclic_graph().
-    """
+    seen = set()
 
-    import networkx as nx
+    for path in candidates:
+        path = Path(path)
 
-    if not nx.is_directed_acyclic_graph(
-        model
-    ):
+        if str(path) in seen:
+            continue
+
+        seen.add(str(path))
+
+        if path.exists():
+            return path
+
+    raise FileNotFoundError(
+        "\nFinal DAG file could not be found.\n"
+        "Expected one of:\n"
+        f"  {FINAL_DAG_PATH}\n"
+        f"  {FINAL_DAG_FALLBACK}\n"
+    )
+
+
+# ============================================================
+# DATA VALIDATION
+# ============================================================
+
+def validate_dataset(df, name):
+
+    required = set(EXPECTED_COLUMNS)
+
+    missing_columns = sorted(
+        required - set(df.columns)
+    )
+
+    if missing_columns:
         raise ValueError(
-            "Model is not a DAG."
+            f"{name} is missing columns: "
+            f"{missing_columns}"
         )
 
-    if FORBIDDEN_EDGE in model.edges():
+    if df[EXPECTED_COLUMNS].isnull().sum().sum() != 0:
+        raise ValueError(
+            f"{name} contains missing values."
+        )
+
+    print(
+        f"{name} shape: {df.shape}"
+    )
+
+    print(
+        f"{name} missing: "
+        f"{int(df.isnull().sum().sum())}"
+    )
+
+
+# ============================================================
+# DISCRETE STATE CONVERSION
+# ============================================================
+
+def convert_to_discrete(df):
+    """
+    Convert every variable to string states.
+
+    This is important because the project uses a discrete
+    Bayesian network and the sparse representation contains
+    discretized states such as age_1, age_2, etc.
+    """
+
+    result = df.copy()
+
+    for column in result.columns:
+        result[column] = result[column].astype(str)
+
+    return result
+
+
+# ============================================================
+# LOAD DAG
+# ============================================================
+
+def load_dag_edges(path):
+
+    edges_df = pd.read_csv(path)
+
+    if not {"source", "target"}.issubset(
+        edges_df.columns
+    ):
+        raise ValueError(
+            "DAG edge file must contain "
+            "'source' and 'target' columns."
+        )
+
+    edges = []
+
+    for _, row in edges_df.iterrows():
+
+        source = str(row["source"])
+        target = str(row["target"])
+
+        edges.append(
+            (source, target)
+        )
+
+    return edges
+
+
+# ============================================================
+# GRAPH VALIDATION
+# ============================================================
+
+def validate_dag(
+    edges,
+    variables,
+    allow_treatment_edge=False,
+):
+
+    graph = nx.DiGraph()
+
+    graph.add_nodes_from(variables)
+    graph.add_edges_from(edges)
+
+    # --------------------------------------------------------
+    # DAG validation
+    # --------------------------------------------------------
+
+    if not nx.is_directed_acyclic_graph(graph):
+        raise ValueError(
+            "Graph is not a DAG."
+        )
+
+    # --------------------------------------------------------
+    # Forbidden edge
+    # --------------------------------------------------------
+
+    if ("label", "trt") in edges:
         raise ValueError(
             "Forbidden edge label -> trt detected."
         )
 
+    # --------------------------------------------------------
+    # Treatment edge
+    # --------------------------------------------------------
 
-def build_model(edges):
+    if not allow_treatment_edge:
+
+        if ("trt", "label") in edges:
+            raise ValueError(
+                "trt -> label is not allowed in "
+                "the current final DAG."
+            )
+
+    return graph
+
+
+# ============================================================
+# MODEL CREATION
+# ============================================================
+
+def build_model(
+    edges,
+    variables,
+    allow_treatment_edge=False,
+):
+
+    validate_dag(
+        edges=edges,
+        variables=variables,
+        allow_treatment_edge=allow_treatment_edge,
+    )
+
     model = DiscreteBayesianNetwork(
         edges
     )
 
-    # Ensure all variables exist, including
-    # isolated treatment variables.
-    model.add_nodes_from(
-        ALL_VARS
-    )
-
-    validate_dag(model)
+    # Make sure isolated variables such as trt are retained.
+    model.add_nodes_from(variables)
 
     return model
 
 
-def learn_parameters(model, development):
-    """
-    Learn BDeu parameters using development data only.
-    """
+# ============================================================
+# PARAMETER LEARNING
+# ============================================================
+
+def learn_bdeu_parameters(
+    model,
+    development,
+):
+
+    print(
+        "Learning BDeu parameters..."
+    )
+
+    # pgmpy 1.1.2 compatible API.
+    #
+    # Do NOT call:
+    #
+    # model.fit(
+    #     data,
+    #     prior_type="BDeu",
+    #     equivalent_sample_size=10
+    # )
+    #
+    # Those arguments are not accepted by
+    # DiscreteBayesianNetwork.fit() in this version.
 
     estimator = BayesianEstimator(
         model,
         development,
     )
 
-    model.fit(
-        development,
-        estimator=BayesianEstimator,
+    cpds = estimator.get_parameters(
         prior_type="BDeu",
         equivalent_sample_size=ESS,
+    )
+
+    model.add_cpds(*cpds)
+
+    print(
+        f"CPDs learned: {len(cpds)}"
+    )
+
+    # pgmpy model consistency check.
+    model.check_model()
+
+    print(
+        "Model consistency: PASSED"
     )
 
     return model
 
 
-def check_model(model):
-    """
-    pgmpy 1.1.2 compatibility.
-    """
+# ============================================================
+# INFERENCE
+# ============================================================
 
-    try:
-        result = model.check_model()
-    except Exception as exc:
-        raise ValueError(
-            f"Model consistency check failed: {exc}"
-        )
-
-    if result is not True:
-        raise ValueError(
-            "Model consistency check returned False."
-        )
-
-
-def probability_label_1(
+def get_positive_probability(
     inference,
     evidence,
 ):
-    result = inference.query(
+
+    query = inference.query(
         variables=[TARGET],
         evidence=evidence,
         show_progress=False,
     )
 
+    # State order comes from the CPD.
     states = list(
-        result.state_names[TARGET]
+        query.state_names[TARGET]
     )
 
-    if 1 in states:
-        index = states.index(1)
-    elif "1" in states:
-        index = states.index("1")
-    else:
+    values = np.asarray(
+        query.values,
+        dtype=float,
+    )
+
+    if "1" not in states:
         raise ValueError(
-            f"Could not find label=1 in states: {states}"
+            "Target state '1' not found in "
+            f"inference result: {states}"
         )
 
+    index = states.index("1")
+
     return float(
-        result.values[index]
+        values[index]
     )
 
 
-def calculate_ece(
+# ============================================================
+# PREDICTION GENERATION
+# ============================================================
+
+def generate_predictions(
+    model,
+    test,
+):
+
+    inference = VariableElimination(
+        model
+    )
+
+    probabilities = []
+
+    feature_columns = [
+        column
+        for column in EXPECTED_COLUMNS
+        if column != TARGET
+    ]
+
+    total = len(test)
+
+    print(
+        f"Patients to evaluate: {total}"
+    )
+
+    for i, (_, row) in enumerate(
+        test.iterrows(),
+        start=1,
+    ):
+
+        evidence = {
+            column: row[column]
+            for column in feature_columns
+        }
+
+        probability = (
+            get_positive_probability(
+                inference,
+                evidence,
+            )
+        )
+
+        probabilities.append(
+            probability
+        )
+
+        if (
+            i % 100 == 0
+            or i == total
+        ):
+            print(
+                f"Processed {i}/{total}"
+            )
+
+    return np.asarray(
+        probabilities,
+        dtype=float,
+    )
+
+
+# ============================================================
+# CALIBRATION
+# ============================================================
+
+def expected_calibration_error(
     y_true,
     probabilities,
     bins=10,
 ):
-    """
-    Expected Calibration Error.
-    """
 
-    y_true = np.asarray(y_true)
-    probabilities = np.asarray(
-        probabilities
+    y_true = np.asarray(
+        y_true,
+        dtype=float,
     )
 
-    ece = 0.0
+    probabilities = np.asarray(
+        probabilities,
+        dtype=float,
+    )
 
-    edges = np.linspace(
+    bin_edges = np.linspace(
         0.0,
         1.0,
         bins + 1,
     )
 
+    ece = 0.0
+    total = len(y_true)
+
     for i in range(bins):
+
+        lower = bin_edges[i]
+        upper = bin_edges[i + 1]
 
         if i == bins - 1:
             mask = (
-                (probabilities >= edges[i])
-                & (probabilities <= edges[i + 1])
+                (probabilities >= lower)
+                & (probabilities <= upper)
             )
         else:
             mask = (
-                (probabilities >= edges[i])
-                & (probabilities < edges[i + 1])
+                (probabilities >= lower)
+                & (probabilities < upper)
             )
 
-        if not np.any(mask):
+        count = int(
+            mask.sum()
+        )
+
+        if count == 0:
             continue
 
         confidence = probabilities[
@@ -268,230 +508,449 @@ def calculate_ece(
         ].mean()
 
         ece += (
-            mask.mean()
-            * abs(
-                confidence - accuracy
-            )
+            count / total
+        ) * abs(
+            confidence - accuracy
         )
 
     return float(ece)
 
 
-def count_cpt_entries(model):
-    total = 0
+# ============================================================
+# MODEL METRICS
+# ============================================================
 
-    for cpd in model.get_cpds():
-
-        values = np.asarray(
-            cpd.values
-        )
-
-        total += values.size
-
-    return int(total)
-
-
-def evaluate_model(
-    model,
-    test,
-    model_name,
+def calculate_metrics(
+    y_true,
+    probabilities,
 ):
-    """
-    Evaluate the Bayesian network on the
-    untouched test set.
-    """
 
-    inference = VariableElimination(
-        model
+    probabilities = np.clip(
+        probabilities,
+        1e-12,
+        1 - 1e-12,
     )
-
-    probabilities = []
-
-    print(
-        f"\nEvaluating {model_name}..."
-    )
-
-    for index, row in test.iterrows():
-
-        evidence = {}
-
-        for variable in ALL_VARS:
-
-            if variable == TARGET:
-                continue
-
-            evidence[variable] = row[
-                variable
-            ]
-
-        probability = probability_label_1(
-            inference,
-            evidence,
-        )
-
-        probabilities.append(
-            probability
-        )
-
-        if (
-            (index + 1) % 50 == 0
-            or index + 1 == len(test)
-        ):
-            print(
-                f"Processed {index + 1}/{len(test)}"
-            )
-
-    probabilities = np.asarray(
-        probabilities
-    )
-
-    y = test[TARGET].to_numpy()
 
     predictions = (
         probabilities >= 0.5
     ).astype(int)
 
-    metrics = {
-        "model": model_name,
-        "rows": int(len(test)),
-        "positive_rate": float(
-            y.mean()
-        ),
-        "mean_predicted_probability": float(
-            probabilities.mean()
-        ),
+    return {
         "log_loss": float(
             log_loss(
-                y,
+                y_true,
                 probabilities,
             )
         ),
         "brier_score": float(
             brier_score_loss(
-                y,
+                y_true,
                 probabilities,
             )
         ),
         "roc_auc": float(
             roc_auc_score(
-                y,
+                y_true,
                 probabilities,
             )
         ),
         "accuracy": float(
             accuracy_score(
-                y,
+                y_true,
                 predictions,
             )
         ),
-        "ece": calculate_ece(
-            y,
-            probabilities,
+        "ece": float(
+            expected_calibration_error(
+                y_true,
+                probabilities,
+            )
         ),
-        "cpt_entries": count_cpt_entries(
-            model
+        "positive_rate": float(
+            np.mean(y_true)
         ),
-        "edges": int(
-            len(model.edges())
+        "mean_predicted_probability": float(
+            np.mean(probabilities)
         ),
     }
 
-    prediction_df = pd.DataFrame(
-        {
-            "observed_label": y,
-            "predicted_probability": probabilities,
-            "predicted_label": predictions,
-        }
-    )
 
-    prediction_path = (
-        OUTPUT_DIR
-        / f"{model_name}_predictions.csv"
-    )
-
-    prediction_df.to_csv(
-        prediction_path,
-        index=False,
-    )
-
-    return metrics, prediction_df
-
+# ============================================================
+# TREATMENT DIAGNOSTIC
+# ============================================================
 
 def treatment_diagnostic(
-    model,
-    development,
-    model_name,
+    test,
+    probabilities,
 ):
-    """
-    Calculate model predictions under
-    each possible treatment while keeping
-    each patient's other evidence fixed.
-    """
-
-    inference = VariableElimination(
-        model
-    )
 
     rows = []
 
     for treatment in sorted(
-        development[TREATMENT].unique()
+        test[TREATMENT]
+        .astype(str)
+        .unique(),
+        key=lambda x: int(x),
     ):
 
-        probabilities = []
+        mask = (
+            test[TREATMENT].astype(str)
+            == treatment
+        )
 
-        for _, row in development.iterrows():
+        observed = (
+            test.loc[
+                mask,
+                TARGET,
+            ]
+            .astype(int)
+            .mean()
+        )
 
-            evidence = {}
-
-            for variable in ALL_VARS:
-
-                if variable in (
-                    TARGET,
-                    TREATMENT,
-                ):
-                    continue
-
-                evidence[variable] = row[
-                    variable
-                ]
-
-            evidence[TREATMENT] = treatment
-
-            probability = probability_label_1(
-                inference,
-                evidence,
-            )
-
-            probabilities.append(
-                probability
-            )
-
-        probabilities = np.asarray(
-            probabilities
+        predicted = (
+            probabilities[mask.to_numpy()]
+            .mean()
         )
 
         rows.append(
             {
-                "model": model_name,
-                "treatment": int(
-                    treatment
+                "treatment": int(treatment),
+                "test_rows": int(mask.sum()),
+                "observed_P_label_1": float(
+                    observed
                 ),
-                "mean_P_label_1": float(
-                    probabilities.mean()
+                "model_P_label_1": float(
+                    predicted
                 ),
-                "min_P_label_1": float(
-                    probabilities.min()
-                ),
-                "max_P_label_1": float(
-                    probabilities.max()
+                "absolute_difference": float(
+                    abs(
+                        observed
+                        - predicted
+                    )
                 ),
             }
         )
 
-    result = pd.DataFrame(rows)
+    return pd.DataFrame(rows)
 
-    return result
+
+# ============================================================
+# EDGE DIFFERENCE
+# ============================================================
+
+def compare_edges(
+    current_edges,
+    sensitivity_edges,
+):
+
+    current_set = set(
+        current_edges
+    )
+
+    sensitivity_set = set(
+        sensitivity_edges
+    )
+
+    return {
+        "current_edge_count": len(
+            current_set
+        ),
+        "sensitivity_edge_count": len(
+            sensitivity_set
+        ),
+        "added_edges": sorted(
+            sensitivity_set
+            - current_set
+        ),
+        "removed_edges": sorted(
+            current_set
+            - sensitivity_set
+        ),
+    }
+
+
+# ============================================================
+# SAVE RESULTS
+# ============================================================
+
+def save_outputs(
+    development,
+    test,
+    current_edges,
+    sensitivity_edges,
+    current_probabilities,
+    sensitivity_probabilities,
+    current_metrics,
+    sensitivity_metrics,
+):
+
+    RESULTS_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    # --------------------------------------------------------
+    # Predictions
+    # --------------------------------------------------------
+
+    predictions = test.copy()
+
+    predictions[
+        "current_model_P_label_1"
+    ] = current_probabilities
+
+    predictions[
+        "sensitivity_model_P_label_1"
+    ] = sensitivity_probabilities
+
+    predictions[
+        "current_model_prediction"
+    ] = (
+        current_probabilities >= 0.5
+    ).astype(int)
+
+    predictions[
+        "sensitivity_model_prediction"
+    ] = (
+        sensitivity_probabilities >= 0.5
+    ).astype(int)
+
+    predictions_path = (
+        RESULTS_DIR
+        / "edge_sensitivity_predictions.csv"
+    )
+
+    predictions.to_csv(
+        predictions_path,
+        index=False,
+    )
+
+    # --------------------------------------------------------
+    # Metrics
+    # --------------------------------------------------------
+
+    metrics_df = pd.DataFrame(
+        [
+            {
+                "model": "current_final_dag",
+                **current_metrics,
+            },
+            {
+                "model": "sensitivity_trt_to_label",
+                **sensitivity_metrics,
+            },
+        ]
+    )
+
+    metrics_path = (
+        RESULTS_DIR
+        / "edge_sensitivity_metrics.csv"
+    )
+
+    metrics_df.to_csv(
+        metrics_path,
+        index=False,
+    )
+
+    # --------------------------------------------------------
+    # Treatment diagnostic
+    # --------------------------------------------------------
+
+    current_treatment = (
+        treatment_diagnostic(
+            test,
+            current_probabilities,
+        )
+    )
+
+    sensitivity_treatment = (
+        treatment_diagnostic(
+            test,
+            sensitivity_probabilities,
+        )
+    )
+
+    current_treatment[
+        "model"
+    ] = "current_final_dag"
+
+    sensitivity_treatment[
+        "model"
+    ] = "sensitivity_trt_to_label"
+
+    treatment_df = pd.concat(
+        [
+            current_treatment,
+            sensitivity_treatment,
+        ],
+        ignore_index=True,
+    )
+
+    treatment_path = (
+        RESULTS_DIR
+        / "edge_sensitivity_treatment_diagnostic.csv"
+    )
+
+    treatment_df.to_csv(
+        treatment_path,
+        index=False,
+    )
+
+    # --------------------------------------------------------
+    # Edge comparison
+    # --------------------------------------------------------
+
+    edge_comparison = compare_edges(
+        current_edges,
+        sensitivity_edges,
+    )
+
+    edge_rows = []
+
+    for source, target in sorted(
+        set(current_edges)
+        | set(sensitivity_edges)
+    ):
+
+        edge_rows.append(
+            {
+                "source": source,
+                "target": target,
+                "current_dag": (
+                    (source, target)
+                    in set(current_edges)
+                ),
+                "sensitivity_dag": (
+                    (source, target)
+                    in set(sensitivity_edges)
+                ),
+            }
+        )
+
+    edge_df = pd.DataFrame(
+        edge_rows
+    )
+
+    edge_path = (
+        RESULTS_DIR
+        / "edge_comparison.csv"
+    )
+
+    edge_df.to_csv(
+        edge_path,
+        index=False,
+    )
+
+    # --------------------------------------------------------
+    # Metric changes
+    # --------------------------------------------------------
+
+    changes = {
+        "log_loss_change": (
+            sensitivity_metrics["log_loss"]
+            - current_metrics["log_loss"]
+        ),
+        "brier_score_change": (
+            sensitivity_metrics["brier_score"]
+            - current_metrics["brier_score"]
+        ),
+        "roc_auc_change": (
+            sensitivity_metrics["roc_auc"]
+            - current_metrics["roc_auc"]
+        ),
+        "accuracy_change": (
+            sensitivity_metrics["accuracy"]
+            - current_metrics["accuracy"]
+        ),
+        "ece_change": (
+            sensitivity_metrics["ece"]
+            - current_metrics["ece"]
+        ),
+    }
+
+    # --------------------------------------------------------
+    # Final JSON summary
+    # --------------------------------------------------------
+
+    summary = {
+        "phase": "Phase-13",
+        "analysis": (
+            "Treatment edge sensitivity analysis"
+        ),
+        "project_root": str(
+            PROJECT_ROOT
+        ),
+        "development_path": str(
+            DEVELOPMENT_PATH
+        ),
+        "test_path": str(
+            TEST_PATH
+        ),
+        "final_dag_path": str(
+            find_final_dag()
+        ),
+        "development_rows": int(
+            len(development)
+        ),
+        "test_rows": int(
+            len(test)
+        ),
+        "equivalent_sample_size": ESS,
+        "current_model": {
+            "name": "current_final_dag",
+            "edges": [
+                {
+                    "source": source,
+                    "target": target,
+                }
+                for source, target
+                in current_edges
+            ],
+            "metrics": current_metrics,
+        },
+        "sensitivity_model": {
+            "name": (
+                "current_final_dag_plus_trt_to_label"
+            ),
+            "edges": [
+                {
+                    "source": source,
+                    "target": target,
+                }
+                for source, target
+                in sensitivity_edges
+            ],
+            "metrics": sensitivity_metrics,
+        },
+        "edge_comparison": edge_comparison,
+        "metric_changes": changes,
+        "final_dag_modified": False,
+    }
+
+    summary_path = (
+        RESULTS_DIR
+        / "edge_sensitivity_summary.json"
+    )
+
+    with open(
+        summary_path,
+        "w",
+        encoding="utf-8",
+    ) as file:
+
+        json.dump(
+            summary,
+            file,
+            indent=2,
+        )
+
+    print()
+    print("Saved results:")
+    print(predictions_path)
+    print(metrics_path)
+    print(treatment_path)
+    print(edge_path)
+    print(summary_path)
 
 
 # ============================================================
@@ -500,13 +959,18 @@ def treatment_diagnostic(
 
 def main():
 
-    print("=" * 70)
-    print("ACTG175 PHASE-13")
-    print("TREATMENT EDGE SENSITIVITY ANALYSIS")
-    print("=" * 70)
+    warnings.filterwarnings(
+        "ignore",
+        category=FutureWarning,
+    )
+
+    print_header(
+        "ACTG175 PHASE-13\n"
+        "TREATMENT EDGE SENSITIVITY ANALYSIS"
+    )
 
     print(
-        "\nIMPORTANT:"
+        "IMPORTANT:"
     )
 
     print(
@@ -514,104 +978,180 @@ def main():
     )
 
     print(
-        "We compare the current DAG against a"
-        " treatment-edge sensitivity DAG."
+        "The current DAG is compared against "
+        "a sensitivity DAG containing trt -> label."
     )
 
     # --------------------------------------------------------
     # Load data
     # --------------------------------------------------------
 
-    development = pd.read_csv(
+    if not DEVELOPMENT_PATH.exists():
+        raise FileNotFoundError(
+            f"Development dataset not found:\n"
+            f"{DEVELOPMENT_PATH}"
+        )
+
+    if not TEST_PATH.exists():
+        raise FileNotFoundError(
+            f"Test dataset not found:\n"
+            f"{TEST_PATH}"
+        )
+
+    dag_path = find_final_dag()
+
+    development_raw = pd.read_csv(
         DEVELOPMENT_PATH
     )
 
-    test = pd.read_csv(
+    test_raw = pd.read_csv(
         TEST_PATH
     )
 
-    print(
-        f"\nDevelopment shape: {development.shape}"
+    validate_dataset(
+        development_raw,
+        "Development",
     )
 
-    print(
-        f"Test shape: {test.shape}"
+    validate_dataset(
+        test_raw,
+        "Test",
     )
 
-    print(
-        f"Development missing: "
-        f"{development.isna().sum().sum()}"
+    # --------------------------------------------------------
+    # Convert to discrete states
+    # --------------------------------------------------------
+
+    development = convert_to_discrete(
+        development_raw[
+            EXPECTED_COLUMNS
+        ]
     )
 
-    print(
-        f"Test missing: "
-        f"{test.isna().sum().sum()}"
+    test = convert_to_discrete(
+        test_raw[
+            EXPECTED_COLUMNS
+        ]
     )
 
     # --------------------------------------------------------
     # Load final DAG
     # --------------------------------------------------------
 
-    final_edges = load_edges(
-        FINAL_DAG_PATH
+    current_edges = load_dag_edges(
+        dag_path
+    )
+
+    print()
+    print(
+        f"Original final DAG edges: "
+        f"{len(current_edges)}"
+    )
+
+    variables = EXPECTED_COLUMNS
+
+    # --------------------------------------------------------
+    # Validate current DAG
+    # --------------------------------------------------------
+
+    print_section(
+        "MODEL A — CURRENT FINAL DAG"
+    )
+
+    current_graph = validate_dag(
+        current_edges,
+        variables,
+        allow_treatment_edge=False,
     )
 
     print(
-        f"\nOriginal final DAG edges: "
-        f"{len(final_edges)}"
-    )
-
-    # --------------------------------------------------------
-    # Model A: current final DAG
-    # --------------------------------------------------------
-
-    print("\n" + "=" * 70)
-    print("MODEL A — CURRENT FINAL DAG")
-    print("=" * 70)
-
-    current_model = build_model(
-        final_edges
-    )
-
-    print(
-        f"Edges: {len(current_model.edges())}"
+        f"Edges: {len(current_edges)}"
     )
 
     print(
         "DAG validation: PASSED"
     )
 
-    current_model = learn_parameters(
+    if ("label", "trt") in current_edges:
+        raise ValueError(
+            "Current final DAG contains "
+            "forbidden label -> trt."
+        )
+
+    print(
+        "Forbidden label -> trt: PASSED"
+    )
+
+    # --------------------------------------------------------
+    # Build current model
+    # --------------------------------------------------------
+
+    current_model = build_model(
+        current_edges,
+        variables,
+        allow_treatment_edge=False,
+    )
+
+    current_model = learn_bdeu_parameters(
         current_model,
         development,
     )
 
-    check_model(
+    current_inference = VariableElimination(
         current_model
     )
 
     print(
-        "Parameter learning: PASSED"
+        "Inference engine: READY"
     )
 
-    current_metrics, current_predictions = (
-        evaluate_model(
+    # --------------------------------------------------------
+    # Current model predictions
+    # --------------------------------------------------------
+
+    print_section(
+        "MODEL A — TEST SET EVALUATION"
+    )
+
+    current_probabilities = (
+        generate_predictions(
             current_model,
             test,
-            "current_dag",
         )
     )
 
+    y_test = (
+        test[TARGET]
+        .astype(int)
+        .to_numpy()
+    )
+
+    current_metrics = calculate_metrics(
+        y_test,
+        current_probabilities,
+    )
+
+    print()
+    print(
+        "Current final DAG metrics:"
+    )
+
+    for key, value in current_metrics.items():
+
+        print(
+            f"{key}: {value:.4f}"
+        )
+
     # --------------------------------------------------------
-    # Model B: add trt -> label
+    # Construct sensitivity DAG
     # --------------------------------------------------------
 
-    print("\n" + "=" * 70)
-    print("MODEL B — CURRENT DAG + TRT -> LABEL")
-    print("=" * 70)
+    print_section(
+        "MODEL B — SENSITIVITY DAG"
+    )
 
     sensitivity_edges = list(
-        final_edges
+        current_edges
     )
 
     treatment_edge = (
@@ -620,138 +1160,222 @@ def main():
     )
 
     if treatment_edge not in sensitivity_edges:
+
         sensitivity_edges.append(
             treatment_edge
         )
 
-    sensitivity_model = build_model(
-        sensitivity_edges
+    print(
+        "Added sensitivity edge:"
     )
 
     print(
-        f"Edges: {len(sensitivity_model.edges())}"
+        "trt -> label"
+    )
+
+    # --------------------------------------------------------
+    # Validate sensitivity DAG
+    # --------------------------------------------------------
+
+    sensitivity_graph = validate_dag(
+        sensitivity_edges,
+        variables,
+        allow_treatment_edge=True,
     )
 
     print(
-        "Added edge: trt -> label"
+        f"Edges: "
+        f"{len(sensitivity_edges)}"
     )
 
     print(
         "DAG validation: PASSED"
     )
 
-    sensitivity_model = learn_parameters(
-        sensitivity_model,
-        development,
+    # --------------------------------------------------------
+    # Build sensitivity model
+    # --------------------------------------------------------
+
+    sensitivity_model = build_model(
+        sensitivity_edges,
+        variables,
+        allow_treatment_edge=True,
     )
 
-    check_model(
-        sensitivity_model
-    )
-
-    print(
-        "Parameter learning: PASSED"
-    )
-
-    sensitivity_metrics, sensitivity_predictions = (
-        evaluate_model(
+    sensitivity_model = (
+        learn_bdeu_parameters(
             sensitivity_model,
-            test,
-            "treatment_edge_dag",
+            development,
         )
     )
 
+    sensitivity_inference = (
+        VariableElimination(
+            sensitivity_model
+        )
+    )
+
+    print(
+        "Inference engine: READY"
+    )
+
     # --------------------------------------------------------
-    # Compare metrics
+    # Sensitivity predictions
     # --------------------------------------------------------
 
-    print("\n" + "=" * 70)
-    print("TEST-SET COMPARISON")
-    print("=" * 70)
+    print_section(
+        "MODEL B — TEST SET EVALUATION"
+    )
+
+    sensitivity_probabilities = (
+        generate_predictions(
+            sensitivity_model,
+            test,
+        )
+    )
+
+    sensitivity_metrics = (
+        calculate_metrics(
+            y_test,
+            sensitivity_probabilities,
+        )
+    )
+
+    print()
+    print(
+        "Sensitivity DAG metrics:"
+    )
+
+    for key, value in (
+        sensitivity_metrics.items()
+    ):
+
+        print(
+            f"{key}: {value:.4f}"
+        )
+
+    # --------------------------------------------------------
+    # Comparison
+    # --------------------------------------------------------
+
+    print_section(
+        "MODEL COMPARISON"
+    )
 
     comparison = pd.DataFrame(
         [
-            current_metrics,
-            sensitivity_metrics,
+            {
+                "model": "Current final DAG",
+                **current_metrics,
+            },
+            {
+                "model": (
+                    "Sensitivity DAG "
+                    "(trt -> label)"
+                ),
+                **sensitivity_metrics,
+            },
         ]
     )
 
     print(
-        comparison.round(6).to_string(
-            index=False
-        )
+        comparison.round(4)
+        .to_string(index=False)
     )
 
     # --------------------------------------------------------
-    # Calculate changes
+    # Metric changes
     # --------------------------------------------------------
 
-    current = current_metrics
-    treatment = sensitivity_metrics
+    log_loss_change = (
+        sensitivity_metrics["log_loss"]
+        - current_metrics["log_loss"]
+    )
 
-    changes = {
-        "log_loss_change": (
-            treatment["log_loss"]
-            - current["log_loss"]
-        ),
-        "brier_change": (
-            treatment["brier_score"]
-            - current["brier_score"]
-        ),
-        "roc_auc_change": (
-            treatment["roc_auc"]
-            - current["roc_auc"]
-        ),
-        "accuracy_change": (
-            treatment["accuracy"]
-            - current["accuracy"]
-        ),
-        "ece_change": (
-            treatment["ece"]
-            - current["ece"]
-        ),
-        "cpt_entry_change": (
-            treatment["cpt_entries"]
-            - current["cpt_entries"]
-        ),
-        "edge_count_change": (
-            treatment["edges"]
-            - current["edges"]
-        ),
-    }
+    brier_change = (
+        sensitivity_metrics["brier_score"]
+        - current_metrics["brier_score"]
+    )
+
+    auc_change = (
+        sensitivity_metrics["roc_auc"]
+        - current_metrics["roc_auc"]
+    )
+
+    accuracy_change = (
+        sensitivity_metrics["accuracy"]
+        - current_metrics["accuracy"]
+    )
+
+    ece_change = (
+        sensitivity_metrics["ece"]
+        - current_metrics["ece"]
+    )
+
+    print()
+    print(
+        "Metric changes "
+        "(Sensitivity - Current):"
+    )
 
     print(
-        "\nMetric changes "
-        "(Treatment-edge model - Current model):"
+        f"Log Loss: "
+        f"{log_loss_change:+.6f}"
     )
 
-    for key, value in changes.items():
+    print(
+        f"Brier Score: "
+        f"{brier_change:+.6f}"
+    )
 
-        print(
-            f"{key}: {value:+.6f}"
-        )
+    print(
+        f"ROC-AUC: "
+        f"{auc_change:+.6f}"
+    )
+
+    print(
+        f"Accuracy: "
+        f"{accuracy_change:+.6f}"
+    )
+
+    print(
+        f"ECE: "
+        f"{ece_change:+.6f}"
+    )
 
     # --------------------------------------------------------
     # Treatment diagnostic
     # --------------------------------------------------------
 
-    print("\n" + "=" * 70)
-    print("TREATMENT-SPECIFIC DIAGNOSTIC")
-    print("=" * 70)
-
-    current_treatment = treatment_diagnostic(
-        current_model,
-        development,
-        "current_dag",
+    print_section(
+        "TREATMENT-SPECIFIC TEST DIAGNOSTIC"
     )
 
-    sensitivity_treatment = treatment_diagnostic(
-        sensitivity_model,
-        development,
-        "treatment_edge_dag",
+    current_treatment = (
+        treatment_diagnostic(
+            test,
+            current_probabilities,
+        )
     )
 
-    treatment_diagnostic_df = pd.concat(
+    current_treatment[
+        "model"
+    ] = "Current final DAG"
+
+    sensitivity_treatment = (
+        treatment_diagnostic(
+            test,
+            sensitivity_probabilities,
+        )
+    )
+
+    sensitivity_treatment[
+        "model"
+    ] = (
+        "Sensitivity DAG (trt -> label)"
+    )
+
+    treatment_comparison = pd.concat(
         [
             current_treatment,
             sensitivity_treatment,
@@ -760,222 +1384,140 @@ def main():
     )
 
     print(
-        treatment_diagnostic_df.round(6)
+        treatment_comparison.round(4)
         .to_string(index=False)
     )
 
-    treatment_diagnostic_path = (
-        OUTPUT_DIR
-        / "treatment_diagnostic.csv"
-    )
-
-    treatment_diagnostic_df.to_csv(
-        treatment_diagnostic_path,
-        index=False,
-    )
-
     # --------------------------------------------------------
-    # Decision logic
+    # Interpretation
     # --------------------------------------------------------
 
-    print("\n" + "=" * 70)
-    print("MODEL DECISION")
-    print("=" * 70)
-
-    improved_logloss = (
-        changes["log_loss_change"] < 0
+    print_section(
+        "INTERPRETATION"
     )
 
-    improved_brier = (
-        changes["brier_change"] < 0
+    better_log_loss = (
+        sensitivity_metrics["log_loss"]
+        < current_metrics["log_loss"]
     )
 
-    improved_auc = (
-        changes["roc_auc_change"] > 0
+    better_brier = (
+        sensitivity_metrics["brier_score"]
+        < current_metrics["brier_score"]
     )
 
-    improved_ece = (
-        changes["ece_change"] < 0
+    better_auc = (
+        sensitivity_metrics["roc_auc"]
+        > current_metrics["roc_auc"]
     )
 
-    increased_complexity = (
-        changes["cpt_entry_change"] > 0
+    better_ece = (
+        sensitivity_metrics["ece"]
+        < current_metrics["ece"]
     )
 
     improvements = sum(
         [
-            improved_logloss,
-            improved_brier,
-            improved_auc,
-            improved_ece,
+            better_log_loss,
+            better_brier,
+            better_auc,
+            better_ece,
         ]
     )
 
     if improvements >= 3:
 
         recommendation = (
-            "TREATMENT_EDGE_SUPPORTED_BY_TEST_PREDICTION"
+            "STRONGER_EVIDENCE_FOR_TREATMENT_EDGE"
         )
 
-    elif improvements >= 2:
+    elif improvements == 2:
 
         recommendation = (
-            "TREATMENT_EDGE_REQUIRES_FURTHER_REVIEW"
+            "MIXED_BUT_SUPPORTIVE_EVIDENCE"
+        )
+
+    elif improvements == 1:
+
+        recommendation = (
+            "WEAK_EVIDENCE_FOR_TREATMENT_EDGE"
         )
 
     else:
 
         recommendation = (
-            "KEEP_CURRENT_DAG"
+            "NO_PREDICTIVE_EVIDENCE_FOR_TREATMENT_EDGE"
         )
 
     print(
-        f"\nLog Loss improved: "
-        f"{improved_logloss}"
+        f"Log Loss improved: "
+        f"{better_log_loss}"
     )
 
     print(
-        f"Brier improved: "
-        f"{improved_brier}"
+        f"Brier Score improved: "
+        f"{better_brier}"
     )
 
     print(
         f"ROC-AUC improved: "
-        f"{improved_auc}"
+        f"{better_auc}"
     )
 
     print(
         f"ECE improved: "
-        f"{improved_ece}"
+        f"{better_ece}"
+    )
+
+    print()
+    print(
+        f"Recommendation: "
+        f"{recommendation}"
+    )
+
+    print()
+    print(
+        "IMPORTANT:"
     )
 
     print(
-        f"CPT complexity increased: "
-        f"{increased_complexity}"
+        "This is a sensitivity analysis."
     )
 
     print(
-        f"\nRecommendation:"
+        "The final DAG has NOT been modified."
     )
 
     print(
-        recommendation
-    )
-
-    print(
-        "\nIMPORTANT:"
-    )
-
-    print(
-        "This recommendation is a sensitivity-analysis "
-        "result, not a causal proof."
+        "Adding trt -> label requires "
+        "structural, causal, statistical, "
+        "and domain justification."
     )
 
     # --------------------------------------------------------
-    # Save results
+    # Save
     # --------------------------------------------------------
 
-    comparison_path = (
-        OUTPUT_DIR
-        / "model_comparison.csv"
+    save_outputs(
+        development=development,
+        test=test,
+        current_edges=current_edges,
+        sensitivity_edges=sensitivity_edges,
+        current_probabilities=current_probabilities,
+        sensitivity_probabilities=sensitivity_probabilities,
+        current_metrics=current_metrics,
+        sensitivity_metrics=sensitivity_metrics,
     )
 
-    comparison.to_csv(
-        comparison_path,
-        index=False,
+    print()
+    print_header(
+        "PHASE-13 COMPLETE"
     )
 
-    changes_path = (
-        OUTPUT_DIR
-        / "metric_changes.json"
-    )
 
-    with open(
-        changes_path,
-        "w",
-        encoding="utf-8",
-    ) as f:
-
-        json.dump(
-            changes,
-            f,
-            indent=2,
-        )
-
-    summary = {
-        "phase": 13,
-        "development_rows": int(
-            len(development)
-        ),
-        "test_rows": int(
-            len(test)
-        ),
-        "current_dag_edges": int(
-            len(current_model.edges())
-        ),
-        "treatment_edge_dag_edges": int(
-            len(sensitivity_model.edges())
-        ),
-        "current_dag_cpt_entries": int(
-            current_metrics["cpt_entries"]
-        ),
-        "treatment_edge_dag_cpt_entries": int(
-            sensitivity_metrics["cpt_entries"]
-        ),
-        "metrics": comparison.to_dict(
-            orient="records"
-        ),
-        "changes": changes,
-        "recommendation": recommendation,
-        "test_set_used_only_for_evaluation": True,
-        "final_dag_modified": False,
-    }
-
-    summary_path = (
-        OUTPUT_DIR
-        / "sensitivity_summary.json"
-    )
-
-    with open(
-        summary_path,
-        "w",
-        encoding="utf-8",
-    ) as f:
-
-        json.dump(
-            summary,
-            f,
-            indent=2,
-        )
-
-    print("\n" + "=" * 70)
-    print("PHASE-13 COMPLETE")
-    print("=" * 70)
-
-    print(
-        "\nSaved:"
-    )
-
-    print(
-        comparison_path
-    )
-
-    print(
-        changes_path
-    )
-
-    print(
-        treatment_diagnostic_path
-    )
-
-    print(
-        summary_path
-    )
-
-    print(
-        "\nOriginal final DAG was NOT modified."
-    )
-
+# ============================================================
+# ENTRY POINT
+# ============================================================
 
 if __name__ == "__main__":
     main()

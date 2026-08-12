@@ -1,0 +1,238 @@
+{
+  "phase": "Phase-13",
+  "analysis": "Treatment edge sensitivity analysis",
+  "project_root": "C:\\Users\\kusha\\OneDrive\\Documents\\Probability-Reasoning",
+  "development_path": "C:\\Users\\kusha\\OneDrive\\Documents\\Probability-Reasoning\\data\\processed\\sparse\\development.csv",
+  "test_path": "C:\\Users\\kusha\\OneDrive\\Documents\\Probability-Reasoning\\data\\processed\\sparse\\test.csv",
+  "final_dag_path": "C:\\Users\\kusha\\OneDrive\\Documents\\Probability-Reasoning\\results\\structure_learning\\final\\final_dag_edges.csv",
+  "development_rows": 1711,
+  "test_rows": 428,
+  "equivalent_sample_size": 10,
+  "current_model": {
+    "name": "current_final_dag",
+    "edges": [
+      {
+        "source": "cd40",
+        "target": "label"
+      },
+      {
+        "source": "cd40",
+        "target": "symptom"
+      },
+      {
+        "source": "cd80",
+        "target": "cd40"
+      },
+      {
+        "source": "gender",
+        "target": "wtkg"
+      },
+      {
+        "source": "hemo",
+        "target": "age"
+      },
+      {
+        "source": "hemo",
+        "target": "drugs"
+      },
+      {
+        "source": "hemo",
+        "target": "gender"
+      },
+      {
+        "source": "hemo",
+        "target": "homo"
+      },
+      {
+        "source": "homo",
+        "target": "cd80"
+      },
+      {
+        "source": "homo",
+        "target": "drugs"
+      },
+      {
+        "source": "homo",
+        "target": "gender"
+      },
+      {
+        "source": "homo",
+        "target": "symptom"
+      },
+      {
+        "source": "preanti",
+        "target": "race"
+      },
+      {
+        "source": "preanti",
+        "target": "strat"
+      },
+      {
+        "source": "preanti",
+        "target": "z30"
+      },
+      {
+        "source": "race",
+        "target": "homo"
+      },
+      {
+        "source": "strat",
+        "target": "hemo"
+      },
+      {
+        "source": "strat",
+        "target": "oprior"
+      },
+      {
+        "source": "symptom",
+        "target": "karnof"
+      },
+      {
+        "source": "z30",
+        "target": "age"
+      },
+      {
+        "source": "z30",
+        "target": "label"
+      },
+      {
+        "source": "z30",
+        "target": "oprior"
+      }
+    ],
+    "metrics": {
+      "log_loss": 0.5423000359198454,
+      "brier_score": 0.1787629257490195,
+      "roc_auc": 0.6097162867996202,
+      "accuracy": 0.7570093457943925,
+      "ece": 0.0420391633786137,
+      "positive_rate": 0.24299065420560748,
+      "mean_predicted_probability": 0.25673509982749204
+    }
+  },
+  "sensitivity_model": {
+    "name": "current_final_dag_plus_trt_to_label",
+    "edges": [
+      {
+        "source": "cd40",
+        "target": "label"
+      },
+      {
+        "source": "cd40",
+        "target": "symptom"
+      },
+      {
+        "source": "cd80",
+        "target": "cd40"
+      },
+      {
+        "source": "gender",
+        "target": "wtkg"
+      },
+      {
+        "source": "hemo",
+        "target": "age"
+      },
+      {
+        "source": "hemo",
+        "target": "drugs"
+      },
+      {
+        "source": "hemo",
+        "target": "gender"
+      },
+      {
+        "source": "hemo",
+        "target": "homo"
+      },
+      {
+        "source": "homo",
+        "target": "cd80"
+      },
+      {
+        "source": "homo",
+        "target": "drugs"
+      },
+      {
+        "source": "homo",
+        "target": "gender"
+      },
+      {
+        "source": "homo",
+        "target": "symptom"
+      },
+      {
+        "source": "preanti",
+        "target": "race"
+      },
+      {
+        "source": "preanti",
+        "target": "strat"
+      },
+      {
+        "source": "preanti",
+        "target": "z30"
+      },
+      {
+        "source": "race",
+        "target": "homo"
+      },
+      {
+        "source": "strat",
+        "target": "hemo"
+      },
+      {
+        "source": "strat",
+        "target": "oprior"
+      },
+      {
+        "source": "symptom",
+        "target": "karnof"
+      },
+      {
+        "source": "z30",
+        "target": "age"
+      },
+      {
+        "source": "z30",
+        "target": "label"
+      },
+      {
+        "source": "z30",
+        "target": "oprior"
+      },
+      {
+        "source": "trt",
+        "target": "label"
+      }
+    ],
+    "metrics": {
+      "log_loss": 0.5330119496710005,
+      "brier_score": 0.17529858003681398,
+      "roc_auc": 0.6371972934472934,
+      "accuracy": 0.7663551401869159,
+      "ece": 0.044487781953857664,
+      "positive_rate": 0.24299065420560748,
+      "mean_predicted_probability": 0.2584611870460112
+    }
+  },
+  "edge_comparison": {
+    "current_edge_count": 22,
+    "sensitivity_edge_count": 23,
+    "added_edges": [
+      [
+        "trt",
+        "label"
+      ]
+    ],
+    "removed_edges": []
+  },
+  "metric_changes": {
+    "log_loss_change": -0.009288086248844918,
+    "brier_score_change": -0.0034643457122055243,
+    "roc_auc_change": 0.027481006647673167,
+    "accuracy_change": 0.009345794392523366,
+    "ece_change": 0.002448618575243963
+  },
+  "final_dag_modified": false
+}
