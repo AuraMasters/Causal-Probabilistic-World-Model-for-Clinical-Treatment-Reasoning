@@ -1,0 +1,12 @@
+{
+  "log_loss_change": -0.005880179148665565,
+  "brier_change": -0.0017718514356469817,
+  "roc_auc_change": 0.022407421821429963,
+  "bic_change": 9.657360048835471,
+  "treatment_improves_bic": false,
+  "treatment_improves_logloss": true,
+  "treatment_improves_brier": true,
+  "treatment_improves_auc": true,
+  "number_of_improvements": 3,
+  "recommendation": "INVESTIGATE_ADDING_TRT_TO_OUTCOME"
+}
