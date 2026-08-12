@@ -1,0 +1,53 @@
+{
+    "phase": "Phase 11 - Test Set Validation",
+    "dataset": "ACTG175",
+    "development_rows": 1711,
+    "test_rows": 428,
+    "variables": 17,
+    "dag_edges": 22,
+    "parameter_learning": "Development only",
+    "evaluation": "Test only",
+    "parameter_estimator": "BayesianEstimator",
+    "prior": "BDeu",
+    "equivalent_sample_size": 10,
+    "inference_algorithm": "Variable Elimination",
+    "metrics": {
+        "rows": 428,
+        "positive_rate": 0.24299065420560748,
+        "log_loss": 0.5423000359198454,
+        "brier_score": 0.1787629257490195,
+        "roc_auc": 0.6097162867996202,
+        "accuracy": 0.7570093457943925
+    },
+    "expected_calibration_error": 0.0420391633786137,
+    "treatment_diagnostic": [
+        {
+            "treatment": 0,
+            "test_rows": 106,
+            "observed_P_label_1": 0.33962264150943394,
+            "model_P_label_1": 0.2444582621952351,
+            "absolute_difference": 0.09516437931419885
+        },
+        {
+            "treatment": 1,
+            "test_rows": 104,
+            "observed_P_label_1": 0.19230769230769232,
+            "model_P_label_1": 0.2444582621952351,
+            "absolute_difference": 0.05215056988754277
+        },
+        {
+            "treatment": 2,
+            "test_rows": 105,
+            "observed_P_label_1": 0.20952380952380953,
+            "model_P_label_1": 0.2444582621952351,
+            "absolute_difference": 0.03493445267142556
+        },
+        {
+            "treatment": 3,
+            "test_rows": 113,
+            "observed_P_label_1": 0.23008849557522124,
+            "model_P_label_1": 0.2444582621952351,
+            "absolute_difference": 0.014369766620013852
+        }
+    ]
+}

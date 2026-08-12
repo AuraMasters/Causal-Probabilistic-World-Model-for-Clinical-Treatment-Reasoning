@@ -1,0 +1,13 @@
+{
+    "rows": 428,
+    "positive_rate": 0.24299065420560748,
+    "log_loss": 0.5423000359198454,
+    "brier_score": 0.1787629257490195,
+    "roc_auc": 0.6097162867996202,
+    "accuracy": 0.7570093457943925,
+    "expected_calibration_error": 0.0420391633786137,
+    "parameter_training_set": "development",
+    "evaluation_set": "test",
+    "equivalent_sample_size": 10,
+    "random_seed": 42
+}
