@@ -1,0 +1,58 @@
+{
+    "phase": 14,
+    "analysis": "formal_treatment_edge_decision",
+    "development_rows": 1711,
+    "test_rows": 428,
+    "current_dag_edges": 22,
+    "sensitivity_dag_edges": 23,
+    "added_edge": "trt -> label",
+    "current_metrics": {
+        "log_loss": 0.5423000359198454,
+        "brier_score": 0.1787629257490195,
+        "accuracy": 0.7570093457943925,
+        "ece": 0.0420391633786137,
+        "positive_rate": 0.24299065420560748,
+        "mean_predicted_probability": 0.25673509982749204,
+        "roc_auc": 0.6097162867996202
+    },
+    "sensitivity_metrics": {
+        "log_loss": 0.5330119496710005,
+        "brier_score": 0.17529858003681398,
+        "accuracy": 0.7663551401869159,
+        "ece": 0.044487781953857664,
+        "positive_rate": 0.24299065420560748,
+        "mean_predicted_probability": 0.2584611870460112,
+        "roc_auc": 0.6371972934472934
+    },
+    "metric_changes": {
+        "log_loss_change": -0.009288086248844918,
+        "brier_score_change": -0.0034643457122055243,
+        "roc_auc_change": 0.027481006647673167,
+        "accuracy_change": 0.009345794392523366,
+        "ece_change": 0.002448618575243963,
+        "bic_change": -41.707029356839485,
+        "parameter_count_change": 18
+    },
+    "development_bic": {
+        "current": -18895.618762642593,
+        "sensitivity": -18937.325791999432,
+        "change": -41.707029356839485
+    },
+    "parameter_count": {
+        "current": 79,
+        "sensitivity": 97,
+        "change": 18
+    },
+    "improvement_checks": {
+        "log_loss": true,
+        "brier_score": true,
+        "roc_auc": true,
+        "accuracy": true,
+        "ece": false,
+        "bic": false
+    },
+    "predictive_metrics_improved": 4,
+    "recommendation": "ACCEPT_TREATMENT_EDGE",
+    "decision": "The evidence supports promoting trt -> label to the final DAG.",
+    "final_dag_modified": false
+}
