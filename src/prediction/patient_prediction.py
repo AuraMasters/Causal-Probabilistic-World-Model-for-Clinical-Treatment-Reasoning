@@ -1,11 +1,11 @@
 from pathlib import Path
+import json
 import warnings
 
 import pandas as pd
 from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.estimators import BayesianEstimator
 from pgmpy.inference import VariableElimination
-
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -30,6 +30,14 @@ DAG_PATH = (
     / "final_model"
     / "dag"
     / "final_dag_edges.csv"
+)
+
+METADATA_PATH = (
+    PROJECT_ROOT
+    / "data"
+    / "processed"
+    / "sparse"
+    / "discretization_metadata.json"
 )
 
 
@@ -63,7 +71,21 @@ ESS = 10
 
 
 # ============================================================
-# LOAD DATA
+# NUMERICAL VARIABLES
+# ============================================================
+
+NUMERICAL_VARIABLES = [
+    "age",
+    "wtkg",
+    "karnof",
+    "preanti",
+    "cd40",
+    "cd80",
+]
+
+
+# ============================================================
+# LOAD DEVELOPMENT DATA
 # ============================================================
 
 def load_data():
@@ -82,6 +104,40 @@ def load_data():
 
 
 # ============================================================
+# LOAD DISCRETIZATION METADATA
+# ============================================================
+
+def load_discretization_metadata():
+
+    if not METADATA_PATH.exists():
+        raise FileNotFoundError(
+            f"Discretization metadata not found:\n"
+            f"{METADATA_PATH}"
+        )
+
+    with open(
+        METADATA_PATH,
+        "r",
+        encoding="utf-8",
+    ) as file:
+
+        metadata = json.load(file)
+
+    if metadata.get("representation") != "sparse":
+        raise ValueError(
+            "Expected sparse discretization metadata."
+        )
+
+    if metadata.get("fit_dataset") != "development_only":
+        raise ValueError(
+            "Discretization metadata was not fitted "
+            "on development data only."
+        )
+
+    return metadata
+
+
+# ============================================================
 # LOAD FINAL DAG
 # ============================================================
 
@@ -94,14 +150,34 @@ def load_edges():
 
     edges_df = pd.read_csv(DAG_PATH)
 
+    required_columns = {
+        "source",
+        "target",
+    }
+
+    if not required_columns.issubset(
+        edges_df.columns
+    ):
+        raise ValueError(
+            "Final DAG file must contain "
+            "'source' and 'target' columns."
+        )
+
     edges = []
 
     for _, row in edges_df.iterrows():
 
-        source = str(row["source"]).strip()
-        target = str(row["target"]).strip()
+        source = str(
+            row["source"]
+        ).strip()
 
-        edges.append((source, target))
+        target = str(
+            row["target"]
+        ).strip()
+
+        edges.append(
+            (source, target)
+        )
 
     return edges
 
@@ -110,12 +186,20 @@ def load_edges():
 # BUILD FINAL BAYESIAN NETWORK
 # ============================================================
 
-def build_model(data, edges):
+def build_model(
+    data,
+    edges,
+):
 
     model = DiscreteBayesianNetwork()
 
-    model.add_nodes_from(VARIABLES)
-    model.add_edges_from(edges)
+    model.add_nodes_from(
+        VARIABLES
+    )
+
+    model.add_edges_from(
+        edges
+    )
 
     estimator = BayesianEstimator(
         model,
@@ -127,18 +211,22 @@ def build_model(data, edges):
         equivalent_sample_size=ESS,
     )
 
-    model.add_cpds(*cpds)
+    model.add_cpds(
+        *cpds
+    )
 
     if not model.check_model():
+
         raise ValueError(
-            "Final Bayesian Network failed consistency check."
+            "Final Bayesian Network "
+            "failed consistency check."
         )
 
     return model
 
 
 # ============================================================
-# GET VALID STATES
+# GET CATEGORICAL STATES
 # ============================================================
 
 def get_states(data):
@@ -148,79 +236,414 @@ def get_states(data):
     for column in VARIABLES:
 
         states[column] = sorted(
-            data[column].unique().tolist()
+            data[column]
+            .unique()
+            .tolist()
         )
 
     return states
 
 
 # ============================================================
-# INPUT PATIENT DATA
+# NUMERICAL → MODEL STATE
 # ============================================================
 
-def get_patient_input(data):
+def convert_numerical_value(
+    variable,
+    value,
+    metadata,
+):
 
-    states = get_states(data)
+    value = float(value)
+
+    if variable not in metadata["variables"]:
+
+        raise ValueError(
+            f"No discretization metadata found "
+            f"for {variable}."
+        )
+
+    variable_metadata = (
+        metadata["variables"][variable]
+    )
+
+    edges = variable_metadata["edges"]
+
+    # --------------------------------------------------------
+    # preanti
+    # --------------------------------------------------------
+
+    if variable == "preanti":
+
+        if value < 0:
+
+            raise ValueError(
+                "Pre-ART exposure cannot be negative."
+            )
+
+        if value == 0:
+
+            return "zero"
+
+        # Positive bins use:
+        # 0
+        # 366
+        # 848.333333...
+        # infinity
+
+        if value <= edges[1]:
+
+            return "positive_1"
+
+        elif value <= edges[2]:
+
+            return "positive_2"
+
+        else:
+
+            return "positive_3"
+
+    # --------------------------------------------------------
+    # Ordinary quantile variables
+    # --------------------------------------------------------
+
+    if variable in [
+        "age",
+        "wtkg",
+        "cd40",
+        "cd80",
+    ]:
+
+        if value <= edges[1]:
+
+            return f"{variable}_1"
+
+        elif value <= edges[2]:
+
+            return f"{variable}_2"
+
+        else:
+
+            return f"{variable}_3"
+
+    # --------------------------------------------------------
+    # Karnofsky
+    # --------------------------------------------------------
+
+    if variable == "karnof":
+
+        if value <= edges[1]:
+
+            return "karnof_1"
+
+        else:
+
+            return "karnof_2"
+
+    raise ValueError(
+        f"Unsupported numerical variable: "
+        f"{variable}"
+    )
+
+
+# ============================================================
+# DISPLAY NUMERICAL RANGES
+# ============================================================
+
+def get_range_text(
+    variable,
+    metadata,
+):
+
+    edges = (
+        metadata["variables"][variable]["edges"]
+    )
+
+    # --------------------------------------------------------
+    # Karnofsky
+    # --------------------------------------------------------
+
+    if variable == "karnof":
+
+        return (
+            f"<= {edges[1]} -> karnof_1\n"
+            f"> {edges[1]} -> karnof_2"
+        )
+
+    # --------------------------------------------------------
+    # preanti
+    # --------------------------------------------------------
+
+    if variable == "preanti":
+
+        return (
+            "0 -> zero\n"
+            f"0 < value <= {edges[1]} "
+            "-> positive_1\n"
+            f"{edges[1]} < value <= {edges[2]} "
+            "-> positive_2\n"
+            f"> {edges[2]} -> positive_3"
+        )
+
+    # --------------------------------------------------------
+    # Three-bin variables
+    # --------------------------------------------------------
+
+    return (
+        f"<= {edges[1]} -> {variable}_1\n"
+        f"{edges[1]} < value <= {edges[2]} "
+        f"-> {variable}_2\n"
+        f"> {edges[2]} -> {variable}_3"
+    )
+
+
+# ============================================================
+# GET NUMERICAL INPUT
+# ============================================================
+
+def get_numeric_input(
+    variable,
+    metadata,
+):
+
+    print()
+    print(
+        f"{variable}"
+    )
+
+    print(
+        "Input ranges used by the model:"
+    )
+
+    print(
+        get_range_text(
+            variable,
+            metadata,
+        )
+    )
+
+    while True:
+
+        value = input(
+            "Enter numerical value: "
+        ).strip()
+
+        try:
+
+            value = float(value)
+
+            state = convert_numerical_value(
+                variable,
+                value,
+                metadata,
+            )
+
+            return value, state
+
+        except ValueError as error:
+
+            print(
+                f"Invalid value: {error}"
+            )
+
+
+# ============================================================
+# GET BINARY INPUT
+# ============================================================
+
+def get_binary_input(
+    variable,
+    states,
+):
+
+    valid_states = [
+        state
+        for state in states[variable]
+        if state in ["0", "1"]
+    ]
+
+    while True:
+
+        value = input(
+            f"{variable} "
+            f"[{', '.join(valid_states)}]: "
+        ).strip()
+
+        if value in valid_states:
+
+            return value
+
+        print(
+            "Invalid value."
+        )
+
+
+# ============================================================
+# GET CHOICE INPUT
+# ============================================================
+
+def get_choice_input(
+    variable,
+    states,
+):
+
+    valid_states = states[variable]
+
+    while True:
+
+        value = input(
+            f"{variable} "
+            f"[{', '.join(valid_states)}]: "
+        ).strip()
+
+        if value in valid_states:
+
+            return value
+
+        print(
+            "Invalid value."
+        )
+
+
+# ============================================================
+# PATIENT INPUT
+# ============================================================
+
+def get_patient_input(
+    data,
+    metadata,
+):
+
+    states = get_states(
+        data
+    )
 
     print()
     print("=" * 70)
     print("PATIENT INPUT")
     print("=" * 70)
 
+    print()
     print(
-        "\nEnter the patient's values."
+        "Enter real numerical values for "
+        "the discretized variables."
     )
 
     evidence = {}
 
-    input_variables = [
-        variable
-        for variable in VARIABLES
-        if variable != TARGET
+    numerical_inputs = {}
+
+    # --------------------------------------------------------
+    # Numerical variables
+    # --------------------------------------------------------
+
+    for variable in NUMERICAL_VARIABLES:
+
+        value, state = (
+            get_numeric_input(
+                variable,
+                metadata,
+            )
+        )
+
+        numerical_inputs[
+            variable
+        ] = value
+
+        evidence[
+            variable
+        ] = state
+
+    # --------------------------------------------------------
+    # Binary variables
+    # --------------------------------------------------------
+
+    binary_variables = [
+        "hemo",
+        "homo",
+        "drugs",
+        "oprior",
+        "z30",
+        "race",
+        "gender",
+        "symptom",
     ]
 
-    for variable in input_variables:
+    print()
 
-        valid_states = states[variable]
+    for variable in binary_variables:
 
-        print()
-        print(
-            f"{variable}"
+        evidence[
+            variable
+        ] = get_binary_input(
+            variable,
+            states,
         )
 
-        print(
-            f"Available values: "
-            f"{', '.join(valid_states)}"
+    # --------------------------------------------------------
+    # Stratification
+    # --------------------------------------------------------
+
+    print()
+
+    evidence["strat"] = (
+        get_choice_input(
+            "strat",
+            states,
         )
+    )
 
-        while True:
+    # --------------------------------------------------------
+    # Treatment
+    # --------------------------------------------------------
 
-            value = input(
-                "Enter value: "
-            ).strip()
+    print()
 
-            if value in valid_states:
+    evidence["trt"] = (
+        get_choice_input(
+            "trt",
+            states,
+        )
+    )
 
-                evidence[variable] = value
-                break
+    return (
+        evidence,
+        numerical_inputs,
+    )
 
-            print(
-                "Invalid value."
-            )
 
-            print(
-                "Please choose one of:"
-                f" {', '.join(valid_states)}"
-            )
+# ============================================================
+# DISPLAY CONVERSION
+# ============================================================
 
-    return evidence
+def display_conversion(
+    numerical_inputs,
+    evidence,
+):
+
+    print()
+    print("=" * 70)
+    print("NUMERICAL INPUT → BAYESIAN NETWORK STATE")
+    print("=" * 70)
+
+    for variable in NUMERICAL_VARIABLES:
+
+        print(
+            f"{variable:<10}: "
+            f"{numerical_inputs[variable]} "
+            f"-> "
+            f"{evidence[variable]}"
+        )
 
 
 # ============================================================
 # PREDICTION
 # ============================================================
 
-def predict(model, evidence):
+def predict(
+    model,
+    evidence,
+):
 
     inference = VariableElimination(
         model
@@ -247,10 +670,16 @@ def predict(model, evidence):
     ):
 
         if str(state) == "0":
-            probability_0 = float(probability)
+
+            probability_0 = float(
+                probability
+            )
 
         elif str(state) == "1":
-            probability_1 = float(probability)
+
+            probability_1 = float(
+                probability
+            )
 
     predicted_outcome = (
         "1"
@@ -291,6 +720,7 @@ def display_result(
         )
 
     print()
+
     print(
         f"P(label = 0): "
         f"{probability_0:.6f}"
@@ -303,19 +733,13 @@ def display_result(
 
     print()
 
-    if predicted_outcome == "1":
-
-        print(
-            "Predicted outcome: LABEL 1"
-        )
-
-    else:
-
-        print(
-            "Predicted outcome: LABEL 0"
-        )
+    print(
+        f"Predicted outcome: "
+        f"LABEL {predicted_outcome}"
+    )
 
     print()
+
     print(
         f"Prediction confidence: "
         f"{max(probability_0, probability_1) * 100:.2f}%"
@@ -336,6 +760,10 @@ def main():
     print("PATIENT PROBABILISTIC PREDICTION")
     print("=" * 70)
 
+    # --------------------------------------------------------
+    # Load development data
+    # --------------------------------------------------------
+
     print()
     print(
         "Loading development data..."
@@ -346,6 +774,32 @@ def main():
     print(
         f"Dataset shape: {data.shape}"
     )
+
+    # --------------------------------------------------------
+    # Load discretization metadata
+    # --------------------------------------------------------
+
+    print()
+    print(
+        "Loading discretization metadata..."
+    )
+
+    metadata = (
+        load_discretization_metadata()
+    )
+
+    print(
+        "Discretization metadata: READY"
+    )
+
+    print(
+        "Fitted on: "
+        f"{metadata['fit_dataset']}"
+    )
+
+    # --------------------------------------------------------
+    # Load final DAG
+    # --------------------------------------------------------
 
     print()
     print(
@@ -364,6 +818,10 @@ def main():
             f"Expected 23 edges, "
             f"found {len(edges)}"
         )
+
+    # --------------------------------------------------------
+    # Build Bayesian Network
+    # --------------------------------------------------------
 
     print()
     print(
@@ -384,14 +842,43 @@ def main():
         "Creating inference engine..."
     )
 
-    evidence = get_patient_input(
-        data
+    # --------------------------------------------------------
+    # Patient input
+    # --------------------------------------------------------
+
+    (
+        evidence,
+        numerical_inputs,
+    ) = get_patient_input(
+        data,
+        metadata,
     )
 
-    probability_0, probability_1, predicted_outcome = predict(
+    # --------------------------------------------------------
+    # Show numerical conversion
+    # --------------------------------------------------------
+
+    display_conversion(
+        numerical_inputs,
+        evidence,
+    )
+
+    # --------------------------------------------------------
+    # Prediction
+    # --------------------------------------------------------
+
+    (
+        probability_0,
+        probability_1,
+        predicted_outcome,
+    ) = predict(
         model,
         evidence,
     )
+
+    # --------------------------------------------------------
+    # Display result
+    # --------------------------------------------------------
 
     display_result(
         evidence,
@@ -405,6 +892,10 @@ def main():
         "PHASE-17 COMPLETE"
     )
 
+
+# ============================================================
+# ENTRY POINT
+# ============================================================
 
 if __name__ == "__main__":
     main()
