@@ -1,0 +1,64 @@
+{
+    "phase": 18,
+    "analysis": "Interventional treatment comparison",
+    "model": "Final 23-edge ACTG175 Bayesian Network",
+    "parameter_learning": {
+        "dataset": "development_only",
+        "prior": "BDeu",
+        "equivalent_sample_size": 10
+    },
+    "intervention": "do(trt = treatment)",
+    "target": "label",
+    "treatment_variable": "trt",
+    "treatment_definitions": {
+        "0": {
+            "name": "Zidovudine (ZDV/AZT)",
+            "short_name": "ZDV"
+        },
+        "1": {
+            "name": "Zidovudine + Didanosine",
+            "short_name": "ZDV + ddI"
+        },
+        "2": {
+            "name": "Zidovudine + Zalcitabine",
+            "short_name": "ZDV + ddC"
+        },
+        "3": {
+            "name": "Didanosine (ddI)",
+            "short_name": "ddI"
+        }
+    },
+    "patient_numerical_inputs": {
+        "age": 44.0,
+        "wtkg": 44.0,
+        "karnof": 99.0,
+        "preanti": 666.0,
+        "cd40": 445.0,
+        "cd80": 654.0
+    },
+    "patient_model_evidence": {
+        "age": "age_3",
+        "wtkg": "wtkg_1",
+        "karnof": "karnof_2",
+        "preanti": "positive_2",
+        "cd40": "cd40_3",
+        "cd80": "cd80_1",
+        "hemo": "1",
+        "homo": "1",
+        "drugs": "1",
+        "oprior": "1",
+        "z30": "1",
+        "race": "1",
+        "gender": "1",
+        "strat": "1",
+        "symptom": "1"
+    },
+    "best_treatment": {
+        "trt": 1,
+        "name": "Zidovudine + Didanosine",
+        "p_label_0": 0.8450210378681626,
+        "p_label_1": 0.15497896213183732
+    },
+    "selection_rule": "Choose treatment with the lowest predicted P(label=1).",
+    "warning": "Model-based comparison only. Not a clinical prescription."
+}
