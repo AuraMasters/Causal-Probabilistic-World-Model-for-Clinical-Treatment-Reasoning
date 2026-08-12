@@ -1,0 +1,23 @@
+{
+    "phase": 15,
+    "model": "ACTG175 Final Bayesian Network",
+    "representation": "sparse",
+    "training_dataset": "C:\\Users\\kusha\\OneDrive\\Documents\\Probability-Reasoning\\data\\processed\\sparse\\development.csv",
+    "training_rows": 1711,
+    "test_data_used": false,
+    "estimator": "BayesianEstimator",
+    "prior": "BDeu",
+    "equivalent_sample_size": 10,
+    "previous_edge_count": 22,
+    "final_edge_count": 23,
+    "new_edge": "trt -> label",
+    "dag_validation": "PASSED",
+    "model_consistency": "PASSED",
+    "cpt_validation": "PASSED",
+    "total_cpt_entries": 175,
+    "zero_probability_entries": 0,
+    "baseline_dag_preserved": true,
+    "final_dag_path": "C:\\Users\\kusha\\OneDrive\\Documents\\Probability-Reasoning\\results\\final_model\\dag\\final_dag_edges.csv",
+    "cpt_directory": "C:\\Users\\kusha\\OneDrive\\Documents\\Probability-Reasoning\\results\\final_model\\cpts",
+    "dot_graph": null
+}
