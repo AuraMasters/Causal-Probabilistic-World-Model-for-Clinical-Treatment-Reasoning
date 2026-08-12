@@ -1,0 +1,5 @@
+treatment,treatment_name,short_name,p_label_0,p_label_1,rank_by_p_label_1,is_best_treatment,utility_label_0,utility_label_1,expected_utility,utility_rank
+0,Zidovudine (ZDV/AZT),ZDV,0.6607795371498173,0.3392204628501826,4,False,1.0,0.0,0.6607795371498173,4
+1,Zidovudine + Didanosine,ZDV + ddI,0.8450210378681626,0.1549789621318373,1,True,1.0,0.0,0.8450210378681626,1
+2,Zidovudine + Zalcitabine,ZDV + ddC,0.80605738575983,0.19394261424017,3,False,1.0,0.0,0.80605738575983,3
+3,Didanosine (ddI),ddI,0.8367799113737076,0.1632200886262924,2,False,1.0,0.0,0.8367799113737076,2

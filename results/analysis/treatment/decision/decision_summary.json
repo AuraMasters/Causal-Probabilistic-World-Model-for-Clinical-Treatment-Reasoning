@@ -1,0 +1,18 @@
+{
+    "phase": 19,
+    "analysis": "Decision and expected utility analysis",
+    "utility_model": {
+        "label_0_utility": 1.0,
+        "label_1_utility": 0.0,
+        "formula": "EU = P(label=0)*U0 + P(label=1)*U1"
+    },
+    "decision_rule": "Select treatment with the highest expected utility.",
+    "best_treatment": {
+        "trt": 1,
+        "name": "Zidovudine + Didanosine",
+        "expected_utility": 0.8450210378681626,
+        "p_label_0": 0.8450210378681626,
+        "p_label_1": 0.1549789621318373
+    },
+    "clinical_warning": "The utility values are simplified research assumptions and are not clinically validated."
+}
