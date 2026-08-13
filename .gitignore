@@ -1,6 +1,7 @@
 # Ignore Python virtual environments
 venv/
 .venv/
+.venv-linux/
 env/
 ENV/
 
@@ -8,3 +9,18 @@ ENV/
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Frontend (Node.js / Vite)
+node_modules/
+dist/
+frontend/node_modules/
+frontend/dist/
+frontend/*.local
+
+# Local Python bytecode cache (server startup)
+.pycache/
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example

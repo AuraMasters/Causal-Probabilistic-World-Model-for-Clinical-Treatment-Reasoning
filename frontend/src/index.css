@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Inter", ui-sans-serif, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-ink-950: #060a14;
+  --color-ink-900: #0a0f1c;
+  --color-ink-850: #0d1424;
+  --color-ink-800: #111a2e;
+  --color-ink-700: #1a2540;
+  --color-ink-600: #263352;
+
+  --color-mint-300: #6ee7c8;
+  --color-mint-400: #34d9b0;
+  --color-mint-500: #16c39a;
+
+  --color-cyan-glow: #38bdf8;
+  --color-violet-glow: #a78bfa;
+
+  --color-rose-risk: #fb7185;
+  --color-amber-warn: #fbbf24;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-ink-950);
+  color: #e6edf7;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ambient background glow */
+.app-bg {
+  background:
+    radial-gradient(
+      1200px 600px at 80% -10%,
+      rgba(56, 189, 248, 0.09),
+      transparent 60%
+    ),
+    radial-gradient(
+      1000px 500px at 0% 10%,
+      rgba(167, 139, 250, 0.08),
+      transparent 55%
+    ),
+    radial-gradient(
+      900px 500px at 50% 110%,
+      rgba(22, 195, 154, 0.06),
+      transparent 60%
+    ),
+    var(--color-ink-950);
+}
+
+/* Subtle grid backdrop */
+.app-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.045) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 75%);
+}
+
+.glass {
+  background: rgba(13, 20, 36, 0.72);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.card-surface {
+  background: linear-gradient(180deg, rgba(17, 26, 46, 0.9), rgba(10, 15, 28, 0.95));
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.text-glow {
+  text-shadow: 0 0 24px rgba(56, 189, 248, 0.35);
+}
+
+.ring-focus:focus {
+  outline: none;
+  border-color: rgba(56, 189, 248, 0.55);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+}
+
+/* React Flow dark theme */
+.react-flow__attribution {
+  display: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-ink-900);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink-600);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #34436b;
+}
