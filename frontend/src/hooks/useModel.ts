@@ -2,6 +2,21 @@ import { useCallback, useEffect, useState } from 'react'
 import { analyzePatient, fetchOverview } from '../lib/api'
 import type { AnalyzeResult, Overview, PatientInputs } from '../lib/types'
 
+const MAX_ATTEMPTS = 8
+const BASE_DELAY_MS = 1000
+
+async function fetchOverviewWithRetry(): Promise<Overview> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fetchOverview()
+    } catch (cause) {
+      if (attempt >= MAX_ATTEMPTS) throw cause
+      const delay = BASE_DELAY_MS * 2 ** (attempt - 1)
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
+}
+
 export function useOverview() {
   const [overview, setOverview] = useState<Overview | null>(null)
   const [loading, setLoading] = useState(true)
@@ -11,7 +26,7 @@ export function useOverview() {
     setLoading(true)
     setError(null)
     try {
-      setOverview(await fetchOverview())
+      setOverview(await fetchOverviewWithRetry())
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause))
     } finally {
