@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 # ============================================================
 # Configuration
 # ============================================================
@@ -138,7 +137,7 @@ def print_unique_values(df: pd.DataFrame) -> None:
 
 def print_treatment_distribution(df: pd.DataFrame) -> None:
     print("\n" + "=" * 70)
-    print("TREATMENT DISTRIBUTION — trt")
+    print("TREATMENT DISTRIBUTION - trt")
     print("=" * 70)
 
     counts = df["trt"].value_counts(dropna=False).sort_index()
@@ -165,7 +164,7 @@ def print_treatment_distribution(df: pd.DataFrame) -> None:
 
 def print_outcome_distribution(df: pd.DataFrame) -> None:
     print("\n" + "=" * 70)
-    print("OUTCOME DISTRIBUTION — label")
+    print("OUTCOME DISTRIBUTION - label")
     print("=" * 70)
 
     counts = df["label"].value_counts(dropna=False).sort_index()

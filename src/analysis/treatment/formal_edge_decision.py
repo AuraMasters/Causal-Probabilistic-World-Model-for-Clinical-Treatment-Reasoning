@@ -1,22 +1,19 @@
-from pathlib import Path
 import json
 import warnings
+from pathlib import Path
 
+import networkx as nx
 import numpy as np
 import pandas as pd
-import networkx as nx
-
+from pgmpy.estimators import BayesianEstimator
+from pgmpy.inference import VariableElimination
+from pgmpy.models import DiscreteBayesianNetwork
 from sklearn.metrics import (
     accuracy_score,
     brier_score_loss,
     log_loss,
     roc_auc_score,
 )
-
-from pgmpy.models import DiscreteBayesianNetwork
-from pgmpy.estimators import BayesianEstimator
-from pgmpy.inference import VariableElimination
-
 
 # ============================================================
 # CONFIGURATION
@@ -327,22 +324,20 @@ def infer_test_probabilities(model, test):
                     "Outcome state '1' not found in inference result."
                 )
 
+            values = np.asarray(result.values)
             probability = float(
-                result.values[
+                values[
                     states.index("1")
                 ]
             )
 
-        except Exception:
+        except Exception:  # noqa: BLE001
             # Fallback: use only evidence that belongs to the model.
-            valid_evidence = {}
-
-            for variable, value in evidence.items():
-                if variable in model.nodes():
-                    try:
-                        valid_evidence[variable] = value
-                    except Exception:
-                        pass
+            valid_evidence = {
+                variable: value
+                for variable, value in evidence.items()
+                if variable in model.nodes()
+            }
 
             result = inference.query(
                 variables=[TARGET],
@@ -352,8 +347,9 @@ def infer_test_probabilities(model, test):
 
             states = list(result.state_names[TARGET])
 
+            values = np.asarray(result.values)
             probability = float(
-                result.values[
+                values[
                     states.index("1")
                 ]
             )
@@ -637,7 +633,7 @@ def main():
     # --------------------------------------------------------
 
     print_header(
-        "MODEL A — CURRENT FINAL DAG"
+        "MODEL A - CURRENT FINAL DAG"
     )
 
     current_edges = list(original_edges)
@@ -682,7 +678,7 @@ def main():
         test,
     )
 
-    current_metrics, y, current_predictions = (
+    current_metrics, _y, current_predictions = (
         evaluate_predictions(
             test,
             current_probabilities,
@@ -703,7 +699,7 @@ def main():
     # --------------------------------------------------------
 
     print_header(
-        "MODEL B — TREATMENT-EDGE SENSITIVITY DAG"
+        "MODEL B - TREATMENT-EDGE SENSITIVITY DAG"
     )
 
     sensitivity_edges = create_sensitivity_edges(

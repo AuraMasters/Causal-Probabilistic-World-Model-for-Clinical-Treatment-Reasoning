@@ -1,16 +1,14 @@
-from pathlib import Path
 import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import log_loss, roc_auc_score, brier_score_loss
+from sklearn.metrics import brier_score_loss, log_loss, roc_auc_score
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
-
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
 
 # ============================================================
 # PATHS
@@ -153,13 +151,16 @@ def evaluate_model(df, features, name):
         random_state=42,
     )
 
-    probabilities = cross_val_predict(
-        pipeline,
-        X,
-        y,
-        cv=cv,
-        method="predict_proba",
-    )[:, 1]
+    proba_matrix = np.asarray(
+        cross_val_predict(
+            pipeline,
+            X,
+            y,
+            cv=cv,
+            method="predict_proba",
+        )
+    )
+    probabilities = proba_matrix[:, 1]
 
     predictions = (
         probabilities >= 0.5
@@ -699,9 +700,9 @@ def main():
     # --------------------------------------------------------
 
     (
-        table,
-        percentages,
-        treatment_rates,
+        _table,
+        _percentages,
+        _treatment_rates,
     ) = treatment_outcome_analysis(
         df
     )
@@ -722,8 +723,8 @@ def main():
 
     (
         comparison,
-        baseline_prob,
-        treatment_prob,
+        _baseline_prob,
+        _treatment_prob,
     ) = predictive_comparison(
         df
     )
@@ -732,7 +733,7 @@ def main():
     # 4. Treatment-specific predictions
     # --------------------------------------------------------
 
-    treatment_predictions = (
+    (
         treatment_specific_predictions(
             df
         )
@@ -754,7 +755,7 @@ def main():
     metadata = {
         "phase": 12,
         "dataset": str(DATA_PATH),
-        "rows": int(len(df)),
+        "rows": len(df),
         "development_only": True,
         "test_set_used": False,
         "treatment_variable": TREATMENT,

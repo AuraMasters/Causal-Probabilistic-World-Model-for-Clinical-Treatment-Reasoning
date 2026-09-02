@@ -1,0 +1,25 @@
+digraph "ACTG175 Final Bayesian Network" {
+    cd40 -> label;
+    cd40 -> symptom;
+    cd80 -> cd40;
+    gender -> wtkg;
+    hemo -> age;
+    hemo -> drugs;
+    hemo -> gender;
+    hemo -> homo;
+    homo -> cd80;
+    homo -> drugs;
+    homo -> gender;
+    homo -> symptom;
+    preanti -> race;
+    preanti -> strat;
+    preanti -> z30;
+    race -> homo;
+    strat -> hemo;
+    strat -> oprior;
+    symptom -> karnof;
+    trt -> label;
+    z30 -> age;
+    z30 -> label;
+    z30 -> oprior;
+}

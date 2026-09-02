@@ -1,9 +1,8 @@
-from pathlib import Path
 import json
+from pathlib import Path
 
 import pandas as pd
 from sklearn.model_selection import train_test_split
-
 
 # ============================================================
 # Paths
@@ -153,7 +152,7 @@ def create_modeling_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         + [OUTCOME_VARIABLE]
     )
 
-    return df[modeling_columns].copy()
+    return pd.DataFrame(df[modeling_columns].copy())
 
 
 # ============================================================
@@ -206,14 +205,19 @@ def main() -> None:
     # Split development/test
     # --------------------------------------------------------
 
-    development_df, test_df = train_test_split(
+    stratify_labels = modeling_df[
+        [DECISION_VARIABLE, OUTCOME_VARIABLE]
+    ].astype(str).agg("_".join, axis=1)
+
+    dev_data, test_data = train_test_split(
         modeling_df,
         test_size=0.20,
         random_state=42,
-        stratify=modeling_df[
-            [DECISION_VARIABLE, OUTCOME_VARIABLE]
-        ].astype(str).agg("_".join, axis=1),
+        stratify=stratify_labels,
     )
+
+    development_df = pd.DataFrame(dev_data)
+    test_df = pd.DataFrame(test_data)
 
     print(
         f"\nDevelopment set: {development_df.shape}"
@@ -250,10 +254,10 @@ def main() -> None:
         "raw_dataset": str(
             RAW_PATH.relative_to(PROJECT_ROOT)
         ),
-        "raw_rows": int(len(df)),
-        "raw_columns": int(len(df.columns)),
-        "development_rows": int(len(development_df)),
-        "test_rows": int(len(test_df)),
+        "raw_rows": len(df),
+        "raw_columns": len(df.columns),
+        "development_rows": len(development_df),
+        "test_rows": len(test_df),
         "random_state": 42,
         "test_size": 0.20,
         "baseline_variables": BASELINE_VARIABLES,

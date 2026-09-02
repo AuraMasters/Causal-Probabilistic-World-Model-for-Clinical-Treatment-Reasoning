@@ -12,7 +12,23 @@ const POLL_INTERVAL_MS = 2000
 
 const frontendDir = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(frontendDir, '..')
-const pythonBin = path.join(repoRoot, '.venv-linux', 'bin', 'python')
+
+function resolvePythonBin(root: string): string {
+  const candidates = [
+    path.join(root, '.venv', 'Scripts', 'python.exe'),
+    path.join(root, '.venv', 'bin', 'python'),
+    path.join(root, '.venv-linux', 'bin', 'python'),
+    path.join(root, '.venv', 'python.exe'),
+  ]
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      return candidate
+    }
+  }
+  return process.platform === 'win32' ? 'python' : 'python3'
+}
+
+const pythonBin = resolvePythonBin(repoRoot)
 const apiScript = path.join(repoRoot, 'src', 'api', 'app.py')
 
 function portOpen(port: number, host = API_HOST): Promise<boolean> {

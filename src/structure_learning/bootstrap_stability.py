@@ -1,15 +1,13 @@
-from pathlib import Path
 import json
 import time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
 from pgmpy.causal_discovery import (
-    HillClimbSearch,
     ExpertKnowledge,
+    HillClimbSearch,
 )
-
 
 # ============================================================
 # PATHS

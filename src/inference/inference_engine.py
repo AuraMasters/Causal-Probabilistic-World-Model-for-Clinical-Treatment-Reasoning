@@ -1,11 +1,10 @@
-from pathlib import Path
 import json
+from pathlib import Path
 
 import pandas as pd
+from pgmpy.estimators import BayesianEstimator
 from pgmpy.inference import VariableElimination
 from pgmpy.models import DiscreteBayesianNetwork
-from pgmpy.estimators import BayesianEstimator
-
 
 # ============================================================
 # ACTG175 PHASE-10 PROBABILISTIC INFERENCE ENGINE
@@ -776,13 +775,13 @@ def main():
             "sparse",
 
         "rows":
-            int(len(df)),
+            len(df),
 
         "variables":
-            int(len(VARIABLES)),
+            len(VARIABLES),
 
         "dag_edges":
-            int(len(edges)),
+            len(edges),
 
         "inference_algorithm":
             "Variable Elimination",

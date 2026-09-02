@@ -2,7 +2,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
 from sklearn.compose import ColumnTransformer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
@@ -14,7 +13,6 @@ from sklearn.metrics import (
 from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
-
 
 # ============================================================
 # Paths
@@ -364,13 +362,16 @@ def evaluate_candidate(
     # Cross-validated probabilities
     # --------------------------------------------------------
 
-    probabilities = cross_val_predict(
-        pipeline,
-        X,
-        y,
-        cv=cv,
-        method="predict_proba",
-    )[:, 1]
+    proba_matrix = np.asarray(
+        cross_val_predict(
+            pipeline,
+            X,
+            y,
+            cv=cv,
+            method="predict_proba",
+        )
+    )
+    probabilities = proba_matrix[:, 1]
 
     predictions = (
         probabilities >= 0.5

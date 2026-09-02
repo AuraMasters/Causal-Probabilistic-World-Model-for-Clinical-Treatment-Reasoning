@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { AlertTriangle, BrainCircuit, Database, GitBranch, HeartPulse } from 'lucide-react'
+import { BrainCircuit, Database, GitBranch, HeartPulse } from 'lucide-react'
 import type { Overview } from '../lib/types'
 
 export function OverviewCards({ overview }: { overview: Overview }) {
@@ -30,7 +30,7 @@ export function OverviewCards({ overview }: { overview: Overview }) {
       label: 'Parameter learning',
       value: overview.model.parameter_learning.split(' ')[0],
       detail: overview.model.parameter_learning,
-      accent: 'amber' as const,
+      accent: 'violet' as const,
     },
   ]
 
@@ -40,13 +40,6 @@ export function OverviewCards({ overview }: { overview: Overview }) {
         {stats.map((stat) => (
           <OverviewCard key={stat.label} {...stat} />
         ))}
-      </div>
-      <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-3">
-        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" strokeWidth={2} />
-        <p className="text-xs leading-relaxed text-amber-200/80">
-          This system provides model-based treatment recommendations for research and educational purposes. It is not a
-          clinical prescription or medical advice.
-        </p>
       </div>
     </div>
   )
@@ -63,7 +56,7 @@ function OverviewCard({
   label: string
   value: string
   detail: string
-  accent: 'cyan' | 'mint' | 'violet' | 'amber'
+  accent: 'cyan' | 'mint' | 'violet'
 }) {
   return (
     <motion.div
@@ -81,9 +74,7 @@ function OverviewCard({
               ? 'border-cyan-400/25 bg-cyan-400/10 text-cyan-300'
               : accent === 'mint'
                 ? 'border-mint-400/25 bg-mint-400/10 text-mint-300'
-                : accent === 'violet'
-                  ? 'border-violet-400/25 bg-violet-400/10 text-violet-300'
-                  : 'border-amber-400/25 bg-amber-400/10 text-amber-300'
+                : 'border-violet-400/25 bg-violet-400/10 text-violet-300'
           }`}
         >
           <Icon className="h-5 w-5" strokeWidth={1.8} />

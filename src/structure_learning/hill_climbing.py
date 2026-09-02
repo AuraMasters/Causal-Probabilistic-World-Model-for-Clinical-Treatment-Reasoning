@@ -1,12 +1,10 @@
-from pathlib import Path
 import json
 import sys
+from pathlib import Path
 
 import pandas as pd
-
 from pgmpy.causal_discovery import HillClimbSearch
 from pgmpy.structure_score import BIC, BDeu
-
 
 # ============================================================
 # Make local structure_learning modules importable
@@ -19,7 +17,6 @@ if str(CURRENT_DIR) not in sys.path:
 
 
 from constraints import build_expert_knowledge
-
 
 # ============================================================
 # Paths
@@ -370,7 +367,7 @@ def learn_hill_climbing(
     )
 
     print(
-        f"CONSTRAINED HILL CLIMBING — "
+        f"CONSTRAINED HILL CLIMBING - "
         f"{name.upper()}"
     )
 
@@ -552,11 +549,7 @@ def save_edges(
     )
 
     edges_df = pd.DataFrame(
-        list(model.edges()),
-        columns=[
-            "source",
-            "target",
-        ],
+        [{"source": str(u), "target": str(v)} for u, v in model.edges()]
     )
 
     edges_df.to_csv(

@@ -1,6 +1,5 @@
 from pgmpy.causal_discovery import ExpertKnowledge
 
-
 # ============================================================
 # ACTG175 VARIABLES BY TEMPORAL STAGE
 # ============================================================

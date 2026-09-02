@@ -1,11 +1,11 @@
-from pathlib import Path
 import json
 import warnings
+from pathlib import Path
 
 import pandas as pd
-from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.estimators import BayesianEstimator
 from pgmpy.inference import VariableElimination
+from pgmpy.models import DiscreteBayesianNetwork
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 

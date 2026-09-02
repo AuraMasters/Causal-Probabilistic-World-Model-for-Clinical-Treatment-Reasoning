@@ -1,9 +1,9 @@
-from pathlib import Path
 import json
 import math
 import sys
 import warnings
 from copy import deepcopy
+from pathlib import Path
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -23,17 +23,16 @@ if str(PROJECT_ROOT) not in sys.path:
 # ============================================================
 
 from src.analysis.treatment.intervention_analysis import (
-    TREATMENTS,
     NUMERICAL_VARIABLES,
-    load_data,
-    load_discretization_metadata,
-    load_edges,
+    TREATMENTS,
     build_model,
     discretize_numerical_value,
     get_states,
     intervention_probability,
+    load_data,
+    load_discretization_metadata,
+    load_edges,
 )
-
 
 # ============================================================
 # UTILITY MODEL (from decision_analysis.py)
@@ -225,7 +224,7 @@ def _trim_float(number):
 # ============================================================
 
 def analyze_patient(inputs):
-    data = get_data()
+    get_data()
     metadata = get_metadata()
     states = get_states_map()
     model = get_model()
@@ -407,15 +406,15 @@ def get_overview():
         "dataset": {
             "name": "ACTG175",
             "patients": 2139,
-            "development_rows": int(len(data)),
+            "development_rows": len(data),
             "test_rows": final_metrics["test_rows"],
             "treatments": len(TREATMENTS),
         },
         "model": {
             "dag_edges": len(edges),
-            "nodes": len(set(
-                [node for edge in edges for node in edge]
-            )),
+            "nodes": len({
+                node for edge in edges for node in edge
+            }),
             "parameter_learning": "BDeu (ESS=10), development-only",
         },
         "dag": [

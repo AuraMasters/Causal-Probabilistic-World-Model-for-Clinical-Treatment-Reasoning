@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
@@ -45,7 +44,7 @@ DISCRETIZED_VARIABLES = [
 def validate_dataset(name: str, path: Path) -> None:
 
     print("\n" + "=" * 70)
-    print(f"{name.upper()} — {path.name}")
+    print(f"{name.upper()} - {path.name}")
     print("=" * 70)
 
     df = pd.read_csv(path)

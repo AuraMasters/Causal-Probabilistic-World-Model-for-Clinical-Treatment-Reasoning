@@ -1,13 +1,11 @@
-from pathlib import Path
 import itertools
 import json
+from pathlib import Path
 
 import networkx as nx
 import pandas as pd
-
 from pgmpy.estimators import BayesianEstimator
 from pgmpy.models import DiscreteBayesianNetwork
-
 
 # ============================================================
 # ACTG175 PHASE-9 PARAMETER LEARNING
@@ -949,13 +947,13 @@ def save_metadata(
             "sparse",
 
         "development_rows":
-            int(len(df)),
+            len(df),
 
         "number_of_variables":
-            int(len(VARIABLES)),
+            len(VARIABLES),
 
         "number_of_edges":
-            int(len(edges)),
+            len(edges),
 
         "variables":
             VARIABLES,

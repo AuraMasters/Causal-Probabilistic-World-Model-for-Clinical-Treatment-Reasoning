@@ -19,5 +19,5 @@
     "baseline_dag_preserved": true,
     "final_dag_path": "C:\\Users\\kusha\\OneDrive\\Documents\\Probability-Reasoning\\results\\final_model\\dag\\final_dag_edges.csv",
     "cpt_directory": "C:\\Users\\kusha\\OneDrive\\Documents\\Probability-Reasoning\\results\\final_model\\cpts",
-    "dot_graph": null
+    "dot_graph": "C:\\Users\\kusha\\OneDrive\\Documents\\Probability-Reasoning\\results\\final_model\\dag\\final_dag.dot"
 }

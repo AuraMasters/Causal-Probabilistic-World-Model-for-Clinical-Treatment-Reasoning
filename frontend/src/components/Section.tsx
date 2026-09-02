@@ -17,7 +17,7 @@ export function Section({ id, eyebrow, title, subtitle, children }: SectionProps
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.55, ease: 'easeOut' }}
-      className="scroll-mt-24"
+      className="scroll-mt-32 pt-2"
     >
       <div className="mb-6">
         {eyebrow && (

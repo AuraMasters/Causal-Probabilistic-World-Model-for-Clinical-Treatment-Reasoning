@@ -1,22 +1,19 @@
-from pathlib import Path
 import json
 import warnings
+from pathlib import Path
 
+import networkx as nx
 import numpy as np
 import pandas as pd
-import networkx as nx
-
+from pgmpy.estimators import BayesianEstimator
+from pgmpy.inference import VariableElimination
+from pgmpy.models import DiscreteBayesianNetwork
 from sklearn.metrics import (
     accuracy_score,
     brier_score_loss,
     log_loss,
     roc_auc_score,
 )
-
-from pgmpy.models import DiscreteBayesianNetwork
-from pgmpy.estimators import BayesianEstimator
-from pgmpy.inference import VariableElimination
-
 
 # ============================================================
 # CONFIGURATION
@@ -258,13 +255,11 @@ def validate_dag(
     # Treatment edge
     # --------------------------------------------------------
 
-    if not allow_treatment_edge:
-
-        if ("trt", "label") in edges:
-            raise ValueError(
-                "trt -> label is not allowed in "
-                "the current final DAG."
-            )
+    if not allow_treatment_edge and ("trt", "label") in edges:
+        raise ValueError(
+            "trt -> label is not allowed in "
+            "the current final DAG."
+        )
 
     return graph
 
@@ -889,12 +884,8 @@ def save_outputs(
         "final_dag_path": str(
             find_final_dag()
         ),
-        "development_rows": int(
-            len(development)
-        ),
-        "test_rows": int(
-            len(test)
-        ),
+        "development_rows": len(development),
+        "test_rows": len(test),
         "equivalent_sample_size": ESS,
         "current_model": {
             "name": "current_final_dag",
@@ -1055,10 +1046,10 @@ def main():
     # --------------------------------------------------------
 
     print_section(
-        "MODEL A — CURRENT FINAL DAG"
+        "MODEL A - CURRENT FINAL DAG"
     )
 
-    current_graph = validate_dag(
+    validate_dag(
         current_edges,
         variables,
         allow_treatment_edge=False,
@@ -1097,7 +1088,7 @@ def main():
         development,
     )
 
-    current_inference = VariableElimination(
+    VariableElimination(
         current_model
     )
 
@@ -1110,7 +1101,7 @@ def main():
     # --------------------------------------------------------
 
     print_section(
-        "MODEL A — TEST SET EVALUATION"
+        "MODEL A - TEST SET EVALUATION"
     )
 
     current_probabilities = (
@@ -1147,7 +1138,7 @@ def main():
     # --------------------------------------------------------
 
     print_section(
-        "MODEL B — SENSITIVITY DAG"
+        "MODEL B - SENSITIVITY DAG"
     )
 
     sensitivity_edges = list(
@@ -1177,7 +1168,7 @@ def main():
     # Validate sensitivity DAG
     # --------------------------------------------------------
 
-    sensitivity_graph = validate_dag(
+    validate_dag(
         sensitivity_edges,
         variables,
         allow_treatment_edge=True,
@@ -1209,7 +1200,7 @@ def main():
         )
     )
 
-    sensitivity_inference = (
+    (
         VariableElimination(
             sensitivity_model
         )
@@ -1224,7 +1215,7 @@ def main():
     # --------------------------------------------------------
 
     print_section(
-        "MODEL B — TEST SET EVALUATION"
+        "MODEL B - TEST SET EVALUATION"
     )
 
     sensitivity_probabilities = (

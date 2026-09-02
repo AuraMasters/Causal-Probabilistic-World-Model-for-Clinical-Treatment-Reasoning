@@ -9,16 +9,25 @@ ENV/
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 
-# Frontend (Node.js / Vite)
+# Frontend (Node.js / Vite / TypeScript)
 node_modules/
 dist/
 frontend/node_modules/
 frontend/dist/
 frontend/*.local
+*.tsbuildinfo
 
 # Local Python bytecode cache (server startup)
 .pycache/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+*.tmp
 
 # Environment variables / secrets
 .env

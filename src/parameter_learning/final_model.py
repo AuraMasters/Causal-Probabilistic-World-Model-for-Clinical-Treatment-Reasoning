@@ -1,16 +1,14 @@
-from pathlib import Path
 import itertools
 import json
 import shutil
 import warnings
+from pathlib import Path
 
 import networkx as nx
 import numpy as np
 import pandas as pd
-
-from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.estimators import BayesianEstimator
-
+from pgmpy.models import DiscreteBayesianNetwork
 
 # ============================================================
 # CONFIGURATION
@@ -1087,33 +1085,20 @@ def save_dag(edges):
 
 def save_dag_dot(edges):
 
-    graph = nx.DiGraph()
-
-    graph.add_nodes_from(
-        ALL_VARIABLES
-    )
-
-    graph.add_edges_from(
-        edges
-    )
-
     output_path = (
         FINAL_DAG_DIR
         / "final_dag.dot"
     )
 
-    try:
+    lines = ['digraph "ACTG175 Final Bayesian Network" {']
+    for source, target in sorted(edges):
+        lines.append(f"    {source} -> {target};")
+    lines.append("}\n")
 
-        nx.drawing.nx_pydot.write_dot(
-            graph,
-            output_path,
-        )
+    with open(output_path, "w", encoding="utf-8") as file:
+        file.write("\n".join(lines))
 
-        return output_path
-
-    except Exception:
-
-        return None
+    return output_path
 
 
 # ============================================================
@@ -1174,14 +1159,10 @@ def calculate_statistics(
         )
 
     return {
-        "number_of_nodes": int(
-            len(
+        "number_of_nodes": len(
                 model.nodes()
-            )
-        ),
-        "number_of_edges": int(
-            len(edges)
-        ),
+            ),
+        "number_of_edges": len(edges),
         "maximum_indegree": int(
             maximum_indegree
         ),
@@ -1357,7 +1338,7 @@ def main():
         "FINAL DAG VALIDATION"
     )
 
-    graph = validate_graph(
+    validate_graph(
         final_edges
     )
 
@@ -1606,21 +1587,15 @@ def main():
         "training_dataset": str(
             DEVELOPMENT_PATH
         ),
-        "training_rows": int(
-            len(data)
-        ),
+        "training_rows": len(data),
         "test_data_used": False,
         "estimator": (
             "BayesianEstimator"
         ),
         "prior": "BDeu",
         "equivalent_sample_size": ESS,
-        "previous_edge_count": int(
-            len(old_edges)
-        ),
-        "final_edge_count": int(
-            len(final_edges)
-        ),
+        "previous_edge_count": len(old_edges),
+        "final_edge_count": len(final_edges),
         "new_edge": "trt -> label",
         "dag_validation": "PASSED",
         "model_consistency": "PASSED",

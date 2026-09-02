@@ -1,12 +1,10 @@
-from pathlib import Path
 import json
 import sys
+from pathlib import Path
 
 import pandas as pd
-
 from pgmpy.causal_discovery import HillClimbSearch
 from pgmpy.structure_score import BIC, BDeu
-
 
 # ============================================================
 # Local module import
@@ -18,7 +16,6 @@ if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
 from constraints import build_expert_knowledge
-
 
 # ============================================================
 # Paths
@@ -375,7 +372,7 @@ def learn_tabu(
     )
 
     print(
-        "ACTG175 TABU SEARCH — SPARSE"
+        "ACTG175 TABU SEARCH - SPARSE"
     )
 
     print(
@@ -566,11 +563,7 @@ def save_edges(
     )
 
     edges_df = pd.DataFrame(
-        list(model.edges()),
-        columns=[
-            "source",
-            "target",
-        ],
+        [{"source": str(u), "target": str(v)} for u, v in model.edges()]
     )
 
     edges_df.to_csv(

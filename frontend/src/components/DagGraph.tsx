@@ -180,7 +180,10 @@ export function DagGraph({ overview }: DagGraphProps) {
             maskColor="rgba(6, 10, 20, 0.75)"
             className="!bg-ink-900/80"
           />
-          <Controls className="!border-slate-600/40 !bg-ink-800 !fill-slate-300" />
+          <Controls
+            showInteractive={false}
+            className="!border-slate-700/60 !bg-ink-850"
+          />
         </ReactFlow>
       </div>
 
@@ -201,7 +204,7 @@ export function DagGraph({ overview }: DagGraphProps) {
               </div>
               <button
                 onClick={() => setSelectedNode(null)}
-                className="rounded-lg p-1 text-slate-400 transition-colors hover:bg-ink-700 hover:text-slate-200"
+                className="rounded-lg border border-slate-700/60 bg-ink-800 p-1.5 text-slate-300 transition-colors hover:bg-slate-700 hover:text-white cursor-pointer"
                 aria-label="Close node details"
               >
                 <X className="h-4 w-4" />

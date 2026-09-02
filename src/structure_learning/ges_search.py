@@ -1,11 +1,9 @@
-from pathlib import Path
 import json
+from pathlib import Path
 
 import pandas as pd
-
 from pgmpy.causal_discovery import GES
 from pgmpy.structure_score import BIC, BDeu
-
 
 # ============================================================
 # PATHS
@@ -302,16 +300,8 @@ def is_temporally_valid(
         target
     )
 
-    # Same tier is allowed.
-    if source_tier == target_tier:
-        return True
-
-    # Earlier -> later is allowed.
-    if source_tier < target_tier:
-        return True
-
-    # Later -> earlier is not allowed.
-    return False
+    # Same tier or earlier -> later is allowed; later -> earlier is not allowed.
+    return source_tier <= target_tier
 
 
 # ============================================================
@@ -353,7 +343,7 @@ def learn_ges(
     )
 
     print(
-        "ACTG175 NATIVE GES — SPARSE"
+        "ACTG175 NATIVE GES - SPARSE"
     )
 
     print(
@@ -545,11 +535,7 @@ def save_edges(
     )
 
     edges_df = pd.DataFrame(
-        list(model.edges()),
-        columns=[
-            "source",
-            "target",
-        ],
+        [{"source": str(u), "target": str(v)} for u, v in model.edges()]
     )
 
     edges_df.to_csv(
@@ -1058,7 +1044,7 @@ def main():
     )
 
     print(
-        "NATIVE GES — SPARSE"
+        "NATIVE GES - SPARSE"
     )
 
     print(

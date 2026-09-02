@@ -1,22 +1,19 @@
-from pathlib import Path
 import json
 import warnings
+from pathlib import Path
 
+import networkx as nx
 import numpy as np
 import pandas as pd
-import networkx as nx
-
-from sklearn.metrics import (
-    accuracy_score,
-    log_loss,
-    brier_score_loss,
-    roc_auc_score,
-)
-
-from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.estimators import BayesianEstimator
 from pgmpy.inference import VariableElimination
-
+from pgmpy.models import DiscreteBayesianNetwork
+from sklearn.metrics import (
+    accuracy_score,
+    brier_score_loss,
+    log_loss,
+    roc_auc_score,
+)
 
 # ============================================================
 # WARNING CONFIGURATION
@@ -615,9 +612,7 @@ def calculate_metrics(
 
     metrics[
         "test_rows"
-    ] = int(
-        len(predictions)
-    )
+    ] = len(predictions)
 
     metrics[
         "positive_rate"
@@ -731,9 +726,7 @@ def treatment_diagnostic(
         rows.append(
             {
                 "treatment": treatment,
-                "test_rows": int(
-                    len(subset)
-                ),
+                "test_rows": len(subset),
                 "observed_P_label_1": (
                     observed_probability
                 ),
@@ -1133,15 +1126,9 @@ def main():
         "test_dataset": str(
             TEST_PATH
         ),
-        "training_rows": int(
-            len(development)
-        ),
-        "test_rows": int(
-            len(test)
-        ),
-        "edge_count": int(
-            len(edges)
-        ),
+        "training_rows": len(development),
+        "test_rows": len(test),
+        "edge_count": len(edges),
         "treatment_edge": (
             "trt -> label"
         ),

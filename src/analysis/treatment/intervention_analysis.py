@@ -1,14 +1,12 @@
-from pathlib import Path
 import json
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
-from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.estimators import BayesianEstimator
 from pgmpy.inference import VariableElimination
-
+from pgmpy.models import DiscreteBayesianNetwork
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -261,12 +259,12 @@ def nx_is_dag(model):
             model
         )
 
-    except Exception:
+    except Exception:  # noqa: BLE001
         # Fallback topological-sort check.
         try:
             list(model.topological_sort())
             return True
-        except Exception:
+        except Exception:  # noqa: BLE001
             return False
 
 

@@ -1,5 +1,5 @@
-from pathlib import Path
 import sys
+from pathlib import Path
 
 from flask import Flask, jsonify, request
 
@@ -12,7 +12,6 @@ from src.api.service import (
     analyze_patient,
     get_overview,
 )
-
 
 app = Flask(__name__)
 

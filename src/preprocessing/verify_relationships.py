@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 # ============================================================
 # Configuration
 # ============================================================
@@ -334,7 +333,7 @@ def inspect_numeric_correlations(df: pd.DataFrame) -> None:
         "label",
     ]
 
-    correlation = df[variables].corr()
+    correlation = pd.DataFrame(df[variables]).corr()
 
     print(
         correlation.round(3).to_string()

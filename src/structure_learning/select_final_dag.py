@@ -1,9 +1,8 @@
-from pathlib import Path
 import json
+from pathlib import Path
 
 import networkx as nx
 import pandas as pd
-
 
 # ============================================================
 # PROJECT PATHS
@@ -333,13 +332,11 @@ def validate_dag(edges):
             )
 
     # Explicit forbidden edge
-    if ("label", "trt") in edges:
+    if ("label", "trt") in edges and ("label", "trt") not in violations:
 
-        if ("label", "trt") not in violations:
-
-            violations.append(
-                ("label", "trt")
-            )
+        violations.append(
+            ("label", "trt")
+        )
 
     return violations
 
@@ -618,7 +615,16 @@ def direction_analysis(
                 }
             )
 
-    return pd.DataFrame(records)
+    return pd.DataFrame(
+        records,
+        columns=[
+            "hc_direction",
+            "hc_stability",
+            "reverse_direction",
+            "reverse_stability",
+            "preferred_bootstrap_direction",
+        ],
+    )
 
 
 # ============================================================
@@ -1022,13 +1028,7 @@ def main():
     # ========================================================
 
     final_edges_df = pd.DataFrame(
-        sorted(
-            final_edges
-        ),
-        columns=[
-            "source",
-            "target",
-        ],
+        [{"source": str(u), "target": str(v)} for u, v in sorted(final_edges)]
     )
 
     final_edges_path = (

@@ -1,21 +1,18 @@
-from pathlib import Path
 import json
+from pathlib import Path
 
+import networkx as nx
 import numpy as np
 import pandas as pd
-import networkx as nx
-
+from pgmpy.estimators import BayesianEstimator
+from pgmpy.inference import VariableElimination
+from pgmpy.models import DiscreteBayesianNetwork
 from sklearn.metrics import (
     accuracy_score,
     brier_score_loss,
     log_loss,
     roc_auc_score,
 )
-
-from pgmpy.models import DiscreteBayesianNetwork
-from pgmpy.estimators import BayesianEstimator
-from pgmpy.inference import VariableElimination
-
 
 # ============================================================
 # ACTG175 PHASE-11 TEST-SET VALIDATION
@@ -411,7 +408,7 @@ def learn_parameters(
     )
 
     print(
-        f"Prior: BDeu"
+        "Prior: BDeu"
     )
 
     print(
@@ -492,23 +489,23 @@ def validate_test_states(
         # States known by model
         # ----------------------------------------------------
 
-        model_states = set(
+        model_states = {
             str(state)
             for state in cpd.state_names[
                 variable
             ]
-        )
+        }
 
         # ----------------------------------------------------
         # States occurring in test set
         # ----------------------------------------------------
 
-        test_states = set(
+        test_states = {
             str(state)
             for state in test[
                 variable
             ].unique()
-        )
+        }
 
         unknown_states = (
             test_states
@@ -707,7 +704,7 @@ def calculate_metrics(
 
     metrics = {
         "rows":
-            int(len(y_true)),
+            len(y_true),
 
         "positive_rate":
             float(np.mean(y_true)),
@@ -928,11 +925,9 @@ def treatment_diagnostic(
                     treatment,
 
                 "test_rows":
-                    int(
-                        len(
+                    len(
                             observed_subset
-                        )
-                    ),
+                        ),
 
                 "observed_P_label_1":
                     observed_rate,

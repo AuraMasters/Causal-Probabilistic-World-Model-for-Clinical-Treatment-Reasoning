@@ -1,14 +1,12 @@
-from pathlib import Path
 import json
 import warnings
+from pathlib import Path
 
-import pandas as pd
 import networkx as nx
-
-from pgmpy.models import DiscreteBayesianNetwork
+import pandas as pd
 from pgmpy.estimators import BayesianEstimator
 from pgmpy.inference import VariableElimination
-
+from pgmpy.models import DiscreteBayesianNetwork
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -952,15 +950,15 @@ def main():
         total_patients + 1,
     ):
 
-        patient_results = (
+        patient_subset = pd.DataFrame(
             detailed_results[
-                detailed_results[
-                    "test_patient"
-                ]
-                == patient_number
+                detailed_results["test_patient"] == patient_number
             ]
+        )
+        patient_results = (
+            patient_subset
             .sort_values(
-                "p_label_1"
+                by="p_label_1"
             )
             .reset_index(
                 drop=True
@@ -1199,7 +1197,7 @@ def main():
 
     print(
         f"Treatment "
-        f"{best_average_treatment} — "
+        f"{best_average_treatment} - "
         f"{best_average_treatment_name}"
     )
 
