@@ -1,5 +1,17 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Database, Network, RefreshCw, Sparkles, Stethoscope } from 'lucide-react'
+import {
+  AlertCircle,
+  BarChart3,
+  BrainCircuit,
+  CheckCircle2,
+  Database,
+  GitBranch,
+  Network,
+  RefreshCw,
+  Sparkles,
+  Stethoscope,
+  UserCheck,
+} from 'lucide-react'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Header } from './components/Header'
 import { OutcomeSection } from './components/OutcomeSection'
@@ -17,11 +29,13 @@ const DagGraph = lazy(() =>
   import('./components/DagGraph').then((module) => ({ default: module.DagGraph })),
 )
 
-const NAV_LINKS = [
-  { href: '#input', label: 'Patient Profile' },
-  { href: '#decision', label: 'Decision Support' },
-  { href: '#network', label: 'Causal DAG' },
-  { href: '#validation', label: 'Validation' },
+const NAV_ITEMS = [
+  { id: 'overview', label: 'Cohort & Model', icon: Database },
+  { id: 'patient', label: 'Patient Evidence', icon: UserCheck },
+  { id: 'recommendation', label: 'AI Decision', icon: Sparkles },
+  { id: 'analysis', label: 'Comparative Arms', icon: BarChart3 },
+  { id: 'network', label: 'Causal DAG', icon: GitBranch },
+  { id: 'validation', label: 'Validation', icon: CheckCircle2 },
 ]
 
 const DEFAULT_SAMPLE: PatientInputs = {
@@ -45,13 +59,7 @@ const DEFAULT_SAMPLE: PatientInputs = {
 export default function App() {
   const { overview, loading, error, retry } = useOverview()
   const { state, run } = useAnalyze()
-  const [showNav, setShowNav] = useState(false)
-
-  useEffect(() => {
-    const onScroll = () => setShowNav(window.scrollY > 280)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+  const [activeSection, setActiveSection] = useState('overview')
 
   // Auto-run initial patient analysis once overview is loaded
   useEffect(() => {
@@ -60,46 +68,80 @@ export default function App() {
     }
   }, [overview, state.status, run])
 
+  // Active section scroll spy
+  useEffect(() => {
+    const sectionIds = NAV_ITEMS.map((item) => item.id)
+
+    const handleScroll = () => {
+      const scrollPos = window.scrollY + 180
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sectionIds[i])
+        if (el && el.offsetTop <= scrollPos) {
+          setActiveSection(sectionIds[i])
+          break
+        }
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   return (
-    <div className="app-bg min-h-screen text-slate-100 selection:bg-mint-400 selection:text-ink-950">
+    <div className="app-bg min-h-screen text-slate-100 selection:bg-cyan-400 selection:text-ink-950">
       <Header />
 
-      <AnimatePresence>
-        {showNav && (
-          <motion.nav
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            className="fixed inset-x-0 top-0 z-50 border-b border-slate-800/80 bg-ink-950/90 backdrop-blur-xl shadow-lg shadow-black/20"
-          >
-            <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3 sm:px-8">
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-mint-400 animate-pulse" />
-                <p className="font-display text-sm font-bold text-slate-100">Causal Clinical Reasoning</p>
-              </div>
-              <div className="flex items-center gap-5">
-                {NAV_LINKS.map((link) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    className="font-mono text-[11px] font-semibold tracking-[0.14em] text-slate-400 uppercase transition-colors hover:text-mint-300"
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </div>
+      {/* Sticky intelligence navigation */}
+      <nav className="sticky top-0 z-50 border-b border-cyan-400/15 bg-ink-950/85 backdrop-blur-xl shadow-lg shadow-black/30">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-400/15 border border-cyan-400/30">
+              <BrainCircuit className="h-4 w-4 text-cyan-300 animate-pulse" />
             </div>
-          </motion.nav>
-        )}
-      </AnimatePresence>
+            <span className="hidden font-display text-sm font-bold tracking-tight text-white md:inline-block">
+              ACTG175 Clinical World Model
+            </span>
+          </div>
 
-      <main className="mx-auto max-w-7xl px-5 pb-20 sm:px-8">
-        <div className="space-y-16 pt-10 sm:pt-12">
+          <div className="flex items-center gap-1 overflow-x-auto py-1 no-scrollbar sm:gap-1.5">
+            {NAV_ITEMS.map((item) => {
+              const isActive = activeSection === item.id
+              const Icon = item.icon
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => scrollTo(item.id)}
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono text-xs font-semibold tracking-wide transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/40 shadow-sm shadow-cyan-400/20'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-ink-850'
+                  }`}
+                >
+                  <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-cyan-300' : 'text-slate-400'}`} />
+                  <span>{item.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </nav>
+
+      <main className="mx-auto max-w-7xl px-4 pb-24 sm:px-8">
+        <div className="space-y-20 pt-8 sm:pt-12">
+          {/* SECTION 1: SYSTEM OVERVIEW */}
           <Section
             id="overview"
-            eyebrow="Cohort & Structure"
+            eyebrow="Cohort & Architecture"
             title="System Overview"
-            subtitle="The ACTG175 randomized trial cohort and the final 23-edge causal Bayesian Network utilized for interventional decision support."
+            subtitle="The ACTG175 randomized trial cohort and the verified 23-edge causal Bayesian Network utilized for interventional decision support."
           >
             {loading ? (
               <LoadingState label="Loading model overview and learned CPT parameters..." />
@@ -110,11 +152,12 @@ export default function App() {
             ) : null}
           </Section>
 
+          {/* SECTION 2: PATIENT PROFILE (EVIDENCE) */}
           <Section
-            id="input"
-            eyebrow="Patient Evidence"
+            id="patient"
+            eyebrow="Clinical Evidence Input"
             title="Patient Clinical Profile"
-            subtitle="Specify patient biomarkers and history. Continuous variables are discretized using data-driven quantile boundaries."
+            subtitle="Input individual baseline biomarkers and patient history. Continuous biomarkers are automatically mapped to calibrated discrete evidence states."
           >
             {overview ? (
               <PatientForm
@@ -123,10 +166,11 @@ export default function App() {
                 onAnalyze={run}
               />
             ) : (
-              <LoadingState label="Loading model metadata..." />
+              <LoadingState label="Loading patient evidence schema..." />
             )}
           </Section>
 
+          {/* ERROR DISPLAY */}
           <AnimatePresence>
             {state.status === 'error' && (
               <motion.div
@@ -137,59 +181,76 @@ export default function App() {
               >
                 <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-risk" />
                 <div>
-                  <p className="text-sm font-bold text-rose-100">Analysis failed</p>
+                  <p className="text-sm font-bold text-rose-100">Causal inference execution failed</p>
                   <p className="mt-0.5 text-sm text-rose-200/90">{state.message}</p>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
+          {/* SECTION 3 & 4: DECISION SUPPORT & ANALYSIS */}
           {state.status === 'success' && (
-            <motion.div
-              id="decision"
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
-              className="scroll-mt-24 space-y-8"
-            >
-              <RecommendedTreatment result={state.result} />
+            <>
+              {/* PRIMARY AI DECISION HERO */}
+              <Section
+                id="recommendation"
+                eyebrow="Pearlian Interventional Decision"
+                title="AI Treatment Recommendation"
+                subtitle="Calculated via Pearl's do-calculus graph mutilation across all four antiretroviral therapy arms."
+              >
+                <RecommendedTreatment result={state.result} />
+              </Section>
 
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <div>
-                  <h3 className="mb-3 font-display text-lg font-bold text-slate-100 flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-mint-300" />
-                    Posterior Outcome Probabilities
-                  </h3>
-                  <OutcomeSection result={state.result} />
-                </div>
-                <div>
-                  <h3 className="mb-3 font-display text-lg font-bold text-slate-100 flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-cyan-300" />
-                    Treatment Arms Ranking
-                  </h3>
-                  <TreatmentRanking ranking={state.result.ranking} />
-                </div>
-              </div>
+              {/* COMPARATIVE ANALYSIS */}
+              <Section
+                id="analysis"
+                eyebrow="Multi-Arm Evaluation"
+                title="Treatment Arms Comparison & Ranking"
+                subtitle="Expected utility, progression-free survival probability, and comparative risk metrics across all available drug regimens."
+              >
+                <div className="space-y-8">
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <div>
+                      <div className="mb-3 flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-cyan-300" />
+                        <h3 className="font-display text-base font-bold text-white uppercase tracking-wider">
+                          Posterior Outcome Probabilities
+                        </h3>
+                      </div>
+                      <OutcomeSection result={state.result} />
+                    </div>
 
-              <div>
-                <h3 className="mb-3 font-display text-lg font-bold text-slate-100">
-                  Comprehensive Treatment Arms Comparison
-                </h3>
-                <div className="card-surface rounded-2xl p-3 shadow-lg">
-                  <TreatmentComparison treatments={state.result.treatments} />
+                    <div>
+                      <div className="mb-3 flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4 text-mint-300" />
+                        <h3 className="font-display text-base font-bold text-white uppercase tracking-wider">
+                          Regimen Decision Hierarchy
+                        </h3>
+                      </div>
+                      <TreatmentRanking ranking={state.result.ranking} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="mb-3 font-display text-base font-bold text-white uppercase tracking-wider">
+                      Comprehensive Multi-Arm Matrix
+                    </h3>
+                    <TreatmentComparison treatments={state.result.treatments} />
+                  </div>
                 </div>
-              </div>
-            </motion.div>
+              </Section>
+            </>
           )}
 
+          {/* SECTION 5: CAUSAL DAG GRAPH */}
           <Section
             id="network"
             eyebrow="Causal Architecture"
             title="Bayesian Network DAG"
-            subtitle="The verified 23-edge directed acyclic graph learned from ACTG175 development data. Click any node to view state spaces and local dependencies."
+            subtitle="The verified 23-edge directed acyclic graph learned from ACTG175 trial data with temporal constraints (Baseline → Treatment → Outcome)."
           >
             {overview ? (
-              <Suspense fallback={<LoadingState label="Rendering DAG network layout..." />}>
+              <Suspense fallback={<LoadingState label="Rendering DAG network graph layout..." />}>
                 <DagGraph overview={overview} />
               </Suspense>
             ) : (
@@ -197,27 +258,42 @@ export default function App() {
             )}
           </Section>
 
+          {/* SECTION 6: HELD-OUT VALIDATION */}
           <Section
             id="validation"
-            eyebrow="Empirical Performance"
+            eyebrow="Empirical Verification"
             title="Held-Out Model Validation"
-            subtitle="Evaluation strictly on the 428 held-out test patients (parameters fitted exclusively on development data)."
+            subtitle="Rigorous out-of-sample evaluation on 428 held-out test patients with parameters learned strictly on the development partition."
           >
             {overview ? <ValidationSection overview={overview} /> : <LoadingState label="Loading validation metrics..." />}
           </Section>
         </div>
       </main>
 
-      <footer className="border-t border-slate-800/80 bg-ink-950/60 py-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-5 sm:flex-row sm:px-8">
-          <p className="flex items-center gap-2 font-mono text-xs text-slate-400">
-            <Stethoscope className="h-4 w-4 text-mint-400" />
-            Causal Clinical Reasoning &middot; ACTG175 Pearlian Decision Support
-          </p>
-          <p className="flex items-center gap-3 font-mono text-[11px] text-slate-500">
-            <span className="flex items-center gap-1.5"><Database className="h-3 w-3 text-cyan-400" /> 2,139 Patients</span>
-            <span className="flex items-center gap-1.5"><Network className="h-3 w-3 text-mint-400" /> 23 Edges / 17 Nodes</span>
-          </p>
+      <footer className="border-t border-cyan-400/15 bg-ink-950 py-10">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-400/10 border border-cyan-400/25">
+              <Stethoscope className="h-4 w-4 text-cyan-300" />
+            </div>
+            <div>
+              <p className="font-display text-sm font-bold text-slate-100">
+                Causal Clinical Reasoning Platform
+              </p>
+              <p className="font-mono text-xs text-slate-400">
+                ACTG175 Bayesian World Model &middot; Exact Variable Elimination
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 font-mono text-xs text-slate-400">
+            <span className="flex items-center gap-1.5 rounded-lg border border-slate-700/50 bg-ink-900 px-3 py-1">
+              <Database className="h-3.5 w-3.5 text-cyan-300" /> 2,139 Patients
+            </span>
+            <span className="flex items-center gap-1.5 rounded-lg border border-slate-700/50 bg-ink-900 px-3 py-1">
+              <Network className="h-3.5 w-3.5 text-mint-300" /> 23 Edges &middot; 17 Nodes
+            </span>
+          </div>
         </div>
       </footer>
     </div>
@@ -226,11 +302,11 @@ export default function App() {
 
 function LoadingState({ label }: { label: string }) {
   return (
-    <div className="flex items-center justify-center gap-3 rounded-2xl border border-slate-800/60 bg-ink-900/50 py-12 shadow-inner">
+    <div className="flex items-center justify-center gap-3 rounded-2xl border border-cyan-400/15 bg-ink-900/60 py-12 shadow-inner">
       <motion.span
         animate={{ rotate: 360 }}
         transition={{ repeat: Infinity, duration: 1.1, ease: 'linear' }}
-        className="h-5 w-5 rounded-full border-2 border-slate-600 border-t-mint-400"
+        className="h-5 w-5 rounded-full border-2 border-slate-700 border-t-cyan-400"
       />
       <p className="text-sm font-medium text-slate-300">{label}</p>
     </div>

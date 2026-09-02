@@ -1,7 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import dagre from 'dagre'
 import { AnimatePresence, motion } from 'framer-motion'
-import { X } from 'lucide-react'
+import {
+  GitBranch,
+  Info,
+  Maximize2,
+  Minimize2,
+  RefreshCw,
+  X,
+} from 'lucide-react'
 import {
   Background,
   Controls,
@@ -9,6 +16,8 @@ import {
   MiniMap,
   Position,
   ReactFlow,
+  useReactFlow,
+  ReactFlowProvider,
   type Edge as FlowEdge,
   type Node as FlowNode,
   type NodeProps,
@@ -18,271 +27,438 @@ import '@xyflow/react/dist/style.css'
 
 import type { Overview } from '../lib/types'
 
-const NODE_DESCRIPTIONS: Record<string, string> = {
-  age: 'Age',
-  wtkg: 'Weight (kg)',
-  hemo: 'Hemophilia',
-  homo: 'Homosexuality',
-  drugs: 'IV drug use',
-  karnof: 'Karnofsky score',
-  oprior: 'Prior opportunistic infection',
-  z30: 'Prior zidovudine use',
-  preanti: 'Pre-ART exposure',
-  race: 'Race',
-  gender: 'Gender',
-  strat: 'Stratification',
-  symptom: 'Symptomatic disease',
-  cd40: 'CD4 count',
-  cd80: 'CD8 count',
-  trt: 'Treatment',
-  label: 'Outcome',
+const NODE_DESCRIPTIONS: Record<string, { name: string; category: string; desc: string }> = {
+  age: { name: 'Age', category: 'Demographics', desc: 'Patient age at study entry' },
+  wtkg: { name: 'Weight (kg)', category: 'Demographics', desc: 'Baseline body weight in kilograms' },
+  hemo: { name: 'Hemophilia', category: 'Clinical History', desc: 'Presence of hemophilia disorder' },
+  homo: { name: 'Homosexuality', category: 'Demographics', desc: 'Homosexual transmission risk factor' },
+  drugs: { name: 'IV Drug Use', category: 'Clinical History', desc: 'History of intravenous drug abuse' },
+  karnof: { name: 'Karnofsky Score', category: 'Functional Status', desc: 'Performance scale rating (0-100)' },
+  oprior: { name: 'Prior Opportunistic Infection', category: 'Clinical History', desc: 'Pre-trial opportunistic disease history' },
+  z30: { name: 'Prior ZDV (30 Days)', category: 'Treatment History', desc: 'Zidovudine use in the 30 days prior to study' },
+  preanti: { name: 'Pre-ART Exposure (Days)', category: 'Treatment History', desc: 'Cumulative days of antiretroviral exposure' },
+  race: { name: 'Race', category: 'Demographics', desc: 'Self-reported race classification' },
+  gender: { name: 'Gender', category: 'Demographics', desc: 'Biological sex' },
+  strat: 'Stratification' in { Stratification: 1 }
+    ? { name: 'Antiretroviral Stratum', category: 'Treatment History', desc: 'Stratification category based on prior ART' }
+    : { name: 'Antiretroviral Stratum', category: 'Treatment History', desc: 'Stratification category based on prior ART' },
+  symptom: { name: 'Symptomatic Indicator', category: 'Clinical Status', desc: 'Presence of HIV symptoms at baseline' },
+  cd40: { name: 'Baseline CD4 T-Cell Count', category: 'Biomarker', desc: 'Baseline helper T-cell count (cells/mm³)' },
+  cd80: { name: 'Baseline CD8 T-Cell Count', category: 'Biomarker', desc: 'Baseline cytotoxic T-cell count (cells/mm³)' },
+  trt: { name: 'Treatment Regimen (Intervention)', category: 'Intervention', desc: 'Randomized treatment arm (4 options)' },
+  label: { name: 'Primary Trial Outcome (Label)', category: 'Outcome', desc: '50% CD4 decline, AIDS endpoint, or death' },
 }
 
 const NODE_ACCENTS: Record<string, string> = {
   trt: 'mint',
-  label: 'violet',
+  label: 'rose',
   cd40: 'cyan',
   cd80: 'cyan',
+  karnof: 'cyan',
+  preanti: 'cyan',
   z30: 'cyan',
 }
 
 type DagNodeData = {
   label: string
-  description: string
+  name: string
+  category: string
   accent: string
   dimmed: boolean
+  isTarget: boolean
+  isSource: boolean
 }
 
 function DagNode({ data, selected }: NodeProps) {
-  const { label, description, accent, dimmed } = data as DagNodeData
+  const { label, name, category, accent, dimmed, isTarget, isSource } = data as DagNodeData
 
   const borderClass =
     accent === 'mint'
-      ? 'border-mint-400/40'
-      : accent === 'violet'
-        ? 'border-violet-400/40'
-        : 'border-cyan-400/30'
-  const textClass =
+      ? 'border-mint-400/60 shadow-mint-400/20'
+      : accent === 'rose'
+        ? 'border-rose-400/60 shadow-rose-400/20'
+        : 'border-cyan-400/40 shadow-cyan-400/15'
+
+  const badgeBg =
     accent === 'mint'
-      ? 'text-mint-300'
-      : accent === 'violet'
-        ? 'text-violet-300'
-        : 'text-cyan-300'
+      ? 'bg-mint-400/20 text-mint-200'
+      : accent === 'rose'
+        ? 'bg-rose-400/20 text-rose-200'
+        : 'bg-cyan-400/20 text-cyan-200'
 
   return (
     <div
-      className={`relative w-[160px] rounded-xl border bg-ink-800/95 px-3 py-2.5 shadow-lg shadow-black/30 backdrop-blur transition-all duration-200 ${
-        borderClass
-      } ${selected ? 'ring-2 ring-cyan-400/50' : ''} ${dimmed ? 'opacity-40' : ''}`}
+      className={`relative w-[170px] rounded-2xl border bg-ink-900/95 p-3 shadow-xl backdrop-blur transition-all duration-200 ${borderClass} ${
+        selected ? 'ring-2 ring-cyan-300 shadow-cyan-400/40 scale-105' : ''
+      } ${dimmed ? 'opacity-30' : 'opacity-100'} ${
+        isSource ? 'ring-2 ring-cyan-400 animate-pulse' : ''
+      } ${isTarget ? 'ring-2 ring-mint-300' : ''}`}
     >
-      <Handle type="target" position={Position.Left} className="!h-1.5 !w-1.5 !border-0 !bg-slate-500" />
-      <p className={`font-mono text-[13px] font-bold tracking-wide ${textClass}`}>{label}</p>
-      <p className="mt-0.5 truncate text-[10px] text-slate-400">{description}</p>
-      <Handle type="source" position={Position.Right} className="!h-1.5 !w-1.5 !border-0 !bg-slate-500" />
+      <Handle type="target" position={Position.Left} className="!h-2 !w-2 !border-0 !bg-cyan-400" />
+      <div className="flex items-center justify-between">
+        <span className={`rounded-md px-1.5 py-0.5 font-mono text-[11px] font-extrabold ${badgeBg}`}>
+          {label}
+        </span>
+        <span className="font-mono text-[9px] text-slate-400 uppercase">{category}</span>
+      </div>
+      <p className="mt-1.5 truncate font-display text-xs font-bold text-white">{name}</p>
+      <Handle type="source" position={Position.Right} className="!h-2 !w-2 !border-0 !bg-mint-400" />
     </div>
   )
 }
 
 const nodeTypes: NodeTypes = { dagNode: DagNode }
 
-interface DagGraphProps {
-  overview: Overview
-}
-
-export function DagGraph({ overview }: DagGraphProps) {
-  const [selectedNode, setSelectedNode] = useState<string | null>(null)
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null)
-
-  const { nodes, edges } = useMemo(() => {
-    const rawEdges: FlowEdge[] = overview.dag.map((edge, index) => ({
-      id: `edge-${index}`,
-      source: edge.source,
-      target: edge.target,
-      animated: false,
-      style: { stroke: '#3b4a6b', strokeWidth: 1.5 },
-    }))
-
-    const rawNodes: FlowNode[] = Object.keys(NODE_DESCRIPTIONS).map((variable) => ({
-      id: variable,
-      type: 'dagNode',
-      position: { x: 0, y: 0 },
-      data: {
-        label: variable,
-        description: NODE_DESCRIPTIONS[variable],
-        accent: NODE_ACCENTS[variable] ?? 'slate',
-        dimmed: false,
-      },
-    }))
-
-    const layouted = layoutDagre(rawNodes, rawEdges)
-    return { nodes: layouted.nodes, edges: layouted.edges }
-  }, [overview])
-
-  const highlight = hoveredNode ?? selectedNode
-
-  const renderNodes = useMemo(
-    () =>
-      nodes.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          dimmed: highlight !== null && highlight !== node.id && !edges.some(
-            (edge) => edge.source === highlight && edge.target === node.id,
-          ) && !edges.some(
-            (edge) => edge.target === highlight && edge.source === node.id,
-          ),
-        },
-      })),
-    [nodes, edges, highlight],
-  )
-
-  const renderEdges = useMemo(
-    () =>
-      edges.map((edge) => ({
-        ...edge,
-        animated: highlight !== null && (edge.source === highlight || edge.target === highlight),
-        style: {
-          stroke: highlight !== null && (edge.source === highlight || edge.target === highlight)
-            ? '#34d9b0'
-            : '#3b4a6b',
-          strokeWidth: highlight !== null && (edge.source === highlight || edge.target === highlight) ? 2.4 : 1.5,
-        },
-      })),
-    [edges, highlight],
-  )
-
-  const selectedStates = selectedNode ? overview.states[selectedNode] ?? [] : []
-
-  return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_260px]">
-      <div className="h-[520px] overflow-hidden rounded-2xl border border-slate-500/20 bg-ink-900/60">
-        <ReactFlow
-          nodes={renderNodes}
-          edges={renderEdges}
-          nodeTypes={nodeTypes}
-          fitView
-          fitViewOptions={{ padding: 0.18 }}
-          minZoom={0.2}
-          maxZoom={1.6}
-          nodesConnectable={false}
-          elementsSelectable
-          onNodeClick={(_, node) => setSelectedNode(node.id)}
-          onNodeMouseEnter={(_, node) => setHoveredNode(node.id)}
-          onNodeMouseLeave={() => setHoveredNode(null)}
-          onPaneClick={() => setSelectedNode(null)}
-          proOptions={{ hideAttribution: true }}
-        >
-          <Background gap={22} size={1} color="#1c2847" />
-          <MiniMap
-            pannable
-            zoomable
-            nodeColor="#1a2540"
-            maskColor="rgba(6, 10, 20, 0.75)"
-            className="!bg-ink-900/80"
-          />
-          <Controls
-            showInteractive={false}
-            className="!border-slate-700/60 !bg-ink-850"
-          />
-        </ReactFlow>
-      </div>
-
-      <AnimatePresence mode="wait">
-        {selectedNode ? (
-          <motion.aside
-            key={selectedNode}
-            initial={{ opacity: 0, x: 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 12 }}
-            className="card-surface h-fit rounded-2xl p-5"
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-mono text-xs tracking-wide text-cyan-300 uppercase">Selected node</p>
-                <h3 className="mt-1 font-display text-lg font-semibold text-slate-50">{selectedNode}</h3>
-                <p className="mt-0.5 text-sm text-slate-400">{NODE_DESCRIPTIONS[selectedNode]}</p>
-              </div>
-              <button
-                onClick={() => setSelectedNode(null)}
-                className="rounded-lg border border-slate-700/60 bg-ink-800 p-1.5 text-slate-300 transition-colors hover:bg-slate-700 hover:text-white cursor-pointer"
-                aria-label="Close node details"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="mt-4">
-              <p className="mb-2 font-mono text-[11px] font-medium tracking-[0.18em] text-slate-500 uppercase">
-                Model states
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {selectedStates.map((state) => (
-                  <span
-                    key={state}
-                    className="rounded-md border border-slate-600/40 bg-ink-800 px-2 py-1 font-mono text-[11px] text-slate-300"
-                  >
-                    {state}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="mt-4 border-t border-slate-600/20 pt-3">
-              <p className="text-[11px] leading-relaxed text-slate-500">
-                {selectedNode === 'label'
-                  ? '0 = desirable study outcome · 1 = undesirable study outcome'
-                  : `Connections from this node are highlighted. Drag nodes to explore the 23-edge DAG.`}
-              </p>
-            </div>
-          </motion.aside>
-        ) : (
-          <motion.aside
-            key="hint"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="card-surface h-fit rounded-2xl p-5"
-          >
-            <p className="font-mono text-[11px] font-medium tracking-[0.18em] text-slate-500 uppercase">Interactions</p>
-            <ul className="mt-3 space-y-2.5 text-sm text-slate-300">
-              <li>Click a node to inspect its model states.</li>
-              <li>Hover a node to highlight its edges.</li>
-              <li>Drag to rearrange · scroll to zoom.</li>
-            </ul>
-            <div className="mt-4 rounded-lg border border-slate-600/20 bg-ink-800/70 p-3">
-              <p className="font-mono text-[11px] text-slate-400">
-                <span className="text-mint-300">trt → label</span> is the causal treatment edge.
-              </p>
-            </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
-
 function layoutDagre(nodes: FlowNode[], edges: FlowEdge[]) {
-  const graph = new dagre.graphlib.Graph()
-  graph.setDefaultEdgeLabel(() => ({}))
-  graph.setGraph({ rankdir: 'LR', nodesep: 28, ranksep: 90, marginx: 10, marginy: 10 })
+  const g = new dagre.graphlib.Graph()
+  g.setGraph({
+    rankdir: 'LR',
+    nodesep: 45,
+    ranksep: 90,
+    marginx: 30,
+    marginy: 30,
+  })
+  g.setDefaultEdgeLabel(() => ({}))
 
   nodes.forEach((node) => {
-    graph.setNode(node.id, { width: 164, height: 58 })
-  })
-  edges.forEach((edge) => {
-    graph.setEdge(edge.source, edge.target)
+    g.setNode(node.id, { width: 170, height: 70 })
   })
 
-  dagre.layout(graph)
+  edges.forEach((edge) => {
+    g.setEdge(edge.source, edge.target)
+  })
+
+  dagre.layout(g)
 
   const layoutedNodes = nodes.map((node) => {
-    const position = graph.node(node.id)
+    const nodeWithPosition = g.node(node.id)
     return {
       ...node,
       position: {
-        x: position.x - 164 / 2,
-        y: position.y - 58 / 2,
+        x: nodeWithPosition.x - 85,
+        y: nodeWithPosition.y - 35,
       },
     }
   })
 
   return { nodes: layoutedNodes, edges }
+}
+
+interface DagGraphProps {
+  overview: Overview
+}
+
+export function DagGraph({ overview }: DagGraphProps) {
+  return (
+    <ReactFlowProvider>
+      <DagGraphInner overview={overview} />
+    </ReactFlowProvider>
+  )
+}
+
+function DagGraphInner({ overview }: DagGraphProps) {
+  const [selectedNode, setSelectedNode] = useState<string | null>('trt')
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null)
+  const [activeFilter, setActiveFilter] = useState<'all' | 'intervention' | 'biomarkers' | 'outcome'>('all')
+
+  const reactFlow = useReactFlow()
+
+  const { rawNodes, rawEdges } = useMemo(() => {
+    const edges: FlowEdge[] = overview.dag.map((edge, index) => ({
+      id: `edge-${index}`,
+      source: edge.source,
+      target: edge.target,
+      animated: false,
+      style: { stroke: '#1d3158', strokeWidth: 1.6 },
+    }))
+
+    const nodes: FlowNode[] = Object.keys(NODE_DESCRIPTIONS).map((variable) => {
+      const meta = NODE_DESCRIPTIONS[variable]
+      return {
+        id: variable,
+        type: 'dagNode',
+        position: { x: 0, y: 0 },
+        data: {
+          label: variable,
+          name: meta.name,
+          category: meta.category,
+          accent: NODE_ACCENTS[variable] ?? 'slate',
+          dimmed: false,
+          isTarget: false,
+          isSource: false,
+        },
+      }
+    })
+
+    const layouted = layoutDagre(nodes, edges)
+    return { rawNodes: layouted.nodes, rawEdges: layouted.edges }
+  }, [overview])
+
+  const highlight = hoveredNode ?? selectedNode
+
+  const renderNodes = useMemo(() => {
+    return rawNodes.map((node) => {
+      const isSelected = highlight === node.id
+      const isParent = highlight ? rawEdges.some((e) => e.source === node.id && e.target === highlight) : false
+      const isChild = highlight ? rawEdges.some((e) => e.source === highlight && e.target === node.id) : false
+
+      let dimmed = false
+      if (highlight) {
+        dimmed = !isSelected && !isParent && !isChild
+      } else if (activeFilter === 'intervention') {
+        dimmed = node.id !== 'trt' && node.id !== 'label'
+      } else if (activeFilter === 'biomarkers') {
+        dimmed = !['cd40', 'cd80', 'karnof', 'preanti', 'z30', 'trt', 'label'].includes(node.id)
+      } else if (activeFilter === 'outcome') {
+        dimmed = node.id !== 'label'
+      }
+
+      return {
+        ...node,
+        data: {
+          ...node.data,
+          dimmed,
+          isSource: isParent,
+          isTarget: isChild,
+        },
+      }
+    })
+  }, [rawNodes, rawEdges, highlight, activeFilter])
+
+  const renderEdges = useMemo(() => {
+    return rawEdges.map((edge) => {
+      const isHighlighted = highlight !== null && (edge.source === highlight || edge.target === highlight)
+      return {
+        ...edge,
+        animated: isHighlighted,
+        style: {
+          stroke: isHighlighted ? '#92eeff' : '#1d3158',
+          strokeWidth: isHighlighted ? 2.8 : 1.6,
+        },
+      }
+    })
+  }, [rawEdges, highlight])
+
+  const selectedNodeMeta = selectedNode ? NODE_DESCRIPTIONS[selectedNode] : null
+  const selectedStates = selectedNode ? overview.states[selectedNode] ?? [] : []
+  const incomingEdges = selectedNode ? overview.dag.filter((e) => e.target === selectedNode) : []
+  const outgoingEdges = selectedNode ? overview.dag.filter((e) => e.source === selectedNode) : []
+
+  const handleFitView = useCallback(() => {
+    reactFlow.fitView({ padding: 0.18, duration: 400 })
+  }, [reactFlow])
+
+  const handleZoomIn = useCallback(() => {
+    reactFlow.zoomIn({ duration: 300 })
+  }, [reactFlow])
+
+  const handleZoomOut = useCallback(() => {
+    reactFlow.zoomOut({ duration: 300 })
+  }, [reactFlow])
+
+  const handleFocusTrtPath = useCallback(() => {
+    setSelectedNode('trt')
+    reactFlow.fitView({ padding: 0.25, duration: 400 })
+  }, [reactFlow])
+
+  return (
+    <div className="space-y-4">
+      {/* Top Filter and Controls Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cyan-400/20 bg-ink-900/90 p-3.5 shadow-md">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="font-mono text-xs font-bold text-slate-400 uppercase mr-2 flex items-center gap-1.5">
+            <GitBranch className="h-4 w-4 text-cyan-300" /> Focus View:
+          </span>
+          <button
+            onClick={() => {
+              setActiveFilter('all')
+              setSelectedNode(null)
+            }}
+            className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
+              activeFilter === 'all' && !selectedNode
+                ? 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/40 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            All 17 Nodes
+          </button>
+          <button
+            onClick={handleFocusTrtPath}
+            className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
+              selectedNode === 'trt'
+                ? 'bg-mint-300/20 text-mint-200 border border-mint-300/40 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Treatment Pathway (trt &rarr; label)
+          </button>
+          <button
+            onClick={() => {
+              setActiveFilter('biomarkers')
+              setSelectedNode('cd40')
+            }}
+            className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
+              activeFilter === 'biomarkers'
+                ? 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/40 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Key Biomarkers
+          </button>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleZoomIn}
+            className="rounded-lg border border-slate-700 bg-ink-850 p-1.5 text-slate-300 hover:text-white hover:border-cyan-400 cursor-pointer"
+            title="Zoom In"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={handleZoomOut}
+            className="rounded-lg border border-slate-700 bg-ink-850 p-1.5 text-slate-300 hover:text-white hover:border-cyan-400 cursor-pointer"
+            title="Zoom Out"
+          >
+            <Minimize2 className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={handleFitView}
+            className="rounded-lg border border-slate-700 bg-ink-850 p-1.5 text-slate-300 hover:text-white hover:border-cyan-400 cursor-pointer"
+            title="Fit View"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Main Graph + Inspector Grid */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_300px]">
+        {/* Flow Canvas */}
+        <div className="h-[540px] overflow-hidden rounded-2xl border border-cyan-400/25 bg-ink-900/90 shadow-xl relative">
+          <ReactFlow
+            nodes={renderNodes}
+            edges={renderEdges}
+            nodeTypes={nodeTypes}
+            fitView
+            fitViewOptions={{ padding: 0.18 }}
+            minZoom={0.2}
+            maxZoom={1.6}
+            nodesConnectable={false}
+            elementsSelectable
+            onNodeClick={(_, node) => setSelectedNode(node.id)}
+            onNodeMouseEnter={(_, node) => setHoveredNode(node.id)}
+            onNodeMouseLeave={() => setHoveredNode(null)}
+            onPaneClick={() => setSelectedNode(null)}
+            proOptions={{ hideAttribution: true }}
+          >
+            <Background gap={24} size={1} color="#0e1a30" />
+            <MiniMap
+              pannable
+              zoomable
+              nodeColor="#142340"
+              maskColor="rgba(5, 10, 20, 0.75)"
+              className="!bg-ink-900/90"
+            />
+            <Controls
+              showInteractive={false}
+              className="!border-cyan-400/25 !bg-ink-850"
+            />
+          </ReactFlow>
+
+          {/* Quick Helper Floating Tip */}
+          <div className="pointer-events-none absolute bottom-3 left-3 rounded-lg border border-slate-700/60 bg-ink-950/90 px-3 py-1.5 text-[11px] font-mono text-slate-400 shadow-md">
+            Click any node to inspect causal parents &amp; conditional distribution
+          </div>
+        </div>
+
+        {/* Node Inspector Drawer */}
+        <div className="rounded-2xl border border-cyan-400/25 bg-ink-900/95 p-5 shadow-xl flex flex-col justify-between">
+          <AnimatePresence mode="wait">
+            {selectedNode && selectedNodeMeta ? (
+              <motion.div
+                key={selectedNode}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-4"
+              >
+                <div className="flex items-start justify-between border-b border-slate-700/70 pb-3">
+                  <div>
+                    <span className="rounded-md bg-cyan-400/20 border border-cyan-400/35 px-2 py-0.5 font-mono text-xs font-bold text-mint-200">
+                      {selectedNode}
+                    </span>
+                    <h4 className="mt-2 font-display text-base font-bold text-white">
+                      {selectedNodeMeta.name}
+                    </h4>
+                    <p className="font-mono text-xs text-slate-400">{selectedNodeMeta.category}</p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedNode(null)}
+                    className="rounded-lg p-1 text-slate-400 hover:text-white cursor-pointer"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <p className="text-xs text-slate-300 leading-relaxed">{selectedNodeMeta.desc}</p>
+
+                {/* Causal Dependencies */}
+                <div className="space-y-2">
+                  <p className="font-mono text-[11px] font-bold text-cyan-300 uppercase">
+                    Causal Relationships:
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                    <div className="rounded-xl border border-slate-700/60 bg-ink-950 p-2.5">
+                      <span className="text-[10px] text-slate-400 block">Parents (In-Degree):</span>
+                      <span className="font-bold text-cyan-200 text-sm">{incomingEdges.length}</span>
+                      <div className="mt-1 text-[10px] text-slate-400 truncate">
+                        {incomingEdges.map((e) => e.source).join(', ') || 'Root node'}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-slate-700/60 bg-ink-950 p-2.5">
+                      <span className="text-[10px] text-slate-400 block">Children (Out-Degree):</span>
+                      <span className="font-bold text-mint-200 text-sm">{outgoingEdges.length}</span>
+                      <div className="mt-1 text-[10px] text-slate-400 truncate">
+                        {outgoingEdges.map((e) => e.target).join(', ') || 'Terminal node'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Discretized Domain States */}
+                <div>
+                  <p className="font-mono text-[11px] font-bold text-cyan-300 uppercase mb-1.5">
+                    CPT State Space ({selectedStates.length} states):
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1">
+                    {selectedStates.map((state) => (
+                      <span
+                        key={state}
+                        className="rounded-lg border border-slate-700/80 bg-ink-950 px-2 py-1 font-mono text-[11px] text-slate-200"
+                      >
+                        {state}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center text-slate-400">
+                <Info className="h-8 w-8 text-cyan-400/60 mb-2" />
+                <p className="font-display text-sm font-bold text-white">Select a Graph Node</p>
+                <p className="text-xs text-slate-400 mt-1 max-w-[200px]">
+                  Click any node in the Bayesian Network to view its parents, children, and state spaces.
+                </p>
+              </div>
+            )}
+          </AnimatePresence>
+
+          <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-500 font-mono">
+            Final Model: 23 Edges &middot; BDeu Prior
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }

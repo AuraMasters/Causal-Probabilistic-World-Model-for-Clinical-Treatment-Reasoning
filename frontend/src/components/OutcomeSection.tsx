@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { HeartPulse, ShieldAlert, ShieldCheck } from 'lucide-react'
 import type { AnalyzeResult } from '../lib/types'
 import { formatPercent, formatProbability } from '../lib/format'
 
@@ -7,27 +7,28 @@ export function OutcomeSection({ result }: { result: AnalyzeResult }) {
   const recommended = result.recommended
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <OutcomeCard
         label="Label 0"
-        meaning="Desirable study outcome"
+        title="Progression-Free Survival"
+        meaning="Preserved CD4 counts & absence of clinical AIDS endpoints"
         probability={recommended.p_label_0}
         accent="mint"
-        icon={CheckCircle2}
+        icon={ShieldCheck}
       />
       <OutcomeCard
         label="Label 1"
-        meaning="Undesirable study outcome"
+        title="Disease Progression"
+        meaning="50% CD4 decline, clinical AIDS-defining event, or mortality"
         probability={recommended.p_label_1}
         accent="rose"
-        icon={XCircle}
+        icon={ShieldAlert}
       />
-      <div className="md:col-span-2">
-        <div className="rounded-xl border border-slate-500/20 bg-ink-900/60 px-4 py-3">
-          <p className="text-xs leading-relaxed text-slate-400">
-            Predicted outcome for the <span className="font-semibold text-slate-200">recommended treatment</span> ·{' '}
-            <span className="text-slate-200">{recommended.name}</span>. Label 0 — desirable study outcome; Label 1 —
-            undesirable study outcome.
+      <div className="sm:col-span-2">
+        <div className="rounded-xl border border-slate-700/60 bg-ink-950/70 px-4 py-3 text-xs leading-relaxed text-slate-300 flex items-center gap-2">
+          <HeartPulse className="h-4 w-4 text-cyan-300 shrink-0" />
+          <p>
+            Predicted under <strong className="text-white">{recommended.name}</strong> (Arm {recommended.treatment}). Probabilities sum strictly to 1.0000 by Bayesian normalization.
           </p>
         </div>
       </div>
@@ -37,44 +38,55 @@ export function OutcomeSection({ result }: { result: AnalyzeResult }) {
 
 function OutcomeCard({
   label,
+  title,
   meaning,
   probability,
   accent,
   icon: Icon,
 }: {
   label: string
+  title: string
   meaning: string
   probability: number
   accent: 'mint' | 'rose'
-  icon: typeof CheckCircle2
+  icon: typeof ShieldCheck
 }) {
   const isMint = accent === 'mint'
-  const color = isMint ? 'text-mint-300' : 'text-rose-risk'
-  const barColor = isMint ? 'bg-mint-400' : 'bg-rose-risk'
-  const borderColor = isMint ? 'border-mint-400/25' : 'border-rose-400/25'
-  const bgColor = isMint ? 'bg-mint-400/10' : 'bg-rose-400/10'
+  const color = isMint ? 'text-mint-200' : 'text-rose-risk'
+  const barColor = isMint ? 'bg-gradient-to-r from-mint-400 to-mint-300' : 'bg-rose-500'
+  const borderColor = isMint ? 'border-mint-400/30' : 'border-rose-500/30'
+  const bgColor = isMint ? 'bg-mint-400/10' : 'bg-rose-500/10'
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.97 }}
+      initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4 }}
-      className={`card-surface rounded-2xl border ${borderColor} p-5`}
+      className={`card-surface rounded-2xl border ${borderColor} p-5 shadow-lg`}
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className={`font-mono text-sm font-semibold tracking-wide ${color}`}>{label}</p>
-          <p className="mt-0.5 text-sm text-slate-300">{meaning}</p>
+          <span className={`font-mono text-xs font-bold tracking-wider ${color} uppercase`}>
+            {label} &middot; {isMint ? 'Desirable' : 'Risk'}
+          </span>
+          <p className="mt-1 font-display text-base font-bold text-white">{title}</p>
+          <p className="mt-0.5 text-xs text-slate-400 leading-snug">{meaning}</p>
         </div>
-        <div className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${bgColor}`}>
-          <Icon className={`h-5 w-5 ${color}`} strokeWidth={1.9} />
+        <div className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${bgColor}`}>
+          <Icon className={`h-5 w-5 ${color}`} strokeWidth={2} />
         </div>
       </div>
-      <p className="mt-4 font-display text-4xl font-bold tracking-tight text-slate-50">
-        {formatPercent(probability, 2)}
-      </p>
-      <p className="mt-1 font-mono text-xs text-slate-500">P = {formatProbability(probability, 4)}</p>
-      <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-ink-700">
+
+      <div className="mt-5 flex items-baseline justify-between">
+        <p className="font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+          {formatPercent(probability, 2)}
+        </p>
+        <span className="font-mono text-xs text-slate-400">
+          P = {formatProbability(probability, 4)}
+        </span>
+      </div>
+
+      <div className="mt-3.5 h-2 w-full overflow-hidden rounded-full bg-slate-900 border border-slate-800">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${probability * 100}%` }}
