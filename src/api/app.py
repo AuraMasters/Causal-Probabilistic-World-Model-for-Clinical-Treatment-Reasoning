@@ -40,7 +40,8 @@ def analyze():
         ), 400
 
     try:
-        payload = analyze_patient(data.get("inputs", {}))
+        model_type = str(data.get("model_type", "continuous")).lower().strip()
+        payload = analyze_patient(data.get("inputs", {}), model_type=model_type)
         return jsonify(payload)
     except ValueError as error:
         return jsonify({"error": str(error)}), 400

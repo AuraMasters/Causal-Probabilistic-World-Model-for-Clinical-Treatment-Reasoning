@@ -50,18 +50,21 @@ type AnalyzeState =
 export function useAnalyze() {
   const [state, setState] = useState<AnalyzeState>({ status: 'idle' })
 
-  const run = useCallback(async (inputs: PatientInputs) => {
-    setState({ status: 'loading' })
-    try {
-      const result = await analyzePatient(inputs)
-      setState({ status: 'success', result })
-    } catch (cause) {
-      setState({
-        status: 'error',
-        message: cause instanceof Error ? cause.message : String(cause),
-      })
-    }
-  }, [])
+  const run = useCallback(
+    async (inputs: PatientInputs, modelType: 'continuous' | 'discretized' = 'continuous') => {
+      setState({ status: 'loading' })
+      try {
+        const result = await analyzePatient(inputs, modelType)
+        setState({ status: 'success', result })
+      } catch (cause) {
+        setState({
+          status: 'error',
+          message: cause instanceof Error ? cause.message : String(cause),
+        })
+      }
+    },
+    [],
+  )
 
   const reset = useCallback(() => setState({ status: 'idle' }), [])
 

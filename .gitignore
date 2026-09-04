@@ -27,7 +27,10 @@ frontend/*.local
 # OS artifacts
 .DS_Store
 Thumbs.db
-*.tmp
+# Archives
+*.zip
+*.tar.gz
+*.rar
 
 # Environment variables / secrets
 .env

@@ -1,0 +1,2595 @@
+{
+    "model_architecture": "Continuous / Hybrid SCM (G-Computation)",
+    "information_preservation": "Full continuous numerical measurements preserved without binning",
+    "dataset": "ACTG175 Clinical Trial",
+    "development_rows": 1711,
+    "test_rows": 428,
+    "continuous_variables": [
+        "age",
+        "wtkg",
+        "karnof",
+        "preanti",
+        "cd40",
+        "cd80"
+    ],
+    "categorical_variables": [
+        "hemo",
+        "homo",
+        "drugs",
+        "oprior",
+        "z30",
+        "race",
+        "gender",
+        "strat",
+        "symptom"
+    ],
+    "random_seed": 42,
+    "predictive_metrics": {
+        "accuracy": 0.7546728971962616,
+        "precision": 0.4838709677419355,
+        "recall_sensitivity": 0.14423076923076922,
+        "specificity": 0.9506172839506173,
+        "f1_score": 0.2222222222222222,
+        "roc_auc": 0.6877967711301045,
+        "pr_auc": 0.4129591370598682,
+        "log_loss": 0.5207923478518115,
+        "brier_score": 0.1699329587630726,
+        "confusion_matrix": {
+            "true_negatives": 308,
+            "false_positives": 16,
+            "false_negatives": 89,
+            "true_positives": 15,
+            "total": 428
+        },
+        "roc_curve": [
+            {
+                "fpr": 0.0,
+                "tpr": 0.0
+            },
+            {
+                "fpr": 0.0093,
+                "tpr": 0.0192
+            },
+            {
+                "fpr": 0.0154,
+                "tpr": 0.0577
+            },
+            {
+                "fpr": 0.0309,
+                "tpr": 0.0962
+            },
+            {
+                "fpr": 0.0401,
+                "tpr": 0.125
+            },
+            {
+                "fpr": 0.0525,
+                "tpr": 0.1442
+            },
+            {
+                "fpr": 0.0617,
+                "tpr": 0.1731
+            },
+            {
+                "fpr": 0.0741,
+                "tpr": 0.2115
+            },
+            {
+                "fpr": 0.0802,
+                "tpr": 0.2308
+            },
+            {
+                "fpr": 0.0864,
+                "tpr": 0.25
+            },
+            {
+                "fpr": 0.0957,
+                "tpr": 0.2692
+            },
+            {
+                "fpr": 0.1111,
+                "tpr": 0.2885
+            },
+            {
+                "fpr": 0.1358,
+                "tpr": 0.3269
+            },
+            {
+                "fpr": 0.1512,
+                "tpr": 0.3558
+            },
+            {
+                "fpr": 0.1759,
+                "tpr": 0.3846
+            },
+            {
+                "fpr": 0.1944,
+                "tpr": 0.4231
+            },
+            {
+                "fpr": 0.2222,
+                "tpr": 0.4519
+            },
+            {
+                "fpr": 0.2346,
+                "tpr": 0.4808
+            },
+            {
+                "fpr": 0.2531,
+                "tpr": 0.5096
+            },
+            {
+                "fpr": 0.2623,
+                "tpr": 0.5288
+            },
+            {
+                "fpr": 0.287,
+                "tpr": 0.5481
+            },
+            {
+                "fpr": 0.3117,
+                "tpr": 0.5673
+            },
+            {
+                "fpr": 0.3272,
+                "tpr": 0.5865
+            },
+            {
+                "fpr": 0.3457,
+                "tpr": 0.6058
+            },
+            {
+                "fpr": 0.358,
+                "tpr": 0.625
+            },
+            {
+                "fpr": 0.3735,
+                "tpr": 0.6635
+            },
+            {
+                "fpr": 0.3827,
+                "tpr": 0.6827
+            },
+            {
+                "fpr": 0.4012,
+                "tpr": 0.7115
+            },
+            {
+                "fpr": 0.4321,
+                "tpr": 0.7308
+            },
+            {
+                "fpr": 0.4506,
+                "tpr": 0.75
+            },
+            {
+                "fpr": 0.4784,
+                "tpr": 0.7692
+            },
+            {
+                "fpr": 0.5062,
+                "tpr": 0.7885
+            },
+            {
+                "fpr": 0.5525,
+                "tpr": 0.8077
+            },
+            {
+                "fpr": 0.5802,
+                "tpr": 0.8269
+            },
+            {
+                "fpr": 0.5895,
+                "tpr": 0.8462
+            },
+            {
+                "fpr": 0.6605,
+                "tpr": 0.8654
+            },
+            {
+                "fpr": 0.7346,
+                "tpr": 0.8846
+            },
+            {
+                "fpr": 0.8117,
+                "tpr": 0.9038
+            },
+            {
+                "fpr": 0.8981,
+                "tpr": 0.9231
+            },
+            {
+                "fpr": 0.9136,
+                "tpr": 0.9423
+            },
+            {
+                "fpr": 0.9414,
+                "tpr": 0.9712
+            },
+            {
+                "fpr": 1.0,
+                "tpr": 0.9904
+            }
+        ],
+        "pr_curve": [
+            {
+                "recall": 1.0,
+                "precision": 0.243
+            },
+            {
+                "recall": 0.9808,
+                "precision": 0.2452
+            },
+            {
+                "recall": 0.9712,
+                "precision": 0.25
+            },
+            {
+                "recall": 0.9327,
+                "precision": 0.2474
+            },
+            {
+                "recall": 0.9231,
+                "precision": 0.2526
+            },
+            {
+                "recall": 0.9231,
+                "precision": 0.2609
+            },
+            {
+                "recall": 0.9038,
+                "precision": 0.264
+            },
+            {
+                "recall": 0.9038,
+                "precision": 0.2733
+            },
+            {
+                "recall": 0.8942,
+                "precision": 0.2801
+            },
+            {
+                "recall": 0.8846,
+                "precision": 0.2875
+            },
+            {
+                "recall": 0.8846,
+                "precision": 0.2987
+            },
+            {
+                "recall": 0.8558,
+                "precision": 0.3007
+            },
+            {
+                "recall": 0.8558,
+                "precision": 0.3134
+            },
+            {
+                "recall": 0.8269,
+                "precision": 0.3162
+            },
+            {
+                "recall": 0.8077,
+                "precision": 0.3231
+            },
+            {
+                "recall": 0.7981,
+                "precision": 0.3347
+            },
+            {
+                "recall": 0.7788,
+                "precision": 0.3432
+            },
+            {
+                "recall": 0.75,
+                "precision": 0.3482
+            },
+            {
+                "recall": 0.7308,
+                "precision": 0.3585
+            },
+            {
+                "recall": 0.6923,
+                "precision": 0.36
+            },
+            {
+                "recall": 0.6635,
+                "precision": 0.367
+            },
+            {
+                "recall": 0.6154,
+                "precision": 0.3636
+            },
+            {
+                "recall": 0.5865,
+                "precision": 0.372
+            },
+            {
+                "recall": 0.5577,
+                "precision": 0.3816
+            },
+            {
+                "recall": 0.5288,
+                "precision": 0.3929
+            },
+            {
+                "recall": 0.5,
+                "precision": 0.4062
+            },
+            {
+                "recall": 0.4519,
+                "precision": 0.4052
+            },
+            {
+                "recall": 0.4231,
+                "precision": 0.4231
+            },
+            {
+                "recall": 0.3846,
+                "precision": 0.4348
+            },
+            {
+                "recall": 0.3365,
+                "precision": 0.4375
+            },
+            {
+                "recall": 0.2981,
+                "precision": 0.4559
+            },
+            {
+                "recall": 0.2596,
+                "precision": 0.4821
+            },
+            {
+                "recall": 0.2115,
+                "precision": 0.5
+            },
+            {
+                "recall": 0.1442,
+                "precision": 0.4688
+            },
+            {
+                "recall": 0.0962,
+                "precision": 0.5
+            },
+            {
+                "recall": 0.0481,
+                "precision": 0.625
+            }
+        ]
+    },
+    "confidence_intervals_95": {
+        "roc_auc": {
+            "point_estimate": 0.6878,
+            "ci_lower": 0.6259,
+            "ci_upper": 0.7443,
+            "std_error": 0.0299
+        },
+        "pr_auc": {
+            "point_estimate": 0.413,
+            "ci_lower": 0.3258,
+            "ci_upper": 0.5106,
+            "std_error": 0.0473
+        },
+        "accuracy": {
+            "point_estimate": 0.7547,
+            "ci_lower": 0.7126,
+            "ci_upper": 0.7944,
+            "std_error": 0.021
+        },
+        "precision": {
+            "point_estimate": 0.4839,
+            "ci_lower": 0.3043,
+            "ci_upper": 0.6574,
+            "std_error": 0.0897
+        },
+        "recall_sensitivity": {
+            "point_estimate": 0.1442,
+            "ci_lower": 0.0841,
+            "ci_upper": 0.2212,
+            "std_error": 0.0344
+        },
+        "specificity": {
+            "point_estimate": 0.9506,
+            "ci_lower": 0.9242,
+            "ci_upper": 0.9719,
+            "std_error": 0.0122
+        },
+        "f1_score": {
+            "point_estimate": 0.2222,
+            "ci_lower": 0.1343,
+            "ci_upper": 0.3175,
+            "std_error": 0.0473
+        },
+        "brier_score": {
+            "point_estimate": 0.1699,
+            "ci_lower": 0.1499,
+            "ci_upper": 0.1912,
+            "std_error": 0.0102
+        },
+        "log_loss": {
+            "point_estimate": 0.5208,
+            "ci_lower": 0.4686,
+            "ci_upper": 0.5744,
+            "std_error": 0.0264
+        }
+    },
+    "calibration": {
+        "ece": 0.0396,
+        "mce": 0.1225,
+        "brier_score": 0.1699,
+        "calibration_intercept": -0.2789,
+        "calibration_slope": 0.7648,
+        "calibration_interpretation": "ECE is 3.96%. Intercept = -0.2789 (ideal 0.0), Slope = 0.7648 (ideal 1.0).",
+        "bins": [
+            {
+                "bin": 1,
+                "lower": 0.0,
+                "upper": 0.1,
+                "count": 61,
+                "mean_predicted": 0.0693,
+                "observed_rate": 0.1311,
+                "absolute_gap": 0.0618
+            },
+            {
+                "bin": 2,
+                "lower": 0.1,
+                "upper": 0.2,
+                "count": 138,
+                "mean_predicted": 0.1522,
+                "observed_rate": 0.1159,
+                "absolute_gap": 0.0362
+            },
+            {
+                "bin": 3,
+                "lower": 0.2,
+                "upper": 0.3,
+                "count": 90,
+                "mean_predicted": 0.2491,
+                "observed_rate": 0.2778,
+                "absolute_gap": 0.0287
+            },
+            {
+                "bin": 4,
+                "lower": 0.3,
+                "upper": 0.4,
+                "count": 66,
+                "mean_predicted": 0.3479,
+                "observed_rate": 0.3182,
+                "absolute_gap": 0.0298
+            },
+            {
+                "bin": 5,
+                "lower": 0.4,
+                "upper": 0.5,
+                "count": 42,
+                "mean_predicted": 0.4447,
+                "observed_rate": 0.4524,
+                "absolute_gap": 0.0077
+            },
+            {
+                "bin": 6,
+                "lower": 0.5,
+                "upper": 0.6,
+                "count": 19,
+                "mean_predicted": 0.5436,
+                "observed_rate": 0.4211,
+                "absolute_gap": 0.1225
+            },
+            {
+                "bin": 7,
+                "lower": 0.6,
+                "upper": 0.7,
+                "count": 9,
+                "mean_predicted": 0.6353,
+                "observed_rate": 0.5556,
+                "absolute_gap": 0.0798
+            },
+            {
+                "bin": 8,
+                "lower": 0.7,
+                "upper": 0.8,
+                "count": 3,
+                "mean_predicted": 0.7579,
+                "observed_rate": 0.6667,
+                "absolute_gap": 0.0913
+            },
+            {
+                "bin": 9,
+                "lower": 0.8,
+                "upper": 0.9,
+                "count": 0,
+                "mean_predicted": null,
+                "observed_rate": null,
+                "absolute_gap": null
+            },
+            {
+                "bin": 10,
+                "lower": 0.9,
+                "upper": 1.0,
+                "count": 0,
+                "mean_predicted": null,
+                "observed_rate": null,
+                "absolute_gap": null
+            }
+        ],
+        "probability_distribution": {
+            "bin_labels": [
+                "0.0-0.1",
+                "0.1-0.2",
+                "0.2-0.3",
+                "0.3-0.4",
+                "0.4-0.5",
+                "0.5-0.6",
+                "0.6-0.7",
+                "0.7-0.8",
+                "0.8-0.9",
+                "0.9-1.0"
+            ],
+            "label_0_counts": [
+                53,
+                122,
+                65,
+                45,
+                23,
+                11,
+                4,
+                1,
+                0,
+                0
+            ],
+            "label_1_counts": [
+                8,
+                16,
+                25,
+                21,
+                19,
+                8,
+                5,
+                2,
+                0,
+                0
+            ]
+        }
+    },
+    "decision_curve_analysis": {
+        "event_prevalence": 0.243,
+        "evaluation_cohort_size": 428,
+        "superior_threshold_range": "12.5% to 47.5%",
+        "interpretation": "Continuous Model achieves positive Net Benefit superior to Treat-All/Treat-None from 12.5% to 47.5%.",
+        "dca_points": [
+            {
+                "threshold_probability": 0.05,
+                "net_benefit_model": 0.1998,
+                "net_benefit_all": 0.2031,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": -6.31
+            },
+            {
+                "threshold_probability": 0.075,
+                "net_benefit_model": 0.1729,
+                "net_benefit_all": 0.1816,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": -10.75
+            },
+            {
+                "threshold_probability": 0.1,
+                "net_benefit_model": 0.1539,
+                "net_benefit_all": 0.1589,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": -4.44
+            },
+            {
+                "threshold_probability": 0.125,
+                "net_benefit_model": 0.1368,
+                "net_benefit_all": 0.1348,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 1.4
+            },
+            {
+                "threshold_probability": 0.15,
+                "net_benefit_model": 0.1233,
+                "net_benefit_all": 0.1094,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 7.87
+            },
+            {
+                "threshold_probability": 0.175,
+                "net_benefit_model": 0.1083,
+                "net_benefit_all": 0.0824,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 12.18
+            },
+            {
+                "threshold_probability": 0.2,
+                "net_benefit_model": 0.0999,
+                "net_benefit_all": 0.0537,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 18.46
+            },
+            {
+                "threshold_probability": 0.225,
+                "net_benefit_model": 0.0864,
+                "net_benefit_all": 0.0232,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 21.75
+            },
+            {
+                "threshold_probability": 0.25,
+                "net_benefit_model": 0.0615,
+                "net_benefit_all": -0.0093,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 18.46
+            },
+            {
+                "threshold_probability": 0.275,
+                "net_benefit_model": 0.0483,
+                "net_benefit_all": -0.0442,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 12.74
+            },
+            {
+                "threshold_probability": 0.3,
+                "net_benefit_model": 0.0444,
+                "net_benefit_all": -0.0814,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 10.36
+            },
+            {
+                "threshold_probability": 0.325,
+                "net_benefit_model": 0.0311,
+                "net_benefit_all": -0.1215,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 6.45
+            },
+            {
+                "threshold_probability": 0.35,
+                "net_benefit_model": 0.0273,
+                "net_benefit_all": -0.1646,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 5.07
+            },
+            {
+                "threshold_probability": 0.375,
+                "net_benefit_model": 0.0196,
+                "net_benefit_all": -0.2112,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 3.27
+            },
+            {
+                "threshold_probability": 0.4,
+                "net_benefit_model": 0.0187,
+                "net_benefit_all": -0.2617,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 2.8
+            },
+            {
+                "threshold_probability": 0.425,
+                "net_benefit_model": 0.0142,
+                "net_benefit_all": -0.3165,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 1.92
+            },
+            {
+                "threshold_probability": 0.45,
+                "net_benefit_model": 0.0055,
+                "net_benefit_all": -0.3764,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 0.67
+            },
+            {
+                "threshold_probability": 0.475,
+                "net_benefit_model": 0.0068,
+                "net_benefit_all": -0.4419,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 0.75
+            },
+            {
+                "threshold_probability": 0.5,
+                "net_benefit_model": -0.0023,
+                "net_benefit_all": -0.514,
+                "net_benefit_none": 0.0,
+                "interventions_avoided_per_100": 0.0
+            }
+        ]
+    },
+    "threshold_analysis": {
+        "investigation_summary": {
+            "root_cause_of_low_sensitivity_at_0_5": "Preserving continuous measurements yields smoother posteriors; rigid 0.50 cutoff requires extreme risk; base rate is 24.3%.",
+            "selection_criterion": "Maximum Youden's J statistic swept strictly on Development partition.",
+            "optimal_threshold_tau": 0.24,
+            "development_metrics_at_optimal": {
+                "threshold": 0.24,
+                "sensitivity_recall": 0.7122,
+                "specificity": 0.6607,
+                "precision": 0.4035,
+                "f1_score": 0.5152,
+                "accuracy": 0.6733,
+                "balanced_accuracy": 0.6865,
+                "youden_j": 0.373,
+                "true_positives": 297,
+                "false_positives": 439,
+                "true_negatives": 855,
+                "false_negatives": 120
+            },
+            "test_default_threshold_0_50": {
+                "threshold": 0.5,
+                "sensitivity_recall": 0.1442,
+                "specificity": 0.9506,
+                "precision": 0.4839,
+                "f1_score": 0.2222,
+                "accuracy": 0.7547,
+                "balanced_accuracy": 0.5474,
+                "youden_j": 0.0948,
+                "true_positives": 15,
+                "false_positives": 16,
+                "true_negatives": 308,
+                "false_negatives": 89
+            },
+            "test_calibrated_threshold": {
+                "threshold": 0.24,
+                "sensitivity_recall": 0.6731,
+                "specificity": 0.6265,
+                "precision": 0.3665,
+                "f1_score": 0.4746,
+                "accuracy": 0.6379,
+                "balanced_accuracy": 0.6498,
+                "youden_j": 0.2996,
+                "true_positives": 70,
+                "false_positives": 121,
+                "true_negatives": 203,
+                "false_negatives": 34
+            }
+        },
+        "development_threshold_sweep": [
+            {
+                "threshold": 0.05,
+                "sensitivity_recall": 0.9904,
+                "specificity": 0.0386,
+                "precision": 0.2492,
+                "f1_score": 0.3983,
+                "accuracy": 0.2706,
+                "balanced_accuracy": 0.5145,
+                "youden_j": 0.029,
+                "true_positives": 413,
+                "false_positives": 1244,
+                "true_negatives": 50,
+                "false_negatives": 4
+            },
+            {
+                "threshold": 0.06,
+                "sensitivity_recall": 0.9808,
+                "specificity": 0.0603,
+                "precision": 0.2517,
+                "f1_score": 0.4006,
+                "accuracy": 0.2846,
+                "balanced_accuracy": 0.5205,
+                "youden_j": 0.0411,
+                "true_positives": 409,
+                "false_positives": 1216,
+                "true_negatives": 78,
+                "false_negatives": 8
+            },
+            {
+                "threshold": 0.07,
+                "sensitivity_recall": 0.9784,
+                "specificity": 0.0889,
+                "precision": 0.2571,
+                "f1_score": 0.4072,
+                "accuracy": 0.3057,
+                "balanced_accuracy": 0.5336,
+                "youden_j": 0.0673,
+                "true_positives": 408,
+                "false_positives": 1179,
+                "true_negatives": 115,
+                "false_negatives": 9
+            },
+            {
+                "threshold": 0.08,
+                "sensitivity_recall": 0.976,
+                "specificity": 0.119,
+                "precision": 0.2631,
+                "f1_score": 0.4145,
+                "accuracy": 0.3279,
+                "balanced_accuracy": 0.5475,
+                "youden_j": 0.095,
+                "true_positives": 407,
+                "false_positives": 1140,
+                "true_negatives": 154,
+                "false_negatives": 10
+            },
+            {
+                "threshold": 0.09,
+                "sensitivity_recall": 0.964,
+                "specificity": 0.1569,
+                "precision": 0.2693,
+                "f1_score": 0.4209,
+                "accuracy": 0.3536,
+                "balanced_accuracy": 0.5605,
+                "youden_j": 0.1209,
+                "true_positives": 402,
+                "false_positives": 1091,
+                "true_negatives": 203,
+                "false_negatives": 15
+            },
+            {
+                "threshold": 0.1,
+                "sensitivity_recall": 0.9472,
+                "specificity": 0.1986,
+                "precision": 0.2758,
+                "f1_score": 0.4273,
+                "accuracy": 0.3811,
+                "balanced_accuracy": 0.5729,
+                "youden_j": 0.1459,
+                "true_positives": 395,
+                "false_positives": 1037,
+                "true_negatives": 257,
+                "false_negatives": 22
+            },
+            {
+                "threshold": 0.11,
+                "sensitivity_recall": 0.9353,
+                "specificity": 0.2396,
+                "precision": 0.2838,
+                "f1_score": 0.4355,
+                "accuracy": 0.4091,
+                "balanced_accuracy": 0.5874,
+                "youden_j": 0.1748,
+                "true_positives": 390,
+                "false_positives": 984,
+                "true_negatives": 310,
+                "false_negatives": 27
+            },
+            {
+                "threshold": 0.12,
+                "sensitivity_recall": 0.9209,
+                "specificity": 0.2828,
+                "precision": 0.2927,
+                "f1_score": 0.4442,
+                "accuracy": 0.4383,
+                "balanced_accuracy": 0.6019,
+                "youden_j": 0.2037,
+                "true_positives": 384,
+                "false_positives": 928,
+                "true_negatives": 366,
+                "false_negatives": 33
+            },
+            {
+                "threshold": 0.13,
+                "sensitivity_recall": 0.9041,
+                "specificity": 0.3153,
+                "precision": 0.2985,
+                "f1_score": 0.4488,
+                "accuracy": 0.4588,
+                "balanced_accuracy": 0.6097,
+                "youden_j": 0.2194,
+                "true_positives": 377,
+                "false_positives": 886,
+                "true_negatives": 408,
+                "false_negatives": 40
+            },
+            {
+                "threshold": 0.14,
+                "sensitivity_recall": 0.8921,
+                "specificity": 0.3624,
+                "precision": 0.3108,
+                "f1_score": 0.461,
+                "accuracy": 0.4915,
+                "balanced_accuracy": 0.6273,
+                "youden_j": 0.2545,
+                "true_positives": 372,
+                "false_positives": 825,
+                "true_negatives": 469,
+                "false_negatives": 45
+            },
+            {
+                "threshold": 0.15,
+                "sensitivity_recall": 0.8753,
+                "specificity": 0.3964,
+                "precision": 0.3185,
+                "f1_score": 0.4671,
+                "accuracy": 0.5132,
+                "balanced_accuracy": 0.6359,
+                "youden_j": 0.2717,
+                "true_positives": 365,
+                "false_positives": 781,
+                "true_negatives": 513,
+                "false_negatives": 52
+            },
+            {
+                "threshold": 0.16,
+                "sensitivity_recall": 0.8585,
+                "specificity": 0.4328,
+                "precision": 0.3278,
+                "f1_score": 0.4745,
+                "accuracy": 0.5365,
+                "balanced_accuracy": 0.6456,
+                "youden_j": 0.2913,
+                "true_positives": 358,
+                "false_positives": 734,
+                "true_negatives": 560,
+                "false_negatives": 59
+            },
+            {
+                "threshold": 0.17,
+                "sensitivity_recall": 0.8369,
+                "specificity": 0.4645,
+                "precision": 0.3349,
+                "f1_score": 0.4784,
+                "accuracy": 0.5552,
+                "balanced_accuracy": 0.6507,
+                "youden_j": 0.3014,
+                "true_positives": 349,
+                "false_positives": 693,
+                "true_negatives": 601,
+                "false_negatives": 68
+            },
+            {
+                "threshold": 0.18,
+                "sensitivity_recall": 0.8129,
+                "specificity": 0.4884,
+                "precision": 0.3387,
+                "f1_score": 0.4781,
+                "accuracy": 0.5675,
+                "balanced_accuracy": 0.6507,
+                "youden_j": 0.3014,
+                "true_positives": 339,
+                "false_positives": 662,
+                "true_negatives": 632,
+                "false_negatives": 78
+            },
+            {
+                "threshold": 0.19,
+                "sensitivity_recall": 0.7986,
+                "specificity": 0.5193,
+                "precision": 0.3487,
+                "f1_score": 0.4854,
+                "accuracy": 0.5874,
+                "balanced_accuracy": 0.6589,
+                "youden_j": 0.3179,
+                "true_positives": 333,
+                "false_positives": 622,
+                "true_negatives": 672,
+                "false_negatives": 84
+            },
+            {
+                "threshold": 0.2,
+                "sensitivity_recall": 0.7866,
+                "specificity": 0.5526,
+                "precision": 0.3616,
+                "f1_score": 0.4955,
+                "accuracy": 0.6096,
+                "balanced_accuracy": 0.6696,
+                "youden_j": 0.3391,
+                "true_positives": 328,
+                "false_positives": 579,
+                "true_negatives": 715,
+                "false_negatives": 89
+            },
+            {
+                "threshold": 0.21,
+                "sensitivity_recall": 0.7722,
+                "specificity": 0.5866,
+                "precision": 0.3757,
+                "f1_score": 0.5055,
+                "accuracy": 0.6318,
+                "balanced_accuracy": 0.6794,
+                "youden_j": 0.3587,
+                "true_positives": 322,
+                "false_positives": 535,
+                "true_negatives": 759,
+                "false_negatives": 95
+            },
+            {
+                "threshold": 0.22,
+                "sensitivity_recall": 0.753,
+                "specificity": 0.6113,
+                "precision": 0.3843,
+                "f1_score": 0.5089,
+                "accuracy": 0.6458,
+                "balanced_accuracy": 0.6821,
+                "youden_j": 0.3643,
+                "true_positives": 314,
+                "false_positives": 503,
+                "true_negatives": 791,
+                "false_negatives": 103
+            },
+            {
+                "threshold": 0.23,
+                "sensitivity_recall": 0.7266,
+                "specificity": 0.6414,
+                "precision": 0.395,
+                "f1_score": 0.5118,
+                "accuracy": 0.6622,
+                "balanced_accuracy": 0.684,
+                "youden_j": 0.368,
+                "true_positives": 303,
+                "false_positives": 464,
+                "true_negatives": 830,
+                "false_negatives": 114
+            },
+            {
+                "threshold": 0.24,
+                "sensitivity_recall": 0.7122,
+                "specificity": 0.6607,
+                "precision": 0.4035,
+                "f1_score": 0.5152,
+                "accuracy": 0.6733,
+                "balanced_accuracy": 0.6865,
+                "youden_j": 0.373,
+                "true_positives": 297,
+                "false_positives": 439,
+                "true_negatives": 855,
+                "false_negatives": 120
+            },
+            {
+                "threshold": 0.25,
+                "sensitivity_recall": 0.6739,
+                "specificity": 0.6862,
+                "precision": 0.409,
+                "f1_score": 0.5091,
+                "accuracy": 0.6832,
+                "balanced_accuracy": 0.6801,
+                "youden_j": 0.3601,
+                "true_positives": 281,
+                "false_positives": 406,
+                "true_negatives": 888,
+                "false_negatives": 136
+            },
+            {
+                "threshold": 0.26,
+                "sensitivity_recall": 0.6547,
+                "specificity": 0.7125,
+                "precision": 0.4233,
+                "f1_score": 0.5141,
+                "accuracy": 0.6984,
+                "balanced_accuracy": 0.6836,
+                "youden_j": 0.3672,
+                "true_positives": 273,
+                "false_positives": 372,
+                "true_negatives": 922,
+                "false_negatives": 144
+            },
+            {
+                "threshold": 0.27,
+                "sensitivity_recall": 0.6211,
+                "specificity": 0.7272,
+                "precision": 0.4232,
+                "f1_score": 0.5034,
+                "accuracy": 0.7013,
+                "balanced_accuracy": 0.6742,
+                "youden_j": 0.3483,
+                "true_positives": 259,
+                "false_positives": 353,
+                "true_negatives": 941,
+                "false_negatives": 158
+            },
+            {
+                "threshold": 0.28,
+                "sensitivity_recall": 0.5947,
+                "specificity": 0.7527,
+                "precision": 0.4366,
+                "f1_score": 0.5036,
+                "accuracy": 0.7142,
+                "balanced_accuracy": 0.6737,
+                "youden_j": 0.3474,
+                "true_positives": 248,
+                "false_positives": 320,
+                "true_negatives": 974,
+                "false_negatives": 169
+            },
+            {
+                "threshold": 0.29,
+                "sensitivity_recall": 0.5755,
+                "specificity": 0.7697,
+                "precision": 0.4461,
+                "f1_score": 0.5026,
+                "accuracy": 0.7224,
+                "balanced_accuracy": 0.6726,
+                "youden_j": 0.3452,
+                "true_positives": 240,
+                "false_positives": 298,
+                "true_negatives": 996,
+                "false_negatives": 177
+            },
+            {
+                "threshold": 0.3,
+                "sensitivity_recall": 0.5612,
+                "specificity": 0.7828,
+                "precision": 0.4544,
+                "f1_score": 0.5021,
+                "accuracy": 0.7288,
+                "balanced_accuracy": 0.672,
+                "youden_j": 0.344,
+                "true_positives": 234,
+                "false_positives": 281,
+                "true_negatives": 1013,
+                "false_negatives": 183
+            },
+            {
+                "threshold": 0.31,
+                "sensitivity_recall": 0.542,
+                "specificity": 0.7975,
+                "precision": 0.4631,
+                "f1_score": 0.4994,
+                "accuracy": 0.7352,
+                "balanced_accuracy": 0.6697,
+                "youden_j": 0.3395,
+                "true_positives": 226,
+                "false_positives": 262,
+                "true_negatives": 1032,
+                "false_negatives": 191
+            },
+            {
+                "threshold": 0.32,
+                "sensitivity_recall": 0.5132,
+                "specificity": 0.8083,
+                "precision": 0.4632,
+                "f1_score": 0.4869,
+                "accuracy": 0.7364,
+                "balanced_accuracy": 0.6608,
+                "youden_j": 0.3215,
+                "true_positives": 214,
+                "false_positives": 248,
+                "true_negatives": 1046,
+                "false_negatives": 203
+            },
+            {
+                "threshold": 0.33,
+                "sensitivity_recall": 0.494,
+                "specificity": 0.8192,
+                "precision": 0.4682,
+                "f1_score": 0.4807,
+                "accuracy": 0.7399,
+                "balanced_accuracy": 0.6566,
+                "youden_j": 0.3132,
+                "true_positives": 206,
+                "false_positives": 234,
+                "true_negatives": 1060,
+                "false_negatives": 211
+            },
+            {
+                "threshold": 0.34,
+                "sensitivity_recall": 0.4652,
+                "specificity": 0.8369,
+                "precision": 0.479,
+                "f1_score": 0.472,
+                "accuracy": 0.7463,
+                "balanced_accuracy": 0.6511,
+                "youden_j": 0.3022,
+                "true_positives": 194,
+                "false_positives": 211,
+                "true_negatives": 1083,
+                "false_negatives": 223
+            },
+            {
+                "threshold": 0.35,
+                "sensitivity_recall": 0.4388,
+                "specificity": 0.8493,
+                "precision": 0.4841,
+                "f1_score": 0.4604,
+                "accuracy": 0.7493,
+                "balanced_accuracy": 0.6441,
+                "youden_j": 0.2882,
+                "true_positives": 183,
+                "false_positives": 195,
+                "true_negatives": 1099,
+                "false_negatives": 234
+            },
+            {
+                "threshold": 0.36,
+                "sensitivity_recall": 0.4101,
+                "specificity": 0.864,
+                "precision": 0.4928,
+                "f1_score": 0.4476,
+                "accuracy": 0.7534,
+                "balanced_accuracy": 0.637,
+                "youden_j": 0.2741,
+                "true_positives": 171,
+                "false_positives": 176,
+                "true_negatives": 1118,
+                "false_negatives": 246
+            },
+            {
+                "threshold": 0.37,
+                "sensitivity_recall": 0.4005,
+                "specificity": 0.8787,
+                "precision": 0.5154,
+                "f1_score": 0.4507,
+                "accuracy": 0.7621,
+                "balanced_accuracy": 0.6396,
+                "youden_j": 0.2792,
+                "true_positives": 167,
+                "false_positives": 157,
+                "true_negatives": 1137,
+                "false_negatives": 250
+            },
+            {
+                "threshold": 0.38,
+                "sensitivity_recall": 0.3885,
+                "specificity": 0.8887,
+                "precision": 0.5294,
+                "f1_score": 0.4481,
+                "accuracy": 0.7668,
+                "balanced_accuracy": 0.6386,
+                "youden_j": 0.2772,
+                "true_positives": 162,
+                "false_positives": 144,
+                "true_negatives": 1150,
+                "false_negatives": 255
+            },
+            {
+                "threshold": 0.39,
+                "sensitivity_recall": 0.3597,
+                "specificity": 0.8941,
+                "precision": 0.5226,
+                "f1_score": 0.4261,
+                "accuracy": 0.7639,
+                "balanced_accuracy": 0.6269,
+                "youden_j": 0.2538,
+                "true_positives": 150,
+                "false_positives": 137,
+                "true_negatives": 1157,
+                "false_negatives": 267
+            },
+            {
+                "threshold": 0.4,
+                "sensitivity_recall": 0.3453,
+                "specificity": 0.8995,
+                "precision": 0.5255,
+                "f1_score": 0.4168,
+                "accuracy": 0.7645,
+                "balanced_accuracy": 0.6224,
+                "youden_j": 0.2449,
+                "true_positives": 144,
+                "false_positives": 130,
+                "true_negatives": 1164,
+                "false_negatives": 273
+            },
+            {
+                "threshold": 0.41,
+                "sensitivity_recall": 0.3261,
+                "specificity": 0.9057,
+                "precision": 0.5271,
+                "f1_score": 0.403,
+                "accuracy": 0.7645,
+                "balanced_accuracy": 0.6159,
+                "youden_j": 0.2319,
+                "true_positives": 136,
+                "false_positives": 122,
+                "true_negatives": 1172,
+                "false_negatives": 281
+            },
+            {
+                "threshold": 0.42,
+                "sensitivity_recall": 0.307,
+                "specificity": 0.915,
+                "precision": 0.5378,
+                "f1_score": 0.3908,
+                "accuracy": 0.7668,
+                "balanced_accuracy": 0.611,
+                "youden_j": 0.2219,
+                "true_positives": 128,
+                "false_positives": 110,
+                "true_negatives": 1184,
+                "false_negatives": 289
+            },
+            {
+                "threshold": 0.43,
+                "sensitivity_recall": 0.2926,
+                "specificity": 0.9219,
+                "precision": 0.5471,
+                "f1_score": 0.3813,
+                "accuracy": 0.7686,
+                "balanced_accuracy": 0.6073,
+                "youden_j": 0.2145,
+                "true_positives": 122,
+                "false_positives": 101,
+                "true_negatives": 1193,
+                "false_negatives": 295
+            },
+            {
+                "threshold": 0.44,
+                "sensitivity_recall": 0.271,
+                "specificity": 0.9297,
+                "precision": 0.5539,
+                "f1_score": 0.3639,
+                "accuracy": 0.7691,
+                "balanced_accuracy": 0.6003,
+                "youden_j": 0.2007,
+                "true_positives": 113,
+                "false_positives": 91,
+                "true_negatives": 1203,
+                "false_negatives": 304
+            },
+            {
+                "threshold": 0.45,
+                "sensitivity_recall": 0.2518,
+                "specificity": 0.9397,
+                "precision": 0.5738,
+                "f1_score": 0.35,
+                "accuracy": 0.7721,
+                "balanced_accuracy": 0.5958,
+                "youden_j": 0.1915,
+                "true_positives": 105,
+                "false_positives": 78,
+                "true_negatives": 1216,
+                "false_negatives": 312
+            },
+            {
+                "threshold": 0.46,
+                "sensitivity_recall": 0.2398,
+                "specificity": 0.9444,
+                "precision": 0.5814,
+                "f1_score": 0.3396,
+                "accuracy": 0.7726,
+                "balanced_accuracy": 0.5921,
+                "youden_j": 0.1842,
+                "true_positives": 100,
+                "false_positives": 72,
+                "true_negatives": 1222,
+                "false_negatives": 317
+            },
+            {
+                "threshold": 0.47,
+                "sensitivity_recall": 0.2278,
+                "specificity": 0.9482,
+                "precision": 0.5864,
+                "f1_score": 0.3282,
+                "accuracy": 0.7726,
+                "balanced_accuracy": 0.588,
+                "youden_j": 0.176,
+                "true_positives": 95,
+                "false_positives": 67,
+                "true_negatives": 1227,
+                "false_negatives": 322
+            },
+            {
+                "threshold": 0.48,
+                "sensitivity_recall": 0.223,
+                "specificity": 0.9536,
+                "precision": 0.6078,
+                "f1_score": 0.3263,
+                "accuracy": 0.7756,
+                "balanced_accuracy": 0.5883,
+                "youden_j": 0.1767,
+                "true_positives": 93,
+                "false_positives": 60,
+                "true_negatives": 1234,
+                "false_negatives": 324
+            },
+            {
+                "threshold": 0.49,
+                "sensitivity_recall": 0.2014,
+                "specificity": 0.9567,
+                "precision": 0.6,
+                "f1_score": 0.3016,
+                "accuracy": 0.7726,
+                "balanced_accuracy": 0.5791,
+                "youden_j": 0.1582,
+                "true_positives": 84,
+                "false_positives": 56,
+                "true_negatives": 1238,
+                "false_negatives": 333
+            },
+            {
+                "threshold": 0.5,
+                "sensitivity_recall": 0.1799,
+                "specificity": 0.9598,
+                "precision": 0.5906,
+                "f1_score": 0.2757,
+                "accuracy": 0.7697,
+                "balanced_accuracy": 0.5698,
+                "youden_j": 0.1397,
+                "true_positives": 75,
+                "false_positives": 52,
+                "true_negatives": 1242,
+                "false_negatives": 342
+            },
+            {
+                "threshold": 0.51,
+                "sensitivity_recall": 0.1655,
+                "specificity": 0.9645,
+                "precision": 0.6,
+                "f1_score": 0.2594,
+                "accuracy": 0.7697,
+                "balanced_accuracy": 0.565,
+                "youden_j": 0.1299,
+                "true_positives": 69,
+                "false_positives": 46,
+                "true_negatives": 1248,
+                "false_negatives": 348
+            },
+            {
+                "threshold": 0.52,
+                "sensitivity_recall": 0.1415,
+                "specificity": 0.9668,
+                "precision": 0.5784,
+                "f1_score": 0.2274,
+                "accuracy": 0.7656,
+                "balanced_accuracy": 0.5541,
+                "youden_j": 0.1083,
+                "true_positives": 59,
+                "false_positives": 43,
+                "true_negatives": 1251,
+                "false_negatives": 358
+            },
+            {
+                "threshold": 0.53,
+                "sensitivity_recall": 0.1319,
+                "specificity": 0.9699,
+                "precision": 0.5851,
+                "f1_score": 0.2153,
+                "accuracy": 0.7656,
+                "balanced_accuracy": 0.5509,
+                "youden_j": 0.1018,
+                "true_positives": 55,
+                "false_positives": 39,
+                "true_negatives": 1255,
+                "false_negatives": 362
+            },
+            {
+                "threshold": 0.54,
+                "sensitivity_recall": 0.1295,
+                "specificity": 0.9753,
+                "precision": 0.6279,
+                "f1_score": 0.2147,
+                "accuracy": 0.7691,
+                "balanced_accuracy": 0.5524,
+                "youden_j": 0.1048,
+                "true_positives": 54,
+                "false_positives": 32,
+                "true_negatives": 1262,
+                "false_negatives": 363
+            },
+            {
+                "threshold": 0.55,
+                "sensitivity_recall": 0.1175,
+                "specificity": 0.9807,
+                "precision": 0.6622,
+                "f1_score": 0.1996,
+                "accuracy": 0.7703,
+                "balanced_accuracy": 0.5491,
+                "youden_j": 0.0982,
+                "true_positives": 49,
+                "false_positives": 25,
+                "true_negatives": 1269,
+                "false_negatives": 368
+            },
+            {
+                "threshold": 0.56,
+                "sensitivity_recall": 0.1079,
+                "specificity": 0.9807,
+                "precision": 0.6429,
+                "f1_score": 0.1848,
+                "accuracy": 0.768,
+                "balanced_accuracy": 0.5443,
+                "youden_j": 0.0886,
+                "true_positives": 45,
+                "false_positives": 25,
+                "true_negatives": 1269,
+                "false_negatives": 372
+            },
+            {
+                "threshold": 0.57,
+                "sensitivity_recall": 0.1031,
+                "specificity": 0.983,
+                "precision": 0.6615,
+                "f1_score": 0.1784,
+                "accuracy": 0.7686,
+                "balanced_accuracy": 0.5431,
+                "youden_j": 0.0861,
+                "true_positives": 43,
+                "false_positives": 22,
+                "true_negatives": 1272,
+                "false_negatives": 374
+            },
+            {
+                "threshold": 0.58,
+                "sensitivity_recall": 0.0911,
+                "specificity": 0.9838,
+                "precision": 0.6441,
+                "f1_score": 0.1597,
+                "accuracy": 0.7662,
+                "balanced_accuracy": 0.5374,
+                "youden_j": 0.0749,
+                "true_positives": 38,
+                "false_positives": 21,
+                "true_negatives": 1273,
+                "false_negatives": 379
+            },
+            {
+                "threshold": 0.59,
+                "sensitivity_recall": 0.0839,
+                "specificity": 0.9869,
+                "precision": 0.6731,
+                "f1_score": 0.1493,
+                "accuracy": 0.7668,
+                "balanced_accuracy": 0.5354,
+                "youden_j": 0.0708,
+                "true_positives": 35,
+                "false_positives": 17,
+                "true_negatives": 1277,
+                "false_negatives": 382
+            },
+            {
+                "threshold": 0.6,
+                "sensitivity_recall": 0.0815,
+                "specificity": 0.9892,
+                "precision": 0.7083,
+                "f1_score": 0.1462,
+                "accuracy": 0.768,
+                "balanced_accuracy": 0.5354,
+                "youden_j": 0.0707,
+                "true_positives": 34,
+                "false_positives": 14,
+                "true_negatives": 1280,
+                "false_negatives": 383
+            }
+        ],
+        "test_threshold_sweep": [
+            {
+                "threshold": 0.05,
+                "sensitivity_recall": 0.9808,
+                "specificity": 0.034,
+                "precision": 0.2458,
+                "f1_score": 0.3931,
+                "accuracy": 0.264,
+                "balanced_accuracy": 0.5074,
+                "youden_j": 0.0147,
+                "true_positives": 102,
+                "false_positives": 313,
+                "true_negatives": 11,
+                "false_negatives": 2
+            },
+            {
+                "threshold": 0.06,
+                "sensitivity_recall": 0.9808,
+                "specificity": 0.0494,
+                "precision": 0.2488,
+                "f1_score": 0.3969,
+                "accuracy": 0.2757,
+                "balanced_accuracy": 0.5151,
+                "youden_j": 0.0302,
+                "true_positives": 102,
+                "false_positives": 308,
+                "true_negatives": 16,
+                "false_negatives": 2
+            },
+            {
+                "threshold": 0.07,
+                "sensitivity_recall": 0.9712,
+                "specificity": 0.0802,
+                "precision": 0.2531,
+                "f1_score": 0.4016,
+                "accuracy": 0.2967,
+                "balanced_accuracy": 0.5257,
+                "youden_j": 0.0514,
+                "true_positives": 101,
+                "false_positives": 298,
+                "true_negatives": 26,
+                "false_negatives": 3
+            },
+            {
+                "threshold": 0.08,
+                "sensitivity_recall": 0.9327,
+                "specificity": 0.0988,
+                "precision": 0.2494,
+                "f1_score": 0.3935,
+                "accuracy": 0.3014,
+                "balanced_accuracy": 0.5157,
+                "youden_j": 0.0315,
+                "true_positives": 97,
+                "false_positives": 292,
+                "true_negatives": 32,
+                "false_negatives": 7
+            },
+            {
+                "threshold": 0.09,
+                "sensitivity_recall": 0.9231,
+                "specificity": 0.1265,
+                "precision": 0.2533,
+                "f1_score": 0.3975,
+                "accuracy": 0.3201,
+                "balanced_accuracy": 0.5248,
+                "youden_j": 0.0496,
+                "true_positives": 96,
+                "false_positives": 283,
+                "true_negatives": 41,
+                "false_negatives": 8
+            },
+            {
+                "threshold": 0.1,
+                "sensitivity_recall": 0.9231,
+                "specificity": 0.1636,
+                "precision": 0.2616,
+                "f1_score": 0.4076,
+                "accuracy": 0.3481,
+                "balanced_accuracy": 0.5433,
+                "youden_j": 0.0867,
+                "true_positives": 96,
+                "false_positives": 271,
+                "true_negatives": 53,
+                "false_negatives": 8
+            },
+            {
+                "threshold": 0.11,
+                "sensitivity_recall": 0.9038,
+                "specificity": 0.2099,
+                "precision": 0.2686,
+                "f1_score": 0.4141,
+                "accuracy": 0.3785,
+                "balanced_accuracy": 0.5569,
+                "youden_j": 0.1137,
+                "true_positives": 94,
+                "false_positives": 256,
+                "true_negatives": 68,
+                "false_negatives": 10
+            },
+            {
+                "threshold": 0.12,
+                "sensitivity_recall": 0.8942,
+                "specificity": 0.2438,
+                "precision": 0.2751,
+                "f1_score": 0.4208,
+                "accuracy": 0.4019,
+                "balanced_accuracy": 0.569,
+                "youden_j": 0.1381,
+                "true_positives": 93,
+                "false_positives": 245,
+                "true_negatives": 79,
+                "false_negatives": 11
+            },
+            {
+                "threshold": 0.13,
+                "sensitivity_recall": 0.8846,
+                "specificity": 0.2685,
+                "precision": 0.2796,
+                "f1_score": 0.4249,
+                "accuracy": 0.4182,
+                "balanced_accuracy": 0.5766,
+                "youden_j": 0.1531,
+                "true_positives": 92,
+                "false_positives": 237,
+                "true_negatives": 87,
+                "false_negatives": 12
+            },
+            {
+                "threshold": 0.14,
+                "sensitivity_recall": 0.8846,
+                "specificity": 0.3086,
+                "precision": 0.2911,
+                "f1_score": 0.4381,
+                "accuracy": 0.4486,
+                "balanced_accuracy": 0.5966,
+                "youden_j": 0.1933,
+                "true_positives": 92,
+                "false_positives": 224,
+                "true_negatives": 100,
+                "false_negatives": 12
+            },
+            {
+                "threshold": 0.15,
+                "sensitivity_recall": 0.8654,
+                "specificity": 0.3488,
+                "precision": 0.299,
+                "f1_score": 0.4444,
+                "accuracy": 0.4743,
+                "balanced_accuracy": 0.6071,
+                "youden_j": 0.2142,
+                "true_positives": 90,
+                "false_positives": 211,
+                "true_negatives": 113,
+                "false_negatives": 14
+            },
+            {
+                "threshold": 0.16,
+                "sensitivity_recall": 0.8558,
+                "specificity": 0.3765,
+                "precision": 0.3058,
+                "f1_score": 0.4506,
+                "accuracy": 0.493,
+                "balanced_accuracy": 0.6162,
+                "youden_j": 0.2323,
+                "true_positives": 89,
+                "false_positives": 202,
+                "true_negatives": 122,
+                "false_negatives": 15
+            },
+            {
+                "threshold": 0.17,
+                "sensitivity_recall": 0.8365,
+                "specificity": 0.4136,
+                "precision": 0.3141,
+                "f1_score": 0.4567,
+                "accuracy": 0.5164,
+                "balanced_accuracy": 0.6251,
+                "youden_j": 0.2501,
+                "true_positives": 87,
+                "false_positives": 190,
+                "true_negatives": 134,
+                "false_negatives": 17
+            },
+            {
+                "threshold": 0.18,
+                "sensitivity_recall": 0.8173,
+                "specificity": 0.4444,
+                "precision": 0.3208,
+                "f1_score": 0.4607,
+                "accuracy": 0.535,
+                "balanced_accuracy": 0.6309,
+                "youden_j": 0.2618,
+                "true_positives": 85,
+                "false_positives": 180,
+                "true_negatives": 144,
+                "false_negatives": 19
+            },
+            {
+                "threshold": 0.19,
+                "sensitivity_recall": 0.7981,
+                "specificity": 0.4907,
+                "precision": 0.3347,
+                "f1_score": 0.4716,
+                "accuracy": 0.5654,
+                "balanced_accuracy": 0.6444,
+                "youden_j": 0.2888,
+                "true_positives": 83,
+                "false_positives": 165,
+                "true_negatives": 159,
+                "false_negatives": 21
+            },
+            {
+                "threshold": 0.2,
+                "sensitivity_recall": 0.7692,
+                "specificity": 0.5401,
+                "precision": 0.3493,
+                "f1_score": 0.4805,
+                "accuracy": 0.5958,
+                "balanced_accuracy": 0.6547,
+                "youden_j": 0.3094,
+                "true_positives": 80,
+                "false_positives": 149,
+                "true_negatives": 175,
+                "false_negatives": 24
+            },
+            {
+                "threshold": 0.21,
+                "sensitivity_recall": 0.75,
+                "specificity": 0.5556,
+                "precision": 0.3514,
+                "f1_score": 0.4785,
+                "accuracy": 0.6028,
+                "balanced_accuracy": 0.6528,
+                "youden_j": 0.3056,
+                "true_positives": 78,
+                "false_positives": 144,
+                "true_negatives": 180,
+                "false_negatives": 26
+            },
+            {
+                "threshold": 0.22,
+                "sensitivity_recall": 0.7308,
+                "specificity": 0.5833,
+                "precision": 0.3602,
+                "f1_score": 0.4825,
+                "accuracy": 0.6192,
+                "balanced_accuracy": 0.6571,
+                "youden_j": 0.3141,
+                "true_positives": 76,
+                "false_positives": 135,
+                "true_negatives": 189,
+                "false_negatives": 28
+            },
+            {
+                "threshold": 0.23,
+                "sensitivity_recall": 0.6923,
+                "specificity": 0.608,
+                "precision": 0.3618,
+                "f1_score": 0.4752,
+                "accuracy": 0.6285,
+                "balanced_accuracy": 0.6502,
+                "youden_j": 0.3003,
+                "true_positives": 72,
+                "false_positives": 127,
+                "true_negatives": 197,
+                "false_negatives": 32
+            },
+            {
+                "threshold": 0.24,
+                "sensitivity_recall": 0.6731,
+                "specificity": 0.6265,
+                "precision": 0.3665,
+                "f1_score": 0.4746,
+                "accuracy": 0.6379,
+                "balanced_accuracy": 0.6498,
+                "youden_j": 0.2996,
+                "true_positives": 70,
+                "false_positives": 121,
+                "true_negatives": 203,
+                "false_negatives": 34
+            },
+            {
+                "threshold": 0.25,
+                "sensitivity_recall": 0.625,
+                "specificity": 0.642,
+                "precision": 0.3591,
+                "f1_score": 0.4561,
+                "accuracy": 0.6379,
+                "balanced_accuracy": 0.6335,
+                "youden_j": 0.267,
+                "true_positives": 65,
+                "false_positives": 116,
+                "true_negatives": 208,
+                "false_negatives": 39
+            },
+            {
+                "threshold": 0.26,
+                "sensitivity_recall": 0.5962,
+                "specificity": 0.6605,
+                "precision": 0.3605,
+                "f1_score": 0.4493,
+                "accuracy": 0.6449,
+                "balanced_accuracy": 0.6283,
+                "youden_j": 0.2566,
+                "true_positives": 62,
+                "false_positives": 110,
+                "true_negatives": 214,
+                "false_negatives": 42
+            },
+            {
+                "threshold": 0.27,
+                "sensitivity_recall": 0.5865,
+                "specificity": 0.679,
+                "precision": 0.3697,
+                "f1_score": 0.4535,
+                "accuracy": 0.6565,
+                "balanced_accuracy": 0.6328,
+                "youden_j": 0.2656,
+                "true_positives": 61,
+                "false_positives": 104,
+                "true_negatives": 220,
+                "false_negatives": 43
+            },
+            {
+                "threshold": 0.28,
+                "sensitivity_recall": 0.5577,
+                "specificity": 0.7006,
+                "precision": 0.3742,
+                "f1_score": 0.4479,
+                "accuracy": 0.6659,
+                "balanced_accuracy": 0.6292,
+                "youden_j": 0.2583,
+                "true_positives": 58,
+                "false_positives": 97,
+                "true_negatives": 227,
+                "false_negatives": 46
+            },
+            {
+                "threshold": 0.29,
+                "sensitivity_recall": 0.5481,
+                "specificity": 0.713,
+                "precision": 0.38,
+                "f1_score": 0.4488,
+                "accuracy": 0.6729,
+                "balanced_accuracy": 0.6305,
+                "youden_j": 0.261,
+                "true_positives": 57,
+                "false_positives": 93,
+                "true_negatives": 231,
+                "false_negatives": 47
+            },
+            {
+                "threshold": 0.3,
+                "sensitivity_recall": 0.5288,
+                "specificity": 0.7407,
+                "precision": 0.3957,
+                "f1_score": 0.4527,
+                "accuracy": 0.6893,
+                "balanced_accuracy": 0.6348,
+                "youden_j": 0.2696,
+                "true_positives": 55,
+                "false_positives": 84,
+                "true_negatives": 240,
+                "false_negatives": 49
+            },
+            {
+                "threshold": 0.31,
+                "sensitivity_recall": 0.5,
+                "specificity": 0.7593,
+                "precision": 0.4,
+                "f1_score": 0.4444,
+                "accuracy": 0.6963,
+                "balanced_accuracy": 0.6296,
+                "youden_j": 0.2593,
+                "true_positives": 52,
+                "false_positives": 78,
+                "true_negatives": 246,
+                "false_negatives": 52
+            },
+            {
+                "threshold": 0.32,
+                "sensitivity_recall": 0.4712,
+                "specificity": 0.7747,
+                "precision": 0.4016,
+                "f1_score": 0.4336,
+                "accuracy": 0.7009,
+                "balanced_accuracy": 0.6229,
+                "youden_j": 0.2458,
+                "true_positives": 49,
+                "false_positives": 73,
+                "true_negatives": 251,
+                "false_negatives": 55
+            },
+            {
+                "threshold": 0.33,
+                "sensitivity_recall": 0.4519,
+                "specificity": 0.7994,
+                "precision": 0.4196,
+                "f1_score": 0.4352,
+                "accuracy": 0.715,
+                "balanced_accuracy": 0.6257,
+                "youden_j": 0.2513,
+                "true_positives": 47,
+                "false_positives": 65,
+                "true_negatives": 259,
+                "false_negatives": 57
+            },
+            {
+                "threshold": 0.34,
+                "sensitivity_recall": 0.4327,
+                "specificity": 0.8025,
+                "precision": 0.4128,
+                "f1_score": 0.4225,
+                "accuracy": 0.7126,
+                "balanced_accuracy": 0.6176,
+                "youden_j": 0.2352,
+                "true_positives": 45,
+                "false_positives": 64,
+                "true_negatives": 260,
+                "false_negatives": 59
+            },
+            {
+                "threshold": 0.35,
+                "sensitivity_recall": 0.4231,
+                "specificity": 0.8148,
+                "precision": 0.4231,
+                "f1_score": 0.4231,
+                "accuracy": 0.7196,
+                "balanced_accuracy": 0.6189,
+                "youden_j": 0.2379,
+                "true_positives": 44,
+                "false_positives": 60,
+                "true_negatives": 264,
+                "false_negatives": 60
+            },
+            {
+                "threshold": 0.36,
+                "sensitivity_recall": 0.4038,
+                "specificity": 0.8241,
+                "precision": 0.4242,
+                "f1_score": 0.4138,
+                "accuracy": 0.722,
+                "balanced_accuracy": 0.614,
+                "youden_j": 0.2279,
+                "true_positives": 42,
+                "false_positives": 57,
+                "true_negatives": 267,
+                "false_negatives": 62
+            },
+            {
+                "threshold": 0.37,
+                "sensitivity_recall": 0.375,
+                "specificity": 0.8426,
+                "precision": 0.4333,
+                "f1_score": 0.4021,
+                "accuracy": 0.729,
+                "balanced_accuracy": 0.6088,
+                "youden_j": 0.2176,
+                "true_positives": 39,
+                "false_positives": 51,
+                "true_negatives": 273,
+                "false_negatives": 65
+            },
+            {
+                "threshold": 0.38,
+                "sensitivity_recall": 0.3654,
+                "specificity": 0.8426,
+                "precision": 0.427,
+                "f1_score": 0.3938,
+                "accuracy": 0.7266,
+                "balanced_accuracy": 0.604,
+                "youden_j": 0.208,
+                "true_positives": 38,
+                "false_positives": 51,
+                "true_negatives": 273,
+                "false_negatives": 66
+            },
+            {
+                "threshold": 0.39,
+                "sensitivity_recall": 0.3462,
+                "specificity": 0.8549,
+                "precision": 0.4337,
+                "f1_score": 0.385,
+                "accuracy": 0.7313,
+                "balanced_accuracy": 0.6005,
+                "youden_j": 0.2011,
+                "true_positives": 36,
+                "false_positives": 47,
+                "true_negatives": 277,
+                "false_negatives": 68
+            },
+            {
+                "threshold": 0.4,
+                "sensitivity_recall": 0.3269,
+                "specificity": 0.8796,
+                "precision": 0.4658,
+                "f1_score": 0.3842,
+                "accuracy": 0.7453,
+                "balanced_accuracy": 0.6033,
+                "youden_j": 0.2066,
+                "true_positives": 34,
+                "false_positives": 39,
+                "true_negatives": 285,
+                "false_negatives": 70
+            },
+            {
+                "threshold": 0.41,
+                "sensitivity_recall": 0.3077,
+                "specificity": 0.8858,
+                "precision": 0.4638,
+                "f1_score": 0.3699,
+                "accuracy": 0.7453,
+                "balanced_accuracy": 0.5967,
+                "youden_j": 0.1935,
+                "true_positives": 32,
+                "false_positives": 37,
+                "true_negatives": 287,
+                "false_negatives": 72
+            },
+            {
+                "threshold": 0.42,
+                "sensitivity_recall": 0.2788,
+                "specificity": 0.8981,
+                "precision": 0.4677,
+                "f1_score": 0.3494,
+                "accuracy": 0.7477,
+                "balanced_accuracy": 0.5885,
+                "youden_j": 0.177,
+                "true_positives": 29,
+                "false_positives": 33,
+                "true_negatives": 291,
+                "false_negatives": 75
+            },
+            {
+                "threshold": 0.43,
+                "sensitivity_recall": 0.2692,
+                "specificity": 0.9074,
+                "precision": 0.4828,
+                "f1_score": 0.3457,
+                "accuracy": 0.7523,
+                "balanced_accuracy": 0.5883,
+                "youden_j": 0.1766,
+                "true_positives": 28,
+                "false_positives": 30,
+                "true_negatives": 294,
+                "false_negatives": 76
+            },
+            {
+                "threshold": 0.44,
+                "sensitivity_recall": 0.2308,
+                "specificity": 0.9198,
+                "precision": 0.48,
+                "f1_score": 0.3117,
+                "accuracy": 0.7523,
+                "balanced_accuracy": 0.5753,
+                "youden_j": 0.1505,
+                "true_positives": 24,
+                "false_positives": 26,
+                "true_negatives": 298,
+                "false_negatives": 80
+            },
+            {
+                "threshold": 0.45,
+                "sensitivity_recall": 0.2115,
+                "specificity": 0.9259,
+                "precision": 0.4783,
+                "f1_score": 0.2933,
+                "accuracy": 0.7523,
+                "balanced_accuracy": 0.5687,
+                "youden_j": 0.1375,
+                "true_positives": 22,
+                "false_positives": 24,
+                "true_negatives": 300,
+                "false_negatives": 82
+            },
+            {
+                "threshold": 0.46,
+                "sensitivity_recall": 0.2115,
+                "specificity": 0.9321,
+                "precision": 0.5,
+                "f1_score": 0.2973,
+                "accuracy": 0.757,
+                "balanced_accuracy": 0.5718,
+                "youden_j": 0.1436,
+                "true_positives": 22,
+                "false_positives": 22,
+                "true_negatives": 302,
+                "false_negatives": 82
+            },
+            {
+                "threshold": 0.47,
+                "sensitivity_recall": 0.2019,
+                "specificity": 0.9352,
+                "precision": 0.5,
+                "f1_score": 0.2877,
+                "accuracy": 0.757,
+                "balanced_accuracy": 0.5686,
+                "youden_j": 0.1371,
+                "true_positives": 21,
+                "false_positives": 21,
+                "true_negatives": 303,
+                "false_negatives": 83
+            },
+            {
+                "threshold": 0.48,
+                "sensitivity_recall": 0.1731,
+                "specificity": 0.9383,
+                "precision": 0.4737,
+                "f1_score": 0.2535,
+                "accuracy": 0.7523,
+                "balanced_accuracy": 0.5557,
+                "youden_j": 0.1113,
+                "true_positives": 18,
+                "false_positives": 20,
+                "true_negatives": 304,
+                "false_negatives": 86
+            },
+            {
+                "threshold": 0.49,
+                "sensitivity_recall": 0.1538,
+                "specificity": 0.9414,
+                "precision": 0.4571,
+                "f1_score": 0.2302,
+                "accuracy": 0.75,
+                "balanced_accuracy": 0.5476,
+                "youden_j": 0.0952,
+                "true_positives": 16,
+                "false_positives": 19,
+                "true_negatives": 305,
+                "false_negatives": 88
+            },
+            {
+                "threshold": 0.5,
+                "sensitivity_recall": 0.1442,
+                "specificity": 0.9506,
+                "precision": 0.4839,
+                "f1_score": 0.2222,
+                "accuracy": 0.7547,
+                "balanced_accuracy": 0.5474,
+                "youden_j": 0.0948,
+                "true_positives": 15,
+                "false_positives": 16,
+                "true_negatives": 308,
+                "false_negatives": 89
+            },
+            {
+                "threshold": 0.51,
+                "sensitivity_recall": 0.1346,
+                "specificity": 0.9599,
+                "precision": 0.5185,
+                "f1_score": 0.2137,
+                "accuracy": 0.7593,
+                "balanced_accuracy": 0.5472,
+                "youden_j": 0.0945,
+                "true_positives": 14,
+                "false_positives": 13,
+                "true_negatives": 311,
+                "false_negatives": 90
+            },
+            {
+                "threshold": 0.52,
+                "sensitivity_recall": 0.125,
+                "specificity": 0.9599,
+                "precision": 0.5,
+                "f1_score": 0.2,
+                "accuracy": 0.757,
+                "balanced_accuracy": 0.5424,
+                "youden_j": 0.0849,
+                "true_positives": 13,
+                "false_positives": 13,
+                "true_negatives": 311,
+                "false_negatives": 91
+            },
+            {
+                "threshold": 0.53,
+                "sensitivity_recall": 0.125,
+                "specificity": 0.9599,
+                "precision": 0.5,
+                "f1_score": 0.2,
+                "accuracy": 0.757,
+                "balanced_accuracy": 0.5424,
+                "youden_j": 0.0849,
+                "true_positives": 13,
+                "false_positives": 13,
+                "true_negatives": 311,
+                "false_negatives": 91
+            },
+            {
+                "threshold": 0.54,
+                "sensitivity_recall": 0.1154,
+                "specificity": 0.966,
+                "precision": 0.5217,
+                "f1_score": 0.189,
+                "accuracy": 0.7593,
+                "balanced_accuracy": 0.5407,
+                "youden_j": 0.0814,
+                "true_positives": 12,
+                "false_positives": 11,
+                "true_negatives": 313,
+                "false_negatives": 92
+            },
+            {
+                "threshold": 0.55,
+                "sensitivity_recall": 0.0962,
+                "specificity": 0.9722,
+                "precision": 0.5263,
+                "f1_score": 0.1626,
+                "accuracy": 0.7593,
+                "balanced_accuracy": 0.5342,
+                "youden_j": 0.0684,
+                "true_positives": 10,
+                "false_positives": 9,
+                "true_negatives": 315,
+                "false_negatives": 94
+            },
+            {
+                "threshold": 0.56,
+                "sensitivity_recall": 0.0769,
+                "specificity": 0.9722,
+                "precision": 0.4706,
+                "f1_score": 0.1322,
+                "accuracy": 0.7547,
+                "balanced_accuracy": 0.5246,
+                "youden_j": 0.0491,
+                "true_positives": 8,
+                "false_positives": 9,
+                "true_negatives": 315,
+                "false_negatives": 96
+            },
+            {
+                "threshold": 0.57,
+                "sensitivity_recall": 0.0769,
+                "specificity": 0.9784,
+                "precision": 0.5333,
+                "f1_score": 0.1345,
+                "accuracy": 0.7593,
+                "balanced_accuracy": 0.5277,
+                "youden_j": 0.0553,
+                "true_positives": 8,
+                "false_positives": 7,
+                "true_negatives": 317,
+                "false_negatives": 96
+            },
+            {
+                "threshold": 0.58,
+                "sensitivity_recall": 0.0769,
+                "specificity": 0.9815,
+                "precision": 0.5714,
+                "f1_score": 0.1356,
+                "accuracy": 0.7617,
+                "balanced_accuracy": 0.5292,
+                "youden_j": 0.0584,
+                "true_positives": 8,
+                "false_positives": 6,
+                "true_negatives": 318,
+                "false_negatives": 96
+            },
+            {
+                "threshold": 0.59,
+                "sensitivity_recall": 0.0769,
+                "specificity": 0.9846,
+                "precision": 0.6154,
+                "f1_score": 0.1368,
+                "accuracy": 0.764,
+                "balanced_accuracy": 0.5307,
+                "youden_j": 0.0615,
+                "true_positives": 8,
+                "false_positives": 5,
+                "true_negatives": 319,
+                "false_negatives": 96
+            },
+            {
+                "threshold": 0.6,
+                "sensitivity_recall": 0.0673,
+                "specificity": 0.9846,
+                "precision": 0.5833,
+                "f1_score": 0.1207,
+                "accuracy": 0.7617,
+                "balanced_accuracy": 0.5259,
+                "youden_j": 0.0519,
+                "true_positives": 7,
+                "false_positives": 5,
+                "true_negatives": 319,
+                "false_negatives": 97
+            }
+        ]
+    },
+    "counterfactual_treatment_evaluation": {
+        "test_patients": 428,
+        "better_count": 313,
+        "better_rate": 0.7313,
+        "same_count": 115,
+        "same_rate": 0.2687,
+        "worse_count": 0,
+        "worse_rate": 0.0,
+        "mean_risk_reduction": 0.0849,
+        "median_risk_reduction": 0.0557,
+        "max_risk_reduction": 0.4993,
+        "risk_reduction_histogram": {
+            "bins": [
+                "-1.0%\u20130.0%",
+                "0.0%\u20135.0%",
+                "5.0%\u201310.0%",
+                "10.0%\u201315.0%",
+                "15.0%\u201320.0%",
+                "20.0%\u201330.0%"
+            ],
+            "counts": [
+                0,
+                204,
+                82,
+                59,
+                26,
+                37
+            ]
+        },
+        "sample_patient_decisions": [
+            {
+                "patient_idx": 0,
+                "observed_treatment": 2,
+                "observed_treatment_name": "Zidovudine + Zalcitabine (ZDV + ddC)",
+                "observed_risk": 0.1808,
+                "recommended_treatment": 3,
+                "recommended_treatment_name": "Didanosine (ddI)",
+                "recommended_risk": 0.1412,
+                "risk_reduction": 0.0396,
+                "status": "lower_risk"
+            },
+            {
+                "patient_idx": 1,
+                "observed_treatment": 3,
+                "observed_treatment_name": "Didanosine (ddI)",
+                "observed_risk": 0.2561,
+                "recommended_treatment": 0,
+                "recommended_treatment_name": "Zidovudine (ZDV)",
+                "recommended_risk": 0.2373,
+                "risk_reduction": 0.0189,
+                "status": "lower_risk"
+            },
+            {
+                "patient_idx": 2,
+                "observed_treatment": 2,
+                "observed_treatment_name": "Zidovudine + Zalcitabine (ZDV + ddC)",
+                "observed_risk": 0.1437,
+                "recommended_treatment": 1,
+                "recommended_treatment_name": "Zidovudine + Didanosine (ZDV + ddI)",
+                "recommended_risk": 0.1304,
+                "risk_reduction": 0.0133,
+                "status": "lower_risk"
+            },
+            {
+                "patient_idx": 3,
+                "observed_treatment": 2,
+                "observed_treatment_name": "Zidovudine + Zalcitabine (ZDV + ddC)",
+                "observed_risk": 0.1429,
+                "recommended_treatment": 1,
+                "recommended_treatment_name": "Zidovudine + Didanosine (ZDV + ddI)",
+                "recommended_risk": 0.0819,
+                "risk_reduction": 0.061,
+                "status": "lower_risk"
+            },
+            {
+                "patient_idx": 4,
+                "observed_treatment": 1,
+                "observed_treatment_name": "Zidovudine + Didanosine (ZDV + ddI)",
+                "observed_risk": 0.0639,
+                "recommended_treatment": 2,
+                "recommended_treatment_name": "Zidovudine + Zalcitabine (ZDV + ddC)",
+                "recommended_risk": 0.0234,
+                "risk_reduction": 0.0404,
+                "status": "lower_risk"
+            },
+            {
+                "patient_idx": 5,
+                "observed_treatment": 3,
+                "observed_treatment_name": "Didanosine (ddI)",
+                "observed_risk": 0.1608,
+                "recommended_treatment": 3,
+                "recommended_treatment_name": "Didanosine (ddI)",
+                "recommended_risk": 0.1608,
+                "risk_reduction": 0.0,
+                "status": "same_risk"
+            },
+            {
+                "patient_idx": 6,
+                "observed_treatment": 0,
+                "observed_treatment_name": "Zidovudine (ZDV)",
+                "observed_risk": 0.4294,
+                "recommended_treatment": 2,
+                "recommended_treatment_name": "Zidovudine + Zalcitabine (ZDV + ddC)",
+                "recommended_risk": 0.2149,
+                "risk_reduction": 0.2145,
+                "status": "lower_risk"
+            },
+            {
+                "patient_idx": 7,
+                "observed_treatment": 1,
+                "observed_treatment_name": "Zidovudine + Didanosine (ZDV + ddI)",
+                "observed_risk": 0.1872,
+                "recommended_treatment": 2,
+                "recommended_treatment_name": "Zidovudine + Zalcitabine (ZDV + ddC)",
+                "recommended_risk": 0.1321,
+                "risk_reduction": 0.0551,
+                "status": "lower_risk"
+            },
+            {
+                "patient_idx": 8,
+                "observed_treatment": 0,
+                "observed_treatment_name": "Zidovudine (ZDV)",
+                "observed_risk": 0.1808,
+                "recommended_treatment": 2,
+                "recommended_treatment_name": "Zidovudine + Zalcitabine (ZDV + ddC)",
+                "recommended_risk": 0.0353,
+                "risk_reduction": 0.1455,
+                "status": "lower_risk"
+            },
+            {
+                "patient_idx": 9,
+                "observed_treatment": 1,
+                "observed_treatment_name": "Zidovudine + Didanosine (ZDV + ddI)",
+                "observed_risk": 0.1955,
+                "recommended_treatment": 2,
+                "recommended_treatment_name": "Zidovudine + Zalcitabine (ZDV + ddC)",
+                "recommended_risk": 0.1183,
+                "risk_reduction": 0.0771,
+                "status": "lower_risk"
+            }
+        ]
+    },
+    "subgroup_analysis": [
+        {
+            "subgroup_name": "Baseline CD4 < 200 (Severe)",
+            "sample_size": 42,
+            "positive_events": 17,
+            "event_rate": 0.4048,
+            "roc_auc": 0.6871,
+            "pr_auc": 0.6516,
+            "accuracy": 0.6429,
+            "precision": 0.6,
+            "sensitivity": 0.3529,
+            "specificity": 0.84,
+            "f1_score": 0.4444,
+            "brier_score": 0.2134,
+            "is_reliable": 1,
+            "reliability_note": "Adequate sample size (N \u2265 30)"
+        },
+        {
+            "subgroup_name": "Baseline CD4 200\u2013350 (Moderate)",
+            "sample_size": 193,
+            "positive_events": 57,
+            "event_rate": 0.2953,
+            "roc_auc": 0.6552,
+            "pr_auc": 0.4162,
+            "accuracy": 0.6891,
+            "precision": 0.4211,
+            "sensitivity": 0.1404,
+            "specificity": 0.9191,
+            "f1_score": 0.2105,
+            "brier_score": 0.1986,
+            "is_reliable": 1,
+            "reliability_note": "Adequate sample size (N \u2265 30)"
+        },
+        {
+            "subgroup_name": "Baseline CD4 > 350 (Mild/Preserved)",
+            "sample_size": 193,
+            "positive_events": 30,
+            "event_rate": 0.1554,
+            "roc_auc": 0.61,
+            "pr_auc": 0.2443,
+            "accuracy": 0.8446,
+            "precision": 0.5,
+            "sensitivity": 0.0333,
+            "specificity": 0.9939,
+            "f1_score": 0.0625,
+            "brier_score": 0.1318,
+            "is_reliable": 1,
+            "reliability_note": "Adequate sample size (N \u2265 30)"
+        },
+        {
+            "subgroup_name": "Age < 35 Years",
+            "sample_size": 231,
+            "positive_events": 60,
+            "event_rate": 0.2597,
+            "roc_auc": 0.6885,
+            "pr_auc": 0.4279,
+            "accuracy": 0.7359,
+            "precision": 0.4615,
+            "sensitivity": 0.1,
+            "specificity": 0.9591,
+            "f1_score": 0.1644,
+            "brier_score": 0.1776,
+            "is_reliable": 1,
+            "reliability_note": "Adequate sample size (N \u2265 30)"
+        },
+        {
+            "subgroup_name": "Age 35\u201350 Years",
+            "sample_size": 178,
+            "positive_events": 39,
+            "event_rate": 0.2191,
+            "roc_auc": 0.6936,
+            "pr_auc": 0.4355,
+            "accuracy": 0.7865,
+            "precision": 0.5333,
+            "sensitivity": 0.2051,
+            "specificity": 0.9496,
+            "f1_score": 0.2963,
+            "brier_score": 0.1579,
+            "is_reliable": 1,
+            "reliability_note": "Adequate sample size (N \u2265 30)"
+        },
+        {
+            "subgroup_name": "Age > 50 Years",
+            "sample_size": 19,
+            "positive_events": 5,
+            "event_rate": 0.2632,
+            "roc_auc": 0.7429,
+            "pr_auc": 0.4546,
+            "accuracy": 0.6842,
+            "precision": 0.3333,
+            "sensitivity": 0.2,
+            "specificity": 0.8571,
+            "f1_score": 0.25,
+            "brier_score": 0.19,
+            "is_reliable": 0,
+            "reliability_note": "Small sample size (N < 30) \u2014 interpret with caution"
+        },
+        {
+            "subgroup_name": "Karnofsky < 90% (Reduced Function)",
+            "sample_size": 22,
+            "positive_events": 7,
+            "event_rate": 0.3182,
+            "roc_auc": 0.7143,
+            "pr_auc": 0.4572,
+            "accuracy": 0.5909,
+            "precision": 0.3333,
+            "sensitivity": 0.2857,
+            "specificity": 0.7333,
+            "f1_score": 0.3077,
+            "brier_score": 0.21,
+            "is_reliable": 0,
+            "reliability_note": "Small sample size (N < 30) \u2014 interpret with caution"
+        },
+        {
+            "subgroup_name": "Karnofsky \u2265 90% (Normal Function)",
+            "sample_size": 406,
+            "positive_events": 97,
+            "event_rate": 0.2389,
+            "roc_auc": 0.6843,
+            "pr_auc": 0.4169,
+            "accuracy": 0.7635,
+            "precision": 0.52,
+            "sensitivity": 0.134,
+            "specificity": 0.9612,
+            "f1_score": 0.2131,
+            "brier_score": 0.1678,
+            "is_reliable": 1,
+            "reliability_note": "Adequate sample size (N \u2265 30)"
+        }
+    ],
+    "methodology_and_limitations": {
+        "continuous_modeling": "Continuous biomarkers are standardized using development-only parameters and evaluated through arm-specific continuous response surfaces.",
+        "data_partitioning": "Strict 80/20 partition (1,711 dev vs 428 test). Preprocessing transforms fitted exclusively on development rows.",
+        "causal_assumptions": "Assumes trial conditional exchangeability, positivity, and consistency within the ACTG175 trial.",
+        "clinical_disclaimer": "Research and educational decision-support prototype. Not approved for autonomous diagnostic or treatment decisions."
+    }
+}

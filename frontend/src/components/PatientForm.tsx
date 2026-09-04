@@ -1,18 +1,16 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
-  Activity,
-  Clock,
   Eraser,
   FlaskConical,
-  Layers,
+  HeartPulse,
+  Info,
   Play,
-  Sparkles,
   Stethoscope,
-  UserCheck,
+  User,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { describeRanges, discretizeValue } from '../lib/discretize'
-import { CATEGORICAL_FIELDS, NUMERICAL_FIELDS } from '../lib/fields'
+import { discretizeValue } from '../lib/discretize'
+import { CATEGORICAL_FIELDS, NUMERICAL_FIELDS, type CategoricalFieldDef, type NumericalFieldDef } from '../lib/fields'
 import type { DiscretizationMetadata, PatientInputs } from '../lib/types'
 
 interface PatientFormProps {
@@ -25,7 +23,7 @@ const PRESETS: { name: string; tag: string; desc: string; inputs: PatientInputs 
   {
     name: 'Sample 1 · ART-Naive',
     tag: 'Baseline Good',
-    desc: 'CD4 480 · 0 prior ART days · No symptoms',
+    desc: 'CD4 480 · 0 prior ART days · Asymptomatic',
     inputs: {
       age: '35',
       wtkg: '72',
@@ -47,7 +45,7 @@ const PRESETS: { name: string; tag: string; desc: string; inputs: PatientInputs 
   {
     name: 'Sample 2 · Moderate',
     tag: 'Prior ZDV',
-    desc: 'CD4 350 · 366 prior ART days · Prior ZDV',
+    desc: 'CD4 350 · 366 prior ART days · ZDV Experienced',
     inputs: {
       age: '44',
       wtkg: '70',
@@ -108,368 +106,352 @@ const EMPTY_INPUTS: PatientInputs = {
   symptom: '',
 }
 
+const FIELD_TOOLTIPS: Record<string, string> = {
+  age: 'Patient chronological age in years at baseline trial screening.',
+  wtkg: 'Baseline body weight in kilograms (kg).',
+  gender: 'Biological sex: 0 = Female, 1 = Male.',
+  race: 'Demographic race classification: 0 = White, 1 = Non-White.',
+  cd40: 'Baseline CD4+ T-helper lymphocyte count (cells/mm³). Key immunologic surrogate marker for HIV progression.',
+  cd80: 'Baseline CD8+ cytotoxic T-lymphocyte count (cells/mm³). Evaluates immunologic response and immune activation.',
+  karnof: 'Karnofsky Performance Scale (70–100%). Measures general functional capacity and activities of daily living.',
+  preanti: 'Cumulative duration of prior antiretroviral exposure (days) prior to study entry.',
+  symptom: 'Clinical disease presentation at baseline: 0 = Asymptomatic, 1 = Symptomatic HIV infection.',
+  z30: 'History of Zidovudine (ZDV/AZT) administration within 30 days prior to baseline randomization.',
+  oprior: 'History of prior non-ZDV antiretroviral therapy (e.g. ddI, ddC, or other nucleoside analogs).',
+  strat: 'Trial stratification group: 1 = ART-Naive, 2 = 1 to 52 weeks prior ART, 3 = >52 weeks prior ART.',
+  hemo: 'Documented medical history of hemophilia (0 = No, 1 = Yes).',
+  homo: 'Transmission risk factor classification for male homosexual contact (0 = No, 1 = Yes).',
+  drugs: 'Documented history of intravenous (IV) drug use (0 = No, 1 = Yes).',
+}
+
 export function PatientForm({ metadata, analyzing, onAnalyze }: PatientFormProps) {
   const [inputs, setInputs] = useState<PatientInputs>(PRESETS[0].inputs)
-  const [activeTab, setActiveTab] = useState<'biomarkers' | 'history' | 'all'>('biomarkers')
-  const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'basic' | 'labs' | 'history'>('labs')
 
-  const setValue = (key: keyof PatientInputs, value: string) => {
-    setInputs((current) => ({ ...current, [key]: value }))
-    setError(null)
+  const discretizedValues = useMemo(() => {
+    const result: Record<string, { state: string; label: string } | null> = {}
+    for (const field of NUMERICAL_FIELDS) {
+      const rawVal = inputs[field.key as keyof PatientInputs]
+      const state = discretizeValue(field.key, rawVal, metadata)
+      if (state) {
+        result[field.key] = {
+          state,
+          label: `Bin: ${state}`,
+        }
+      } else {
+        result[field.key] = null
+      }
+    }
+    return result
+  }, [inputs, metadata])
+
+  const filledCount = Object.values(inputs).filter((v) => v !== '').length
+  const totalCount = Object.keys(inputs).length
+  const isComplete = filledCount === totalCount
+
+  const handleFieldChange = (key: keyof PatientInputs, value: string) => {
+    setInputs((prev) => ({ ...prev, [key]: value }))
   }
 
-  const applyPreset = (presetInputs: PatientInputs) => {
-    setInputs(presetInputs)
-    setError(null)
+  const handlePreset = (preset: typeof PRESETS[0]) => {
+    setInputs({ ...preset.inputs })
   }
 
-  const clearAll = () => {
+  const handleClear = () => {
     setInputs(EMPTY_INPUTS)
-    setError(null)
   }
 
-  const isComplete = useMemo(() => {
-    return NUMERICAL_FIELDS.every((field) => Number.isFinite(Number(inputs[field.key])))
-  }, [inputs])
-
-  const handleAnalyze = () => {
-    if (!isComplete) {
-      setError('Please provide valid numbers for all continuous biomarker fields.')
-      return
-    }
-    const categoricalMissing = CATEGORICAL_FIELDS.find((field) => inputs[field.key] === '')
-    if (categoricalMissing) {
-      setError(`Please select a value for: ${categoricalMissing.label}.`)
-      return
-    }
-    setError(null)
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!isComplete || analyzing) return
     onAnalyze(inputs)
   }
 
+  // Define field keys in each tab
+  const basicFields = ['age', 'gender', 'wtkg', 'race']
+  const labFields = ['cd40', 'cd80', 'karnof', 'preanti']
+  const historyFields = ['symptom', 'z30', 'oprior', 'strat', 'hemo', 'homo', 'drugs']
+
   return (
-    <div className="card-surface rounded-2xl p-5 sm:p-8 shadow-xl">
-      {/* Top Header: Presets & Controls */}
-      <div className="mb-6 flex flex-col gap-4 border-b border-cyan-400/15 pb-6 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <UserCheck className="h-5 w-5 text-cyan-300" />
-            <h3 className="font-display text-lg font-bold text-white">
-              Patient Baseline Biomarkers & History
-            </h3>
+    <form onSubmit={handleSubmit} className="card-surface rounded-2xl p-6 shadow-xl border border-slate-700/60 flex flex-col justify-between">
+      <div className="space-y-6">
+        {/* Header with Sample Presets */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Stethoscope className="h-5 w-5 text-cyan-300" />
+              <h2 className="font-display text-lg font-bold text-white tracking-tight">Patient Clinical Profile</h2>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Specify demographic biomarkers, baseline labs, and medical history to simulate causal treatment interventions.
+            </p>
           </div>
-          <p className="mt-1 text-xs text-slate-400">
-            Select a calibrated trial sample profile or specify custom clinical measurements.
-          </p>
-        </div>
 
-        {/* Preset Profiles */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-xs font-semibold tracking-wider text-slate-400 uppercase mr-1">
-            Presets:
-          </span>
-          {PRESETS.map((preset) => (
+          {/* Quick Presets */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="font-mono text-[11px] font-bold text-slate-400 uppercase mr-1">Presets:</span>
+            {PRESETS.map((preset) => {
+              const isSelected = JSON.stringify(inputs) === JSON.stringify(preset.inputs)
+              return (
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() => handlePreset(preset)}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-mono font-medium transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/40 shadow-sm shadow-cyan-400/20'
+                      : 'border border-slate-700 bg-ink-850 text-slate-300 hover:border-slate-600 hover:text-white'
+                  }`}
+                  title={preset.desc}
+                >
+                  {preset.tag}
+                </button>
+              )
+            })}
             <button
-              key={preset.name}
               type="button"
-              onClick={() => applyPreset(preset.inputs)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-400/35 bg-ink-850 px-3.5 py-1.5 text-xs font-semibold text-cyan-200 shadow-sm transition-all hover:border-cyan-300 hover:bg-ink-800 hover:text-white cursor-pointer active:scale-98"
+              onClick={handleClear}
+              className="rounded-lg border border-slate-800 p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
+              title="Clear all inputs"
             >
-              <Sparkles className="h-3 w-3 text-cyan-300" />
-              <span>{preset.name}</span>
+              <Eraser className="h-3.5 w-3.5" />
             </button>
-          ))}
-          <button
-            type="button"
-            onClick={clearAll}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-ink-900 px-3 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:border-slate-500 hover:text-slate-200 cursor-pointer"
-          >
-            <Eraser className="h-3 w-3" />
-            Reset
-          </button>
+          </div>
         </div>
-      </div>
 
-      {/* Logical Section Tabs */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-2 rounded-xl bg-ink-950/80 p-1 border border-slate-800">
+        {/* 3 Logical Clinical Tabs */}
+        <div className="flex border-b border-slate-800 gap-2">
           <button
             type="button"
-            onClick={() => setActiveTab('biomarkers')}
-            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'biomarkers'
-                ? 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/35 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+            onClick={() => setActiveTab('basic')}
+            className={`inline-flex items-center gap-2 pb-2.5 px-3 font-mono text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+              activeTab === 'basic'
+                ? 'border-cyan-400 text-cyan-200'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Stethoscope className="h-3.5 w-3.5" />
-            <span>Primary Biomarkers (6)</span>
+            <User className="h-3.5 w-3.5" />
+            <span>1. Demographics &amp; Vitals</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('labs')}
+            className={`inline-flex items-center gap-2 pb-2.5 px-3 font-mono text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+              activeTab === 'labs'
+                ? 'border-cyan-400 text-cyan-200'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <FlaskConical className="h-3.5 w-3.5" />
+            <span>2. Lab Biomarkers &amp; CD4</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('history')}
-            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
+            className={`inline-flex items-center gap-2 pb-2.5 px-3 font-mono text-xs font-bold border-b-2 transition-colors cursor-pointer ${
               activeTab === 'history'
-                ? 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/35 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'border-cyan-400 text-cyan-200'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Clock className="h-3.5 w-3.5" />
-            <span>Clinical History & Demographics (9)</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('all')}
-            className={`hidden sm:inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'all'
-                ? 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/35 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Layers className="h-3.5 w-3.5" />
-            <span>View All</span>
+            <HeartPulse className="h-3.5 w-3.5" />
+            <span>3. Clinical History &amp; Risks</span>
           </button>
         </div>
 
-        <span className="hidden font-mono text-xs text-slate-400 sm:inline-block">
-          Exact BDeu Evidence States Active
-        </span>
+        {/* Form Fields Rendered by Tab */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* TAB 1: BASIC DEMOGRAPHIC PROFILE */}
+          {activeTab === 'basic' && (
+            <>
+              {NUMERICAL_FIELDS.filter((f) => basicFields.includes(f.key)).map((field) => (
+                <NumericalInputCard
+                  key={field.key}
+                  field={field}
+                  value={inputs[field.key as keyof PatientInputs]}
+                  discretized={discretizedValues[field.key]}
+                  tooltip={FIELD_TOOLTIPS[field.key]}
+                  onChange={(val) => handleFieldChange(field.key as keyof PatientInputs, val)}
+                />
+              ))}
+              {CATEGORICAL_FIELDS.filter((f) => basicFields.includes(f.key)).map((field) => (
+                <CategoricalInputCard
+                  key={field.key}
+                  field={field}
+                  value={inputs[field.key as keyof PatientInputs]}
+                  tooltip={FIELD_TOOLTIPS[field.key]}
+                  onChange={(val) => handleFieldChange(field.key as keyof PatientInputs, val)}
+                />
+              ))}
+            </>
+          )}
+
+          {/* TAB 2: LAB BIOMARKERS & CD4 COUNTS */}
+          {activeTab === 'labs' && (
+            <>
+              {NUMERICAL_FIELDS.filter((f) => labFields.includes(f.key)).map((field) => (
+                <NumericalInputCard
+                  key={field.key}
+                  field={field}
+                  value={inputs[field.key as keyof PatientInputs]}
+                  discretized={discretizedValues[field.key]}
+                  tooltip={FIELD_TOOLTIPS[field.key]}
+                  onChange={(val) => handleFieldChange(field.key as keyof PatientInputs, val)}
+                />
+              ))}
+            </>
+          )}
+
+          {/* TAB 3: CLINICAL HISTORY & RISK FACTORS */}
+          {activeTab === 'history' && (
+            <>
+              {CATEGORICAL_FIELDS.filter((f) => historyFields.includes(f.key)).map((field) => (
+                <CategoricalInputCard
+                  key={field.key}
+                  field={field}
+                  value={inputs[field.key as keyof PatientInputs]}
+                  tooltip={FIELD_TOOLTIPS[field.key]}
+                  onChange={(val) => handleFieldChange(field.key as keyof PatientInputs, val)}
+                />
+              ))}
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Numerical Fields: Primary Biomarkers */}
-      {(activeTab === 'biomarkers' || activeTab === 'all') && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-xs font-bold tracking-wider text-cyan-300 uppercase">
-              Continuous Biomarkers & Physical Measurements
-            </p>
-            <span className="font-mono text-[11px] text-slate-400">
-              Quantile discretization fitted on development set
-            </span>
+      {/* Action Footer Bar */}
+      <div className="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-t border-slate-800 pt-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-2 w-28 overflow-hidden rounded-full bg-slate-800">
+            <div
+              className="bg-cyan-400 transition-all duration-300"
+              style={{ width: `${(filledCount / totalCount) * 100}%` }}
+            />
           </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {NUMERICAL_FIELDS.map((field, index) => (
-              <NumericField
-                key={field.key}
-                index={index}
-                label={field.label}
-                unit={field.unit}
-                placeholder={field.placeholder}
-                hint={field.hint}
-                value={inputs[field.key]}
-                metadata={metadata}
-                onChange={(value) => setValue(field.key, value)}
-              />
-            ))}
-          </div>
+          <span className="font-mono text-xs text-slate-400">
+            {filledCount} of {totalCount} variables specified
+          </span>
         </div>
-      )}
 
-      {/* Categorical Fields: Clinical History & Demographics */}
-      {(activeTab === 'history' || activeTab === 'all') && (
-        <div className={`space-y-4 ${activeTab === 'all' ? 'mt-8 border-t border-slate-800 pt-6' : ''}`}>
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-xs font-bold tracking-wider text-cyan-300 uppercase">
-              Clinical History & Demographic Attributes
-            </p>
-            <span className="font-mono text-[11px] text-slate-400">
-              9 discrete clinical indicators
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
-            {CATEGORICAL_FIELDS.map((field) => (
-              <CategoricalField
-                key={field.key}
-                label={field.label}
-                description={field.description}
-                options={field.options}
-                value={inputs[field.key]}
-                onChange={(value) => setValue(field.key, value)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Error Banner */}
-      <AnimatePresence>
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            className="mt-5 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200 font-semibold"
-          >
-            {error}
-          </motion.p>
-        )}
-      </AnimatePresence>
-
-      {/* Form Bottom Action Bar */}
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-cyan-400/15 pt-6">
-        <p className="flex items-center gap-2 text-xs text-slate-400">
-          <FlaskConical className="h-4 w-4 text-cyan-300" />
-          <span>Executes exact Bayesian Variable Elimination for interventional do(trt = k).</span>
-        </p>
-
-        <motion.button
-          whileHover={{ scale: analyzing ? 1 : 1.01 }}
-          whileTap={{ scale: analyzing ? 1 : 0.98 }}
-          onClick={handleAnalyze}
-          disabled={analyzing}
-          className={`inline-flex items-center gap-2.5 rounded-xl px-8 py-3.5 text-sm font-extrabold tracking-wide transition-all shadow-lg cursor-pointer ${
-            analyzing
-              ? 'cursor-not-allowed bg-slate-700 text-slate-300'
-              : 'bg-gradient-to-r from-cyan-400 via-mint-300 to-cyan-300 text-ink-950 shadow-cyan-500/25 hover:shadow-cyan-500/40'
+        <button
+          type="submit"
+          disabled={!isComplete || analyzing}
+          className={`inline-flex items-center justify-center gap-2.5 rounded-xl px-6 py-3 font-display text-sm font-bold tracking-wide transition-all shadow-lg cursor-pointer ${
+            isComplete && !analyzing
+              ? 'bg-gradient-to-r from-cyan-400 to-sky-500 text-ink-950 shadow-cyan-400/25 hover:from-cyan-300 hover:to-sky-400 hover:shadow-cyan-400/40'
+              : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
           }`}
         >
           {analyzing ? (
             <>
-              <Activity className="h-4 w-4 animate-spin text-ink-950" />
-              <span>Computing Causal Posterior...</span>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                className="h-4 w-4 rounded-full border-2 border-ink-950 border-t-transparent"
+              />
+              <span>Evaluating Causal Inferences...</span>
             </>
           ) : (
             <>
-              <Play className="h-4 w-4 fill-ink-950" />
-              <span>Run Interventional Inference</span>
+              <Play className="h-4 w-4 fill-current" />
+              <span>Simulate Interventions do(trt = k)</span>
             </>
           )}
-        </motion.button>
+        </button>
       </div>
-    </div>
+    </form>
   )
 }
 
-function NumericField({
-  index,
-  label,
-  unit,
-  placeholder,
-  hint,
+function NumericalInputCard({
+  field,
   value,
-  metadata,
+  discretized,
+  tooltip,
   onChange,
 }: {
-  index: number
-  label: string
-  unit: string
-  placeholder: string
-  hint: string
+  field: NumericalFieldDef
   value: string
-  metadata: DiscretizationMetadata
-  onChange: (value: string) => void
+  discretized: { state: string; label: string } | null
+  tooltip?: string
+  onChange: (val: string) => void
 }) {
-  const [focused, setFocused] = useState(false)
-  const numValue = Number(value)
-  const hasValue = value.trim() !== '' && Number.isFinite(numValue)
-  const fieldKey = NUMERICAL_FIELDS[index].key
-  const assignedState = hasValue ? discretizeValue(fieldKey, numValue, metadata) : null
-  const ranges = describeRanges(fieldKey, metadata)
-
   return (
-    <div
-      className={`relative rounded-xl border p-4 transition-all ${
-        focused
-          ? 'border-cyan-400/70 bg-ink-850 shadow-md shadow-cyan-500/10'
-          : 'border-slate-700/60 bg-ink-900/80 hover:border-slate-600'
-      }`}
-    >
+    <div className="rounded-xl border border-slate-700/60 bg-ink-900/90 p-4 shadow-sm hover:border-slate-600 transition-colors">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-bold text-slate-100">
-          {label}
-          {unit && <span className="ml-1 text-xs font-normal text-slate-400">({unit})</span>}
+        <label className="font-mono text-xs font-bold text-slate-300">
+          {field.label} {field.unit && <span className="text-[10px] text-slate-400">({field.unit})</span>}
         </label>
-        <span className="font-mono text-[11px] text-slate-400">{hint}</span>
-      </div>
-
-      <div className="mt-2.5 flex items-center gap-2">
-        <input
-          type="number"
-          step="any"
-          placeholder={placeholder}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          className="ring-focus w-full rounded-lg border border-slate-700 bg-ink-950 px-3.5 py-2 font-mono text-sm font-semibold text-white placeholder-slate-600"
-        />
-        {assignedState !== null && (
-          <span className="shrink-0 rounded-lg border border-cyan-400/35 bg-cyan-400/10 px-2.5 py-1.5 font-mono text-xs font-bold text-mint-200">
-            {assignedState}
+        {tooltip && (
+          <span className="text-slate-500 hover:text-slate-300 cursor-help" title={tooltip}>
+            <Info className="h-3.5 w-3.5" />
           </span>
         )}
       </div>
 
-      <AnimatePresence>
-        {focused && ranges.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="mt-2.5 rounded-lg border border-slate-800 bg-ink-950 p-2.5 text-xs text-slate-400">
-              <p className="font-mono font-bold text-cyan-200 text-[11px]">Discretized Bins:</p>
-              <div className="mt-1 space-y-0.5 font-mono text-[11px]">
-                {ranges.map((range, rangeIndex) => {
-                  const isCurrent = assignedState ? range.includes(assignedState) : false
-                  return (
-                    <div
-                      key={rangeIndex}
-                      className={`flex justify-between ${
-                        isCurrent ? 'font-bold text-mint-200' : 'text-slate-400'
-                      }`}
-                    >
-                      <span>Bin {rangeIndex + 1}:</span>
-                      <span>{range}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </motion.div>
+      <div className="mt-2 relative">
+        <input
+          type="number"
+          step="any"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={field.placeholder || `e.g. ${field.hint}`}
+          className="w-full rounded-lg border border-slate-700 bg-ink-950 px-3 py-2 text-sm font-mono text-white placeholder-slate-600 focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-all"
+        />
+      </div>
+
+      <div className="mt-2 flex items-center justify-between text-[11px] font-mono">
+        <span className="text-slate-400">{field.hint}</span>
+        {discretized && (
+          <span className="rounded bg-cyan-400/15 border border-cyan-400/30 px-1.5 py-0.5 font-bold text-cyan-200">
+            {discretized.label}
+          </span>
         )}
-      </AnimatePresence>
+      </div>
     </div>
   )
 }
 
-function CategoricalField({
-  label,
-  description,
-  options,
+function CategoricalInputCard({
+  field,
   value,
+  tooltip,
   onChange,
 }: {
-  label: string
-  description: string
-  options: { value: string; label: string }[]
+  field: CategoricalFieldDef
   value: string
-  onChange: (value: string) => void
+  tooltip?: string
+  onChange: (val: string) => void
 }) {
   return (
-    <div className="rounded-xl border border-slate-700/60 bg-ink-900/80 p-3.5 hover:border-slate-600 transition-colors">
-      <div className="mb-2 flex items-center justify-between">
-        <label className="text-xs font-bold text-slate-100">
-          {label}
-        </label>
-        <span className="font-mono text-[10px] text-slate-400 uppercase">{description}</span>
+    <div className="rounded-xl border border-slate-700/60 bg-ink-900/90 p-4 shadow-sm hover:border-slate-600 transition-colors">
+      <div className="flex items-center justify-between">
+        <label className="font-mono text-xs font-bold text-slate-300">{field.label}</label>
+        {tooltip && (
+          <span className="text-slate-500 hover:text-slate-300 cursor-help" title={tooltip}>
+            <Info className="h-3.5 w-3.5" />
+          </span>
+        )}
       </div>
-      <select
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="ring-focus w-full cursor-pointer rounded-lg border border-slate-700 bg-ink-950 px-3 py-2 text-xs font-semibold text-slate-100"
-      >
-        <option value="" disabled>
-          Select state...
-        </option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+
+      <div className="mt-2">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full rounded-lg border border-slate-700 bg-ink-950 px-3 py-2 text-sm font-mono text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-all cursor-pointer"
+        >
+          <option value="" disabled>Select option...</option>
+          {field.options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mt-2 text-[11px] font-mono text-slate-400 truncate">
+        {field.options.find((o) => o.value === value)?.label || field.description || 'No selection'}
+      </div>
     </div>
   )
 }

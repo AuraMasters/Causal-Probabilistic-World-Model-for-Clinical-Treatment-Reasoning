@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   Database,
   GitBranch,
-  Network,
   RefreshCw,
   Sparkles,
   Stethoscope,
@@ -35,7 +34,7 @@ const NAV_ITEMS = [
   { id: 'recommendation', label: 'AI Decision', icon: Sparkles },
   { id: 'analysis', label: 'Comparative Arms', icon: BarChart3 },
   { id: 'network', label: 'Causal DAG', icon: GitBranch },
-  { id: 'validation', label: 'Validation', icon: CheckCircle2 },
+  { id: 'validation', label: 'Validation & Comparison', icon: CheckCircle2 },
 ]
 
 const DEFAULT_SAMPLE: PatientInputs = {
@@ -59,14 +58,26 @@ const DEFAULT_SAMPLE: PatientInputs = {
 export default function App() {
   const { overview, loading, error, retry } = useOverview()
   const { state, run } = useAnalyze()
+  const [activeModel, setActiveModel] = useState<'continuous' | 'discretized'>('continuous')
+  const [currentInputs, setCurrentInputs] = useState<PatientInputs>(DEFAULT_SAMPLE)
   const [activeSection, setActiveSection] = useState('overview')
 
   // Auto-run initial patient analysis once overview is loaded
   useEffect(() => {
     if (overview && state.status === 'idle') {
-      void run(DEFAULT_SAMPLE)
+      void run(DEFAULT_SAMPLE, activeModel)
     }
-  }, [overview, state.status, run])
+  }, [overview, state.status, run, activeModel])
+
+  const handleModelSelect = (model: 'continuous' | 'discretized') => {
+    setActiveModel(model)
+    void run(currentInputs, model)
+  }
+
+  const handlePatientAnalyze = (inputs: PatientInputs) => {
+    setCurrentInputs(inputs)
+    void run(inputs, activeModel)
+  }
 
   // Active section scroll spy
   useEffect(() => {
@@ -97,7 +108,7 @@ export default function App() {
 
   return (
     <div className="app-bg min-h-screen text-slate-100 selection:bg-cyan-400 selection:text-ink-950">
-      <Header />
+      <Header activeModel={activeModel} onSelectModel={handleModelSelect} />
 
       {/* Sticky intelligence navigation */}
       <nav className="sticky top-0 z-50 border-b border-cyan-400/15 bg-ink-950/85 backdrop-blur-xl shadow-lg shadow-black/30">
@@ -141,10 +152,10 @@ export default function App() {
             id="overview"
             eyebrow="Cohort & Architecture"
             title="System Overview"
-            subtitle="The ACTG175 randomized trial cohort and the verified 23-edge causal Bayesian Network utilized for interventional decision support."
+            subtitle="The ACTG175 randomized clinical trial cohort and verified causal architectures for interventional treatment optimization."
           >
             {loading ? (
-              <LoadingState label="Loading model overview and learned CPT parameters..." />
+              <LoadingState label="Loading model overview and parameters..." />
             ) : error ? (
               <ErrorState message={error} onRetry={retry} />
             ) : overview ? (
@@ -157,143 +168,127 @@ export default function App() {
             id="patient"
             eyebrow="Clinical Evidence Input"
             title="Patient Clinical Profile"
-            subtitle="Input individual baseline biomarkers and patient history. Continuous biomarkers are automatically mapped to calibrated discrete evidence states."
+            subtitle={
+              activeModel === 'continuous'
+                ? 'Numerical biomarkers (CD4, CD8, Karnofsky, Age, Weight) are preserved as exact continuous values without arbitrary binning.'
+                : 'Baseline Model A maps continuous measurements to 3-bin quantile discrete evidence states.'
+            }
           >
-            {overview ? (
+            {loading ? (
+              <LoadingState label="Loading patient profile parameters..." />
+            ) : overview ? (
               <PatientForm
                 metadata={overview.discretization}
                 analyzing={state.status === 'loading'}
-                onAnalyze={run}
+                onAnalyze={handlePatientAnalyze}
               />
+            ) : null}
+          </Section>
+
+          {/* SECTION 3: RECOMMENDED TREATMENT (AI DECISION) */}
+          <Section
+            id="recommendation"
+            eyebrow="AI Interventional Recommendation"
+            title="Optimal Regimen Selection"
+            subtitle="Maximizes expected clinical utility under Pearlian causal graph mutilation do(trt = k)."
+          >
+            <AnimatePresence mode="wait">
+              {state.status === 'loading' && (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <LoadingState label="Evaluating causal interventions across all 4 randomized treatment arms..." />
+                </motion.div>
+              )}
+
+              {state.status === 'error' && (
+                <motion.div
+                  key="error"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <ErrorState message={state.message} />
+                </motion.div>
+              )}
+
+              {state.status === 'success' && (
+                <motion.div
+                  key="success"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <RecommendedTreatment result={state.result} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Section>
+
+          {/* SECTION 4: COMPARATIVE TREATMENT ANALYSIS */}
+          <Section
+            id="analysis"
+            eyebrow="Interventional Analysis"
+            title="Comparative Treatment Arms"
+            subtitle="Predicted progression probabilities, progression-free survival, and expected utilities across all four arms."
+          >
+            {state.status === 'success' ? (
+              <div className="space-y-12">
+                <TreatmentRanking ranking={state.result.ranking} />
+                <TreatmentComparison treatments={state.result.treatments} />
+              </div>
             ) : (
-              <LoadingState label="Loading patient evidence schema..." />
+              <div className="card-surface rounded-2xl p-12 text-center text-slate-400">
+                <Stethoscope className="mx-auto h-12 w-12 text-cyan-400/60 mb-3 animate-pulse" />
+                <p className="font-display text-base font-bold text-white">No Active Patient Inferences</p>
+                <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                  Submit a clinical profile above to simulate interventional outcomes across all 4 treatment arms.
+                </p>
+              </div>
             )}
           </Section>
 
-          {/* ERROR DISPLAY */}
-          <AnimatePresence>
-            {state.status === 'error' && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="flex items-start gap-3 rounded-2xl border border-rose-400/40 bg-rose-400/10 p-5 shadow-lg"
-              >
-                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-risk" />
-                <div>
-                  <p className="text-sm font-bold text-rose-100">Causal inference execution failed</p>
-                  <p className="mt-0.5 text-sm text-rose-200/90">{state.message}</p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* SECTION 3 & 4: DECISION SUPPORT & ANALYSIS */}
-          {state.status === 'success' && (
-            <>
-              {/* PRIMARY AI DECISION HERO */}
-              <Section
-                id="recommendation"
-                eyebrow="Pearlian Interventional Decision"
-                title="AI Treatment Recommendation"
-                subtitle="Calculated via Pearl's do-calculus graph mutilation across all four antiretroviral therapy arms."
-              >
-                <RecommendedTreatment result={state.result} />
-              </Section>
-
-              {/* COMPARATIVE ANALYSIS */}
-              <Section
-                id="analysis"
-                eyebrow="Multi-Arm Evaluation"
-                title="Treatment Arms Comparison & Ranking"
-                subtitle="Expected utility, progression-free survival probability, and comparative risk metrics across all available drug regimens."
-              >
-                <div className="space-y-8">
-                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <div>
-                      <div className="mb-3 flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-cyan-300" />
-                        <h3 className="font-display text-base font-bold text-white uppercase tracking-wider">
-                          Posterior Outcome Probabilities
-                        </h3>
-                      </div>
-                      <OutcomeSection result={state.result} />
-                    </div>
-
-                    <div>
-                      <div className="mb-3 flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4 text-mint-300" />
-                        <h3 className="font-display text-base font-bold text-white uppercase tracking-wider">
-                          Regimen Decision Hierarchy
-                        </h3>
-                      </div>
-                      <TreatmentRanking ranking={state.result.ranking} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="mb-3 font-display text-base font-bold text-white uppercase tracking-wider">
-                      Comprehensive Multi-Arm Matrix
-                    </h3>
-                    <TreatmentComparison treatments={state.result.treatments} />
-                  </div>
-                </div>
-              </Section>
-            </>
-          )}
-
-          {/* SECTION 5: CAUSAL DAG GRAPH */}
+          {/* SECTION 5: INTERACTIVE CAUSAL DAG */}
           <Section
             id="network"
-            eyebrow="Causal Architecture"
-            title="Bayesian Network DAG"
-            subtitle="The verified 23-edge directed acyclic graph learned from ACTG175 trial data with temporal constraints (Baseline → Treatment → Outcome)."
+            eyebrow="Structural Causal Model"
+            title="Bayesian Directed Acyclic Graph (DAG)"
+            subtitle="The learned 23-edge causal network connecting demographic baseline factors, clinical biomarkers, treatment assignment, and primary endpoints."
           >
             {overview ? (
-              <Suspense fallback={<LoadingState label="Rendering DAG network graph layout..." />}>
+              <Suspense fallback={<LoadingState label="Rendering interactive Bayesian network..." />}>
                 <DagGraph overview={overview} />
               </Suspense>
-            ) : (
-              <LoadingState label="Loading network..." />
-            )}
+            ) : null}
           </Section>
 
-          {/* SECTION 6: HELD-OUT VALIDATION */}
+          {/* SECTION 6: MODEL VALIDATION & COMPARISON */}
           <Section
             id="validation"
-            eyebrow="Empirical Verification"
-            title="Held-Out Model Validation"
-            subtitle="Rigorous out-of-sample evaluation on 428 held-out test patients with parameters learned strictly on the development partition."
+            eyebrow="Scientific Rigor & Validation"
+            title="Model Validation & Side-by-Side Comparison"
+            subtitle="Held-out test cohort evaluations (N = 428), Model A vs Model B benchmarks, calibration reliability, threshold sweeps, and Decision Curve Analysis."
           >
-            {overview ? <ValidationSection overview={overview} /> : <LoadingState label="Loading validation metrics..." />}
+            {overview ? <ValidationSection overview={overview} /> : null}
           </Section>
+
+          {/* SECTION 7: OUTCOME DEFINITION */}
+          <OutcomeSection />
         </div>
       </main>
 
-      <footer className="border-t border-cyan-400/15 bg-ink-950 py-10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-400/10 border border-cyan-400/25">
-              <Stethoscope className="h-4 w-4 text-cyan-300" />
-            </div>
-            <div>
-              <p className="font-display text-sm font-bold text-slate-100">
-                Causal Clinical Reasoning Platform
-              </p>
-              <p className="font-mono text-xs text-slate-400">
-                ACTG175 Bayesian World Model &middot; Exact Variable Elimination
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 font-mono text-xs text-slate-400">
-            <span className="flex items-center gap-1.5 rounded-lg border border-slate-700/50 bg-ink-900 px-3 py-1">
-              <Database className="h-3.5 w-3.5 text-cyan-300" /> 2,139 Patients
-            </span>
-            <span className="flex items-center gap-1.5 rounded-lg border border-slate-700/50 bg-ink-900 px-3 py-1">
-              <Network className="h-3.5 w-3.5 text-mint-300" /> 23 Edges &middot; 17 Nodes
-            </span>
-          </div>
+      {/* Footer */}
+      <footer className="border-t border-slate-800/80 bg-ink-950 py-10 text-center font-mono text-xs text-slate-400">
+        <div className="mx-auto max-w-7xl px-4 space-y-2">
+          <p className="font-bold text-slate-300">
+            ACTG175 Clinical AI Decision Support System &middot; Causal World Model
+          </p>
+          <p className="text-[11px] text-slate-500 max-w-2xl mx-auto">
+            Research and educational decision-support prototype. Evaluated under strict 80/20 train/test partition without test set leakage.
+          </p>
         </div>
       </footer>
     </div>
@@ -302,32 +297,33 @@ export default function App() {
 
 function LoadingState({ label }: { label: string }) {
   return (
-    <div className="flex items-center justify-center gap-3 rounded-2xl border border-cyan-400/15 bg-ink-900/60 py-12 shadow-inner">
-      <motion.span
+    <div className="card-surface flex flex-col items-center justify-center rounded-2xl py-16 text-center shadow-lg">
+      <motion.div
         animate={{ rotate: 360 }}
-        transition={{ repeat: Infinity, duration: 1.1, ease: 'linear' }}
-        className="h-5 w-5 rounded-full border-2 border-slate-700 border-t-cyan-400"
+        transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+        className="h-10 w-10 rounded-full border-3 border-cyan-400/20 border-t-cyan-400 mb-4"
       />
-      <p className="text-sm font-medium text-slate-300">{label}</p>
+      <p className="font-display text-sm font-bold text-white">{label}</p>
+      <p className="font-mono text-xs text-cyan-300/70 mt-1">Executing mathematical pipeline...</p>
     </div>
   )
 }
 
-function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-rose-400/30 bg-rose-400/10 px-6 py-10 text-center shadow-lg">
-      <AlertCircle className="h-6 w-6 text-rose-risk" />
-      <p className="max-w-xl text-sm font-bold text-rose-100">{message}</p>
-      <p className="text-xs text-rose-200/80">
-        Ensure the backend Flask API is running on port 5000 and click retry.
-      </p>
-      <button
-        onClick={onRetry}
-        className="mt-2 inline-flex items-center gap-2 rounded-xl border border-rose-400/40 bg-rose-400/15 px-5 py-2.5 text-sm font-bold text-rose-100 transition-colors hover:bg-rose-400/25 cursor-pointer"
-      >
-        <RefreshCw className="h-4 w-4" />
-        Retry Connection
-      </button>
+    <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-8 text-center shadow-xl">
+      <AlertCircle className="mx-auto h-10 w-10 text-rose-400 mb-3" />
+      <h3 className="font-display text-base font-bold text-white">Pipeline Execution Error</h3>
+      <p className="font-mono text-xs text-rose-200/90 mt-1 max-w-md mx-auto">{message}</p>
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-rose-500/20 border border-rose-500/40 px-4 py-2 font-mono text-xs font-bold text-rose-200 hover:bg-rose-500/30 transition-colors cursor-pointer"
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          <span>Retry Connection</span>
+        </button>
+      )}
     </div>
   )
 }

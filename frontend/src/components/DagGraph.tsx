@@ -39,9 +39,7 @@ const NODE_DESCRIPTIONS: Record<string, { name: string; category: string; desc: 
   preanti: { name: 'Pre-ART Exposure (Days)', category: 'Treatment History', desc: 'Cumulative days of antiretroviral exposure' },
   race: { name: 'Race', category: 'Demographics', desc: 'Self-reported race classification' },
   gender: { name: 'Gender', category: 'Demographics', desc: 'Biological sex' },
-  strat: 'Stratification' in { Stratification: 1 }
-    ? { name: 'Antiretroviral Stratum', category: 'Treatment History', desc: 'Stratification category based on prior ART' }
-    : { name: 'Antiretroviral Stratum', category: 'Treatment History', desc: 'Stratification category based on prior ART' },
+  strat: { name: 'Antiretroviral Stratum', category: 'Treatment History', desc: 'Stratification category based on prior ART duration' },
   symptom: { name: 'Symptomatic Indicator', category: 'Clinical Status', desc: 'Presence of HIV symptoms at baseline' },
   cd40: { name: 'Baseline CD4 T-Cell Count', category: 'Biomarker', desc: 'Baseline helper T-cell count (cells/mm³)' },
   cd80: { name: 'Baseline CD8 T-Cell Count', category: 'Biomarker', desc: 'Baseline cytotoxic T-cell count (cells/mm³)' },
@@ -101,54 +99,19 @@ function DagNode({ data, selected }: NodeProps) {
         </span>
         <span className="font-mono text-[9px] text-slate-400 uppercase">{category}</span>
       </div>
-      <p className="mt-1.5 truncate font-display text-xs font-bold text-white">{name}</p>
-      <Handle type="source" position={Position.Right} className="!h-2 !w-2 !border-0 !bg-mint-400" />
+      <div className="mt-1 font-display text-xs font-bold text-white truncate" title={name}>
+        {name}
+      </div>
+      <Handle type="source" position={Position.Right} className="!h-2 !w-2 !border-0 !bg-cyan-400" />
     </div>
   )
 }
 
-const nodeTypes: NodeTypes = { dagNode: DagNode }
-
-function layoutDagre(nodes: FlowNode[], edges: FlowEdge[]) {
-  const g = new dagre.graphlib.Graph()
-  g.setGraph({
-    rankdir: 'LR',
-    nodesep: 45,
-    ranksep: 90,
-    marginx: 30,
-    marginy: 30,
-  })
-  g.setDefaultEdgeLabel(() => ({}))
-
-  nodes.forEach((node) => {
-    g.setNode(node.id, { width: 170, height: 70 })
-  })
-
-  edges.forEach((edge) => {
-    g.setEdge(edge.source, edge.target)
-  })
-
-  dagre.layout(g)
-
-  const layoutedNodes = nodes.map((node) => {
-    const nodeWithPosition = g.node(node.id)
-    return {
-      ...node,
-      position: {
-        x: nodeWithPosition.x - 85,
-        y: nodeWithPosition.y - 35,
-      },
-    }
-  })
-
-  return { nodes: layoutedNodes, edges }
+const nodeTypes: NodeTypes = {
+  customNode: DagNode,
 }
 
-interface DagGraphProps {
-  overview: Overview
-}
-
-export function DagGraph({ overview }: DagGraphProps) {
+export function DagGraph({ overview }: { overview: Overview }) {
   return (
     <ReactFlowProvider>
       <DagGraphInner overview={overview} />
@@ -156,33 +119,51 @@ export function DagGraph({ overview }: DagGraphProps) {
   )
 }
 
-function DagGraphInner({ overview }: DagGraphProps) {
-  const [selectedNode, setSelectedNode] = useState<string | null>('trt')
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null)
-  const [activeFilter, setActiveFilter] = useState<'all' | 'intervention' | 'biomarkers' | 'outcome'>('all')
-
+function DagGraphInner({ overview }: { overview: Overview }) {
   const reactFlow = useReactFlow()
+  const [selectedNode, setSelectedNode] = useState<string | null>(null)
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null)
+  const [activeFilter, setActiveFilter] = useState<'all' | 'intervention' | 'biomarkers' | 'stable'>('all')
 
+  const highlight = selectedNode || hoveredNode
+
+  // Layout with Dagre
   const { rawNodes, rawEdges } = useMemo(() => {
-    const edges: FlowEdge[] = overview.dag.map((edge, index) => ({
-      id: `edge-${index}`,
-      source: edge.source,
-      target: edge.target,
-      animated: false,
-      style: { stroke: '#1d3158', strokeWidth: 1.6 },
-    }))
+    const g = new dagre.graphlib.Graph()
+    g.setGraph({ rankdir: 'LR', nodesep: 35, ranksep: 75 })
+    g.setDefaultEdgeLabel(() => ({}))
 
-    const nodes: FlowNode[] = Object.keys(NODE_DESCRIPTIONS).map((variable) => {
-      const meta = NODE_DESCRIPTIONS[variable]
+    const allNodeIds = Array.from(
+      new Set([
+        ...overview.variables.numerical,
+        ...overview.variables.categorical,
+        'trt',
+        'label',
+      ])
+    )
+
+    allNodeIds.forEach((id) => {
+      g.setNode(id, { width: 170, height: 60 })
+    })
+
+    overview.dag.forEach((edge) => {
+      g.setEdge(edge.source, edge.target)
+    })
+
+    dagre.layout(g)
+
+    const nodes: FlowNode[] = allNodeIds.map((id) => {
+      const nodeMeta = NODE_DESCRIPTIONS[id] || { name: id, category: 'Clinical', desc: '' }
+      const nodePos = g.node(id)
       return {
-        id: variable,
-        type: 'dagNode',
-        position: { x: 0, y: 0 },
+        id,
+        type: 'customNode',
+        position: { x: nodePos.x - 85, y: nodePos.y - 30 },
         data: {
-          label: variable,
-          name: meta.name,
-          category: meta.category,
-          accent: NODE_ACCENTS[variable] ?? 'slate',
+          label: id,
+          name: nodeMeta.name,
+          category: nodeMeta.category,
+          accent: NODE_ACCENTS[id] || 'cyan',
           dimmed: false,
           isTarget: false,
           isSource: false,
@@ -190,11 +171,29 @@ function DagGraphInner({ overview }: DagGraphProps) {
       }
     })
 
-    const layouted = layoutDagre(nodes, edges)
-    return { rawNodes: layouted.nodes, rawEdges: layouted.edges }
-  }, [overview])
+    const edges: FlowEdge[] = overview.dag.map((edge, idx) => {
+      const isIntervention = edge.is_intervention_edge || (edge.source === 'trt' && edge.target === 'label')
+      const stability = edge.bootstrap_stability ?? (isIntervention ? 1.0 : 0.5)
+      const isVeryStable = stability >= 0.75
+      const isWeak = stability < 0.50 && !isIntervention
 
-  const highlight = hoveredNode ?? selectedNode
+      return {
+        id: `e-${edge.source}-${edge.target}-${idx}`,
+        source: edge.source,
+        target: edge.target,
+        type: 'smoothstep',
+        data: {
+          stability,
+          category: edge.support_category || (isIntervention ? 'INTERVENTION' : 'EXPLORATORY'),
+          isIntervention,
+          isVeryStable,
+          isWeak,
+        },
+      }
+    })
+
+    return { rawNodes: nodes, rawEdges: edges }
+  }, [overview])
 
   const renderNodes = useMemo(() => {
     return rawNodes.map((node) => {
@@ -209,8 +208,6 @@ function DagGraphInner({ overview }: DagGraphProps) {
         dimmed = node.id !== 'trt' && node.id !== 'label'
       } else if (activeFilter === 'biomarkers') {
         dimmed = !['cd40', 'cd80', 'karnof', 'preanti', 'z30', 'trt', 'label'].includes(node.id)
-      } else if (activeFilter === 'outcome') {
-        dimmed = node.id !== 'label'
       }
 
       return {
@@ -228,12 +225,29 @@ function DagGraphInner({ overview }: DagGraphProps) {
   const renderEdges = useMemo(() => {
     return rawEdges.map((edge) => {
       const isHighlighted = highlight !== null && (edge.source === highlight || edge.target === highlight)
+      const data = edge.data as { stability: number; isIntervention: boolean; isVeryStable: boolean; isWeak: boolean }
+
+      let strokeColor = '#2a4365' // default slate blue
+      let strokeDash = undefined
+
+      if (data.isIntervention) {
+        strokeColor = isHighlighted ? '#92eeff' : '#00e5a3'
+      } else if (data.isVeryStable) {
+        strokeColor = isHighlighted ? '#92eeff' : '#30afff'
+      } else if (data.isWeak) {
+        strokeColor = isHighlighted ? '#92eeff' : '#4a5568'
+        strokeDash = '5 5'
+      } else {
+        strokeColor = isHighlighted ? '#92eeff' : '#5f8cb8'
+      }
+
       return {
         ...edge,
-        animated: isHighlighted,
+        animated: isHighlighted || data.isIntervention,
         style: {
-          stroke: isHighlighted ? '#92eeff' : '#1d3158',
-          strokeWidth: isHighlighted ? 2.8 : 1.6,
+          stroke: strokeColor,
+          strokeWidth: isHighlighted ? 2.8 : data.isIntervention ? 2.4 : 1.6,
+          strokeDasharray: strokeDash,
         },
       }
     })
@@ -333,7 +347,7 @@ function DagGraphInner({ overview }: DagGraphProps) {
       </div>
 
       {/* Main Graph + Inspector Grid */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_300px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
         {/* Flow Canvas */}
         <div className="h-[540px] overflow-hidden rounded-2xl border border-cyan-400/25 bg-ink-900/90 shadow-xl relative">
           <ReactFlow
@@ -366,9 +380,25 @@ function DagGraphInner({ overview }: DagGraphProps) {
             />
           </ReactFlow>
 
+          {/* Edge Stability Legend Bar */}
+          <div className="pointer-events-none absolute top-3 right-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-700/60 bg-ink-950/90 px-3 py-1.5 text-[10px] font-mono text-slate-300 shadow-md">
+            <span className="flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-cyan-400 inline-block" /> Solid: High Stability (&ge;75%)
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-blue-400 inline-block" /> Blue: Stable (50–74%)
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-slate-500 inline-block" /> Dashed: Exploratory (&lt;50%)
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-mint-300 inline-block" /> Mint: Intervention
+            </span>
+          </div>
+
           {/* Quick Helper Floating Tip */}
           <div className="pointer-events-none absolute bottom-3 left-3 rounded-lg border border-slate-700/60 bg-ink-950/90 px-3 py-1.5 text-[11px] font-mono text-slate-400 shadow-md">
-            Click any node to inspect causal parents &amp; conditional distribution
+            Click any node to inspect causal parents, edge stability &amp; state space
           </div>
         </div>
 
@@ -403,24 +433,34 @@ function DagGraphInner({ overview }: DagGraphProps) {
 
                 <p className="text-xs text-slate-300 leading-relaxed">{selectedNodeMeta.desc}</p>
 
-                {/* Causal Dependencies */}
+                {/* Causal Dependencies with Edge Stability */}
                 <div className="space-y-2">
                   <p className="font-mono text-[11px] font-bold text-cyan-300 uppercase">
-                    Causal Relationships:
+                    Causal Relationships &amp; Edge Stability:
                   </p>
                   <div className="grid grid-cols-2 gap-2 text-xs font-mono">
                     <div className="rounded-xl border border-slate-700/60 bg-ink-950 p-2.5">
                       <span className="text-[10px] text-slate-400 block">Parents (In-Degree):</span>
                       <span className="font-bold text-cyan-200 text-sm">{incomingEdges.length}</span>
-                      <div className="mt-1 text-[10px] text-slate-400 truncate">
-                        {incomingEdges.map((e) => e.source).join(', ') || 'Root node'}
+                      <div className="mt-1 space-y-1 max-h-24 overflow-y-auto">
+                        {incomingEdges.map((e) => (
+                          <div key={e.source} className="text-[10px] text-slate-300 truncate">
+                            &larr; <strong className="text-white">{e.source}</strong> ({e.support_category || 'DAG'})
+                          </div>
+                        ))}
+                        {incomingEdges.length === 0 && <span className="text-[10px] text-slate-500">Root Node</span>}
                       </div>
                     </div>
                     <div className="rounded-xl border border-slate-700/60 bg-ink-950 p-2.5">
                       <span className="text-[10px] text-slate-400 block">Children (Out-Degree):</span>
                       <span className="font-bold text-mint-200 text-sm">{outgoingEdges.length}</span>
-                      <div className="mt-1 text-[10px] text-slate-400 truncate">
-                        {outgoingEdges.map((e) => e.target).join(', ') || 'Terminal node'}
+                      <div className="mt-1 space-y-1 max-h-24 overflow-y-auto">
+                        {outgoingEdges.map((e) => (
+                          <div key={e.target} className="text-[10px] text-slate-300 truncate">
+                            &rarr; <strong className="text-white">{e.target}</strong> ({e.support_category || 'DAG'})
+                          </div>
+                        ))}
+                        {outgoingEdges.length === 0 && <span className="text-[10px] text-slate-500">Terminal Node</span>}
                       </div>
                     </div>
                   </div>
@@ -431,7 +471,7 @@ function DagGraphInner({ overview }: DagGraphProps) {
                   <p className="font-mono text-[11px] font-bold text-cyan-300 uppercase mb-1.5">
                     CPT State Space ({selectedStates.length} states):
                   </p>
-                  <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1">
+                  <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1">
                     {selectedStates.map((state) => (
                       <span
                         key={state}
@@ -447,15 +487,16 @@ function DagGraphInner({ overview }: DagGraphProps) {
               <div className="flex flex-col items-center justify-center py-16 text-center text-slate-400">
                 <Info className="h-8 w-8 text-cyan-400/60 mb-2" />
                 <p className="font-display text-sm font-bold text-white">Select a Graph Node</p>
-                <p className="text-xs text-slate-400 mt-1 max-w-[200px]">
-                  Click any node in the Bayesian Network to view its parents, children, and state spaces.
+                <p className="text-xs text-slate-400 mt-1 max-w-[220px]">
+                  Click any node in the Bayesian Network to view its parents, children, bootstrap stability, and state spaces.
                 </p>
               </div>
             )}
           </AnimatePresence>
 
-          <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-500 font-mono">
-            Final Model: 23 Edges &middot; BDeu Prior
+          <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400 font-mono flex items-center justify-between">
+            <span>23 Causal Edges</span>
+            <span className="text-mint-300">BDeu (ESS=10)</span>
           </div>
         </div>
       </div>
