@@ -34,10 +34,10 @@ const FEATURE_LABELS: Record<string, string> = {
 }
 
 const ARM_COLORS: Record<number, { stroke: string; fill: string; name: string }> = {
-  0: { stroke: '#f472b6', fill: 'bg-pink-500', name: 'ZDV Monotherapy' },
-  1: { stroke: '#a1eafb', fill: 'bg-cyan-300', name: 'ZDV + ddI' },
-  2: { stroke: '#cabbe9', fill: 'bg-purple-300', name: 'ZDV + ddC (Recommended)' },
-  3: { stroke: '#ffcef3', fill: 'bg-pink-300', name: 'ddI Monotherapy' },
+  0: { stroke: '#f43f5e', fill: 'bg-rose-500', name: 'ZDV Monotherapy' },
+  1: { stroke: '#90caf9', fill: 'bg-sky-400', name: 'ZDV + ddI' },
+  2: { stroke: '#2196f3', fill: 'bg-blue-500', name: 'ZDV + ddC (Recommended)' },
+  3: { stroke: '#64b5f6', fill: 'bg-blue-400', name: 'ddI Monotherapy' },
 }
 
 export function RecommendedTreatment({ result }: { result: AnalyzeResult }) {
