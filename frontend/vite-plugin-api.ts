@@ -29,7 +29,9 @@ function resolvePythonBin(root: string): string {
 }
 
 const pythonBin = resolvePythonBin(repoRoot)
-const apiScript = path.join(repoRoot, 'src', 'api', 'app.py')
+const apiScript = existsSync(path.join(repoRoot, 'backend', 'app.py'))
+  ? path.join(repoRoot, 'backend', 'app.py')
+  : path.join(repoRoot, 'src', 'api', 'app.py')
 
 function portOpen(port: number, host = API_HOST): Promise<boolean> {
   return new Promise((resolve) => {
