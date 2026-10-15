@@ -1,0 +1,79 @@
+{
+    "title": "Comprehensive Side-by-Side Model Comparison: Model A (Discretized BN) vs Model B (Continuous SCM)",
+    "cohort": "ACTG175 Held-Out Test Set (N = 428 patients, Seed 42)",
+    "summary": "Following faculty advisor recommendations, Model B preserves all numerical clinical biomarkers (CD4, CD8, Age, Weight, Karnofsky, Pre-ART Days) as genuine continuous values. When evaluated on the exact same untouched test partition, Model B achieves superior discrimination (ROC-AUC 0.6878 vs 0.6372), better calibration (ECE 3.96% vs 4.45%), and higher specificity at calibrated decision thresholds.",
+    "comparison_table": [
+        {
+            "dimension": "Continuous Variable Preservation",
+            "model_a_discretized": "Converted into 3 discrete quantile bins (e.g. cd40_1, cd40_2, cd40_3)",
+            "model_b_continuous": "Preserved as exact continuous measurements (e.g. CD4 = 347.0 cells/mm\u00b3)",
+            "advantage": "Model B eliminates discretization step-function artifacts & information loss"
+        },
+        {
+            "dimension": "Causal / Probabilistic Architecture",
+            "model_a_discretized": "23-Edge Discrete Bayesian Network (BDeu ESS=10, Variable Elimination)",
+            "model_b_continuous": "Continuous-Categorical SCM (G-Computation Response Surfaces, L2 Ridge)",
+            "advantage": "Both support counterfactual do-calculus; Model B is differentiable"
+        },
+        {
+            "dimension": "Discrimination (ROC-AUC)",
+            "model_a_discretized": "0.6372 (95% CI: 0.5763 - 0.6966)",
+            "model_b_continuous": "0.6878 (95% CI: 0.6259 - 0.7443)",
+            "advantage": "Model B +0.0506 AUC gain on exact same test partition"
+        },
+        {
+            "dimension": "Precision-Recall AUC (PR-AUC)",
+            "model_a_discretized": "0.3687 (95% CI: 0.2853 - 0.4553)",
+            "model_b_continuous": "0.4130 (95% CI: 0.3258 - 0.5106)",
+            "advantage": "Model B +0.0443 PR-AUC gain under 24.3% prevalence"
+        },
+        {
+            "dimension": "Probabilistic Calibration (ECE)",
+            "model_a_discretized": "0.0445 (4.45% error)",
+            "model_b_continuous": "0.0396 (3.96% error)",
+            "advantage": "Model B achieves tighter agreement with empirical event frequencies"
+        },
+        {
+            "dimension": "Brier Score (Probabilistic Error)",
+            "model_a_discretized": "0.1753 (95% CI: 0.1562 - 0.1955)",
+            "model_b_continuous": "0.1699 (95% CI: 0.1499 - 0.1912)",
+            "advantage": "Model B achieves lower squared probability error"
+        },
+        {
+            "dimension": "Development-Calibrated Threshold (tau*)",
+            "model_a_discretized": "tau* = 0.2 (Sensitivity: 68.3%, Specificity: 50.3%)",
+            "model_b_continuous": "tau* = 0.24 (Sensitivity: 67.3%, Specificity: 62.6%)",
+            "advantage": "Model B yields superior specificity (+12.3%) at equivalent ~67% sensitivity"
+        },
+        {
+            "dimension": "Local Explainability Methodology",
+            "model_a_discretized": "Discrete Evidence Ablation (Delta P on discrete variable omission)",
+            "model_b_continuous": "Exact Continuous Gradient Sensitivity (d P / d X_j partial derivatives)",
+            "advantage": "Model B provides exact risk slopes per unit biomarker (e.g. per 50 CD4 cells)"
+        },
+        {
+            "dimension": "Counterfactual Advantage Rate",
+            "model_a_discretized": "75.0% (321/428 patients)",
+            "model_b_continuous": "73.1% (313/428 patients)",
+            "advantage": "Both models independently identify superior dual-therapy regimens over monotherapy"
+        }
+    ],
+    "model_a_summary": {
+        "name": "Model A: Discretized Bayesian Network (Baseline)",
+        "roc_auc": 0.6371972934472934,
+        "pr_auc": 0.36866781511356306,
+        "brier_score": 0.17529858003681398,
+        "ece": 0.0445,
+        "optimal_tau": 0.2,
+        "calibrated_f1": 0.4226
+    },
+    "model_b_summary": {
+        "name": "Model B: Continuous / Hybrid SCM (Primary)",
+        "roc_auc": 0.6877967711301045,
+        "pr_auc": 0.4129591370598682,
+        "brier_score": 0.1699329587630726,
+        "ece": 0.0396,
+        "optimal_tau": 0.24,
+        "calibrated_f1": 0.4746
+    }
+}
