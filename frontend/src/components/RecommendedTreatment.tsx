@@ -100,7 +100,10 @@ export function RecommendedTreatment({ result }: { result: AnalyzeResult }) {
             </span>
           )}
           {benefit && (
-            <span className="rounded-lg border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-1 font-mono text-xs font-bold text-cyan-200">
+            <span
+              className="rounded-lg border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-1 font-mono text-xs font-bold text-cyan-200 cursor-help"
+              title="Individualized treatment benefit (Conditional Average Treatment Effect / Absolute Risk Reduction) relative to ZDV monotherapy, evaluated as a percentile across the trial development cohort."
+            >
               {benefit.benefit_tier} ({benefit.benefit_percentile}th %ile Benefit)
             </span>
           )}
@@ -229,8 +232,22 @@ export function RecommendedTreatment({ result }: { result: AnalyzeResult }) {
           </div>
 
           <p className="mt-3 text-xs text-slate-300 leading-relaxed font-sans">
-            <strong>Clinical Causal Interpretation:</strong> {eValue.interpretation} Because{' '}
-            <span className="text-emerald-300 font-bold">E = {eValue.e_value_point.toFixed(2)} &ge; 1.5</span>, the causal recommendation has high stability and cannot be easily nullified by residual clinical confounders.
+            <strong>Clinical Causal Interpretation:</strong> {eValue.interpretation}{' '}
+            {eValue.risk_ratio_vs_monotherapy < 1.0 ? (
+              eValue.is_robust ? (
+                <span>
+                  Because <span className="text-emerald-300 font-bold">E = {eValue.e_value_point.toFixed(2)} &ge; 1.5</span>, the estimated protective benefit demonstrates moderate-to-high stability against plausible unmeasured confounding.
+                </span>
+              ) : (
+                <span>
+                  Because <span className="text-amber-300 font-bold">E = {eValue.e_value_point.toFixed(2)} &lt; 1.5</span>, residual confounding of modest strength could potentially explain away the observed risk reduction.
+                </span>
+              )
+            ) : (
+              <span>
+                Sensitivity analysis for protective confounding is not applicable when risk reduction is absent relative to monotherapy.
+              </span>
+            )}
           </p>
         </div>
       )}
@@ -443,6 +460,9 @@ export function RecommendedTreatment({ result }: { result: AnalyzeResult }) {
           <p className="mt-1">
             Conditioning on this patient's exact continuous biomarkers (CD4, CD8, Karnofsky, and prior ART history),{' '}
             <strong className="text-mint-200">{recommended.name}</strong> yields the lowest model-estimated posterior probability of disease progression among all four randomized treatment strategies in the ACTG175 Causal World Model.
+          </p>
+          <p className="mt-2 text-[11px] text-slate-400 italic">
+            * Causal estimates reflect model-estimated potential outcomes under ACTG175 trial assumptions and do not replace personalized physician evaluation or constitute autonomous clinical prescribing decisions.
           </p>
         </div>
       </div>

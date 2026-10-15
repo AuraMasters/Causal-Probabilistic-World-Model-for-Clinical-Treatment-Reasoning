@@ -345,7 +345,7 @@ def compute_calibration_analysis(y_true, y_prob, n_bins=10):
     clipped_prob = np.clip(y_prob, eps, 1.0 - eps)
     logits = np.log(clipped_prob / (1.0 - clipped_prob)).reshape(-1, 1)
 
-    calib_model = LogisticRegression(penalty=None, solver="lbfgs", max_iter=500)
+    calib_model = LogisticRegression(C=np.inf, solver="lbfgs", max_iter=500)
     calib_model.fit(logits, y_true)
     calib_intercept = round(float(calib_model.intercept_[0]), 4)
     calib_slope = round(float(calib_model.coef_[0][0]), 4)

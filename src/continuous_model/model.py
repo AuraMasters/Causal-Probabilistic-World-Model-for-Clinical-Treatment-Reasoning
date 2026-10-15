@@ -1,3 +1,4 @@
+import json
 import math
 import pickle
 from pathlib import Path
@@ -112,7 +113,6 @@ class ContinuousCausalModel:
                 raise ValueError(f"No development samples found for treatment arm {t}")
 
             clf = LogisticRegression(
-                penalty="l2",
                 C=self.c_reg,
                 solver="lbfgs",
                 max_iter=1000,
@@ -320,12 +320,41 @@ class ContinuousCausalModel:
             },
         }
 
+    def export_weights_json(self, filepath: Path | None = None) -> Path:
+        """Exports fitted continuous model parameters to JSON for frontend offline client inference."""
+        if filepath is None:
+            filepath = PROJECT_ROOT / "frontend" / "src" / "lib" / "modelWeights.json"
+        
+        arms_data = {}
+        for t in [0, 1, 2, 3]:
+            clf = self.arm_models[t]
+            arms_data[str(t)] = {
+                "intercept": float(clf.intercept_[0]),
+                "coefficients": [float(c) for c in clf.coef_[0]],
+            }
+
+        payload = {
+            "scaler_means": self.scaler_means,
+            "scaler_stds": self.scaler_stds,
+            "feature_names": self.feature_names,
+            "dev_risk_reductions": [float(r) for r in self.dev_risk_reductions],
+            "arms": arms_data,
+        }
+
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2)
+        return filepath
+
     def save(self, filepath: Path | None = None) -> Path:
-        """Saves the fitted model artifact."""
+        """Saves the fitted model artifact and synchronizes frontend JSON weights."""
         if filepath is None:
             filepath = ARTIFACTS_DIR / "continuous_causal_model.pkl"
         with open(filepath, "wb") as f:
             pickle.dump(self, f)
+        try:
+            self.export_weights_json()
+        except Exception:
+            pass
         return filepath
 
     @classmethod

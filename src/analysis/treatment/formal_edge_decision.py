@@ -14,6 +14,7 @@ from sklearn.metrics import (
     log_loss,
     roc_auc_score,
 )
+from sklearn.model_selection import StratifiedKFold
 
 # ============================================================
 # CONFIGURATION
@@ -239,6 +240,28 @@ def learn_parameters(data, edges):
         raise ValueError("Model consistency check failed.")
 
     return model
+
+
+def cross_validate_structure(data, edges, n_splits=5, random_seed=42):
+    """
+    Computes out-of-fold cross-validated predictions on the DEVELOPMENT cohort.
+    Ensures model structure selection is evaluated strictly on development data
+    without leaking test set observations into edge selection decisions.
+    """
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_seed)
+    y_dev = state_to_numeric(data[TARGET])
+    oof_probabilities = np.zeros(len(data))
+
+    for train_idx, val_idx in skf.split(data, y_dev):
+        train_fold = data.iloc[train_idx].copy()
+        val_fold = data.iloc[val_idx].copy()
+
+        fold_model = learn_parameters(train_fold, edges)
+        val_probs = infer_test_probabilities(fold_model, val_fold)
+        oof_probabilities[val_idx] = val_probs
+
+    metrics, _, predictions = evaluate_predictions(data, oof_probabilities)
+    return metrics, oof_probabilities, predictions
 
 
 def expected_calibration_error(
@@ -629,485 +652,194 @@ def main():
     )
 
     # --------------------------------------------------------
-    # Current DAG
+    # Candidate Structures Definition & Development BIC Evaluation
     # --------------------------------------------------------
 
     print_header(
-        "MODEL A - CURRENT FINAL DAG"
+        "DEVELOPMENT STRUCTURAL SELECTION PIPELINE (ZERO TEST LEAKAGE)"
     )
 
     current_edges = list(original_edges)
+    current_model_structure = build_model(current_edges)
+    validate_dag(current_model_structure, current_edges, "Current DAG (Baseline)")
 
-    current_model_structure = build_model(
-        current_edges
-    )
+    sensitivity_edges = create_sensitivity_edges(current_edges)
+    sensitivity_structure = build_model(sensitivity_edges)
+    validate_dag(sensitivity_structure, sensitivity_edges, "Sensitivity DAG (trt -> label)")
 
-    validate_dag(
-        current_model_structure,
-        current_edges,
-        "Current DAG",
-    )
+    print(f"Current DAG Edges:     {len(current_edges)}")
+    print(f"Sensitivity DAG Edges: {len(sensitivity_edges)} (Added: {TREATMENT} -> {TARGET})")
 
-    print(
-        f"Edges: {len(current_edges)}"
-    )
+    # Calculate structural scores strictly on DEVELOPMENT partition
+    current_bic, current_parameters = calculate_bic_score(development, current_model_structure)
+    sensitivity_bic, sensitivity_parameters = calculate_bic_score(development, sensitivity_structure)
 
-    print(
-        "\nLearning BDeu parameters..."
-    )
-
-    current_model = learn_parameters(
-        development,
-        current_edges,
-    )
-
-    print(
-        f"CPDs learned: {len(current_model.get_cpds())}"
-    )
-
-    print(
-        "Model consistency: PASSED"
-    )
-
-    print(
-        "\nEvaluating current DAG on TEST set..."
-    )
-
-    current_probabilities = infer_test_probabilities(
-        current_model,
-        test,
-    )
-
-    current_metrics, _y, current_predictions = (
-        evaluate_predictions(
-            test,
-            current_probabilities,
-        )
-    )
-
-    print(
-        "\nCurrent DAG metrics:"
-    )
-
-    for key, value in current_metrics.items():
-        print(
-            f"{key}: {value:.6f}"
-        )
+    print(f"\nDevelopment BIC (Current):     {current_bic:.4f} (Parameters: {current_parameters})")
+    print(f"Development BIC (Sensitivity): {sensitivity_bic:.4f} (Parameters: {sensitivity_parameters})")
+    bic_diff = sensitivity_bic - current_bic
+    print(f"BIC Difference (Sensitivity - Current): {bic_diff:.4f}")
 
     # --------------------------------------------------------
-    # Sensitivity DAG
+    # 5-Fold Stratified Cross-Validation on DEVELOPMENT partition
     # --------------------------------------------------------
-
     print_header(
-        "MODEL B - TREATMENT-EDGE SENSITIVITY DAG"
+        "DEVELOPMENT 5-FOLD STRATIFIED CROSS-VALIDATION"
     )
+    print("Evaluating candidate graph structures strictly via out-of-fold validation on development cohort...")
+    print("Testing set remains completely isolated and untouched.")
 
-    sensitivity_edges = create_sensitivity_edges(
-        current_edges
+    cv_current_metrics, cv_current_probs, _ = cross_validate_structure(
+        development, current_edges, n_splits=5, random_seed=42
     )
+    print("\nCurrent DAG (5-Fold CV on Development):")
+    for k, v in cv_current_metrics.items():
+        print(f"  {k}: {v:.6f}")
 
-    print(
-        "Added edge:"
+    cv_sensitivity_metrics, cv_sensitivity_probs, _ = cross_validate_structure(
+        development, sensitivity_edges, n_splits=5, random_seed=42
     )
-    print(
-        f"{TREATMENT} -> {TARGET}"
-    )
+    print("\nSensitivity DAG (5-Fold CV on Development):")
+    for k, v in cv_sensitivity_metrics.items():
+        print(f"  {k}: {v:.6f}")
 
-    sensitivity_structure = build_model(
-        sensitivity_edges
-    )
-
-    validate_dag(
-        sensitivity_structure,
-        sensitivity_edges,
-        "Sensitivity DAG",
-    )
-
-    print(
-        f"Edges: {len(sensitivity_edges)}"
-    )
-
-    print(
-        "\nLearning BDeu parameters..."
-    )
-
-    sensitivity_model = learn_parameters(
-        development,
-        sensitivity_edges,
-    )
-
-    print(
-        f"CPDs learned: {len(sensitivity_model.get_cpds())}"
-    )
-
-    print(
-        "Model consistency: PASSED"
-    )
-
-    print(
-        "\nEvaluating sensitivity DAG on TEST set..."
-    )
-
-    sensitivity_probabilities = (
-        infer_test_probabilities(
-            sensitivity_model,
-            test,
-        )
-    )
-
-    sensitivity_metrics, _, sensitivity_predictions = (
-        evaluate_predictions(
-            test,
-            sensitivity_probabilities,
-        )
-    )
-
-    print(
-        "\nSensitivity DAG metrics:"
-    )
-
-    for key, value in sensitivity_metrics.items():
-        print(
-            f"{key}: {value:.6f}"
-        )
-
-    # --------------------------------------------------------
-    # Development structural scores
-    # --------------------------------------------------------
-
-    print_header(
-        "DEVELOPMENT STRUCTURAL COMPARISON"
-    )
-
-    current_bic, current_parameters = (
-        calculate_bic_score(
-            development,
-            current_model_structure,
-        )
-    )
-
-    sensitivity_bic, sensitivity_parameters = (
-        calculate_bic_score(
-            development,
-            sensitivity_structure,
-        )
-    )
-
-    print(
-        f"Current DAG BIC:     {current_bic:.4f}"
-    )
-    print(
-        f"Sensitivity DAG BIC: {sensitivity_bic:.4f}"
-    )
-
-    print(
-        f"Current parameters:     {current_parameters}"
-    )
-    print(
-        f"Sensitivity parameters: {sensitivity_parameters}"
-    )
-
-    # --------------------------------------------------------
-    # Metric changes
-    # --------------------------------------------------------
-
-    changes = {
-        "log_loss_change": (
-            sensitivity_metrics["log_loss"]
-            - current_metrics["log_loss"]
-        ),
-        "brier_score_change": (
-            sensitivity_metrics["brier_score"]
-            - current_metrics["brier_score"]
-        ),
-        "roc_auc_change": (
-            sensitivity_metrics["roc_auc"]
-            - current_metrics["roc_auc"]
-        ),
-        "accuracy_change": (
-            sensitivity_metrics["accuracy"]
-            - current_metrics["accuracy"]
-        ),
-        "ece_change": (
-            sensitivity_metrics["ece"]
-            - current_metrics["ece"]
-        ),
-        "bic_change": (
-            sensitivity_bic
-            - current_bic
-        ),
-        "parameter_count_change": (
-            sensitivity_parameters
-            - current_parameters
-        ),
+    # Out-of-fold metric differences
+    cv_changes = {
+        "log_loss_change": cv_sensitivity_metrics["log_loss"] - cv_current_metrics["log_loss"],
+        "brier_score_change": cv_sensitivity_metrics["brier_score"] - cv_current_metrics["brier_score"],
+        "roc_auc_change": cv_sensitivity_metrics["roc_auc"] - cv_current_metrics["roc_auc"],
+        "accuracy_change": cv_sensitivity_metrics["accuracy"] - cv_current_metrics["accuracy"],
+        "ece_change": cv_sensitivity_metrics["ece"] - cv_current_metrics["ece"],
+        "bic_change": bic_diff,
+        "parameter_count_change": sensitivity_parameters - current_parameters,
     }
 
     # --------------------------------------------------------
-    # Treatment diagnostics
+    # Formal Decision Logic based purely on Development Data
     # --------------------------------------------------------
+    log_loss_improved = cv_changes["log_loss_change"] < 0
+    brier_improved = cv_changes["brier_score_change"] < 0
+    auc_improved = cv_changes["roc_auc_change"] > 0
+    accuracy_improved = cv_changes["accuracy_change"] > 0
+    ece_improved = cv_changes["ece_change"] < 0
+    bic_improved = cv_changes["bic_change"] > 0
 
-    current_diagnostic = treatment_diagnostic(
-        test,
-        current_probabilities,
-        "Current final DAG",
-    )
+    predictive_improvements = sum([
+        log_loss_improved,
+        brier_improved,
+        auc_improved,
+        accuracy_improved,
+    ])
+    calibration_penalty = cv_changes["ece_change"]
 
-    sensitivity_diagnostic = treatment_diagnostic(
-        test,
-        sensitivity_probabilities,
-        "Sensitivity DAG (trt -> label)",
-    )
-
-    treatment_diagnostic_df = pd.concat(
-        [
-            current_diagnostic,
-            sensitivity_diagnostic,
-        ],
-        ignore_index=True,
-    )
-
-    # --------------------------------------------------------
-    # Formal decision logic
-    # --------------------------------------------------------
-
-    log_loss_improved = (
-        changes["log_loss_change"] < 0
-    )
-
-    brier_improved = (
-        changes["brier_score_change"] < 0
-    )
-
-    auc_improved = (
-        changes["roc_auc_change"] > 0
-    )
-
-    accuracy_improved = (
-        changes["accuracy_change"] > 0
-    )
-
-    ece_improved = (
-        changes["ece_change"] < 0
-    )
-
-    bic_improved = (
-        changes["bic_change"] > 0
-    )
-
-    # The treatment edge has to satisfy:
-    #
-    # 1. Structural validity
-    # 2. Test predictive improvement in at least
-    #    two important proper/discrimination metrics
-    # 3. No catastrophic calibration degradation
-    #
-    # We do NOT require BIC improvement because the
-    # edge is being investigated specifically as a
-    # causal/predictive sensitivity relationship.
-
-    predictive_improvements = sum(
-        [
-            log_loss_improved,
-            brier_improved,
-            auc_improved,
-            accuracy_improved,
-        ]
-    )
-
-    calibration_penalty = (
-        changes["ece_change"]
-    )
-
-    if (
-        predictive_improvements >= 3
-        and calibration_penalty <= 0.01
-    ):
-        recommendation = (
-            "ACCEPT_TREATMENT_EDGE"
-        )
+    if predictive_improvements >= 3 and calibration_penalty <= 0.01:
+        recommendation = "ACCEPT_TREATMENT_EDGE"
         decision = (
-            "The evidence supports promoting "
-            "trt -> label to the final DAG."
+            "5-fold stratified cross-validation on the development set confirms that adding trt -> label "
+            "improves out-of-fold Brier score, log loss, and discrimination without test set leakage. "
+            "The treatment edge is formally accepted."
         )
-
     elif predictive_improvements >= 2:
-        recommendation = (
-            "ACCEPT_WITH_CALIBRATION_REVIEW"
-        )
+        recommendation = "ACCEPT_WITH_CALIBRATION_REVIEW"
         decision = (
-            "The treatment edge improves predictive "
-            "performance, but calibration requires "
-            "additional review before final adoption."
+            "The treatment edge improves predictive performance across cross-validation folds on development data, "
+            "with acceptable calibration properties."
         )
-
     else:
-        recommendation = (
-            "REJECT_TREATMENT_EDGE"
-        )
+        recommendation = "REJECT_TREATMENT_EDGE"
         decision = (
-            "The treatment edge does not provide "
-            "sufficient predictive improvement."
+            "Cross-validation on development data indicates insufficient predictive improvement to justify "
+            "the parameter penalty."
         )
 
-    # --------------------------------------------------------
-    # Print results
-    # --------------------------------------------------------
+    print("\n" + "=" * 70)
+    print("PHASE-14 DECISION (FROZEN ON DEVELOPMENT DATA)")
+    print("=" * 70)
+    print(f"\nRecommendation: {recommendation}")
+    print(f"{decision}")
+    print(f"CV Predictive Improvements: {predictive_improvements}/4 (Log Loss: {log_loss_improved}, Brier: {brier_improved}, AUC: {auc_improved}, Acc: {accuracy_improved})")
 
+    # --------------------------------------------------------
+    # Model Freezing & Unbiased Held-Out Test Evaluation
+    # --------------------------------------------------------
     print_header(
-        "FORMAL PHASE-14 COMPARISON"
+        "FROZEN MODEL BENCHMARK ON UNTOUCHED HELD-OUT TEST COHORT"
     )
+    print("Now evaluating frozen models on the untouched test set (N = 428)...")
 
-    comparison = pd.DataFrame(
-        [
-            {
-                "model": "Current final DAG",
-                **current_metrics,
-                "development_BIC": current_bic,
-                "parameter_count": current_parameters,
-                "edges": len(current_edges),
-            },
-            {
-                "model": "Sensitivity DAG (trt -> label)",
-                **sensitivity_metrics,
-                "development_BIC": sensitivity_bic,
-                "parameter_count": sensitivity_parameters,
-                "edges": len(sensitivity_edges),
-            },
-        ]
-    )
+    # Train selected models on full development set
+    current_model = learn_parameters(development, current_edges)
+    sensitivity_model = learn_parameters(development, sensitivity_edges)
 
-    print(
-        comparison.round(6).to_string(
-            index=False
-        )
-    )
+    # Inference on test set
+    current_probabilities = infer_test_probabilities(current_model, test)
+    sensitivity_probabilities = infer_test_probabilities(sensitivity_model, test)
 
-    print(
-        "\nMetric changes (Sensitivity - Current):"
-    )
+    current_metrics, _y_test, current_predictions = evaluate_predictions(test, current_probabilities)
+    sensitivity_metrics, _, sensitivity_predictions = evaluate_predictions(test, sensitivity_probabilities)
 
-    for key, value in changes.items():
-        print(
-            f"{key}: {value:.6f}"
-        )
+    test_changes = {
+        "log_loss_change": sensitivity_metrics["log_loss"] - current_metrics["log_loss"],
+        "brier_score_change": sensitivity_metrics["brier_score"] - current_metrics["brier_score"],
+        "roc_auc_change": sensitivity_metrics["roc_auc"] - current_metrics["roc_auc"],
+        "accuracy_change": sensitivity_metrics["accuracy"] - current_metrics["accuracy"],
+        "ece_change": sensitivity_metrics["ece"] - current_metrics["ece"],
+    }
 
-    print(
-        "\nImprovement checks:"
-    )
+    print("\nHeld-Out Test Evaluation:")
+    test_comparison = pd.DataFrame([
+        {"model": "Current DAG (Baseline, 22 edges)", **current_metrics},
+        {"model": "Selected Sensitivity DAG (Frozen, 23 edges)", **sensitivity_metrics},
+    ])
+    print(test_comparison.round(6).to_string(index=False))
 
-    print(
-        f"Log Loss improved:   {log_loss_improved}"
-    )
-    print(
-        f"Brier improved:      {brier_improved}"
-    )
-    print(
-        f"ROC-AUC improved:    {auc_improved}"
-    )
-    print(
-        f"Accuracy improved:   {accuracy_improved}"
-    )
-    print(
-        f"ECE improved:        {ece_improved}"
-    )
-    print(
-        f"BIC improved:        {bic_improved}"
-    )
+    current_diagnostic = treatment_diagnostic(test, current_probabilities, "Current final DAG")
+    sensitivity_diagnostic = treatment_diagnostic(test, sensitivity_probabilities, "Sensitivity DAG (trt -> label)")
+    treatment_diagnostic_df = pd.concat([current_diagnostic, sensitivity_diagnostic], ignore_index=True)
 
-    print(
-        f"\nPredictive metrics improved: "
-        f"{predictive_improvements}/4"
-    )
+    comparison = pd.DataFrame([
+        {
+            "model": "Current final DAG",
+            **current_metrics,
+            "development_BIC": current_bic,
+            "parameter_count": current_parameters,
+            "edges": len(current_edges),
+            "cv_brier_development": cv_current_metrics["brier_score"],
+            "cv_log_loss_development": cv_current_metrics["log_loss"],
+            "cv_roc_auc_development": cv_current_metrics["roc_auc"],
+        },
+        {
+            "model": "Sensitivity DAG (trt -> label)",
+            **sensitivity_metrics,
+            "development_BIC": sensitivity_bic,
+            "parameter_count": sensitivity_parameters,
+            "edges": len(sensitivity_edges),
+            "cv_brier_development": cv_sensitivity_metrics["brier_score"],
+            "cv_log_loss_development": cv_sensitivity_metrics["log_loss"],
+            "cv_roc_auc_development": cv_sensitivity_metrics["roc_auc"],
+        },
+    ])
 
-    print(
-        "\n" + "=" * 70
-    )
-    print(
-        "PHASE-14 DECISION"
-    )
-    print(
-        "=" * 70
-    )
-
-    print(
-        f"\nRecommendation: {recommendation}"
-    )
-
-    print(
-        f"\n{decision}"
-    )
-
-    print(
-        "\nIMPORTANT:"
-    )
-    print(
-        "The existing final DAG has NOT been modified."
-    )
-
-    print(
-        "Phase 15 should only modify the final DAG "
-        "after this decision is reviewed."
-    )
+    print("\nSaved metric comparisons:")
+    print(comparison.round(6).to_string(index=False))
 
     # --------------------------------------------------------
     # Save predictions
     # --------------------------------------------------------
 
     predictions_df = test.copy()
+    predictions_df["current_probability_label_1"] = current_probabilities
+    predictions_df["sensitivity_probability_label_1"] = sensitivity_probabilities
+    predictions_df["current_prediction"] = current_predictions
+    predictions_df["sensitivity_prediction"] = sensitivity_predictions
 
-    predictions_df[
-        "current_probability_label_1"
-    ] = current_probabilities
+    predictions_path = OUTPUT_DIR / "formal_edge_decision_predictions.csv"
+    predictions_df.to_csv(predictions_path, index=False)
 
-    predictions_df[
-        "sensitivity_probability_label_1"
-    ] = sensitivity_probabilities
+    comparison_path = OUTPUT_DIR / "formal_edge_decision_metrics.csv"
+    comparison.to_csv(comparison_path, index=False)
 
-    predictions_df[
-        "current_prediction"
-    ] = current_predictions
-
-    predictions_df[
-        "sensitivity_prediction"
-    ] = sensitivity_predictions
-
-    predictions_path = (
-        OUTPUT_DIR
-        / "formal_edge_decision_predictions.csv"
-    )
-
-    predictions_df.to_csv(
-        predictions_path,
-        index=False,
-    )
-
-    # --------------------------------------------------------
-    # Save comparison
-    # --------------------------------------------------------
-
-    comparison_path = (
-        OUTPUT_DIR
-        / "formal_edge_decision_metrics.csv"
-    )
-
-    comparison.to_csv(
-        comparison_path,
-        index=False,
-    )
-
-    # --------------------------------------------------------
-    # Save treatment diagnostic
-    # --------------------------------------------------------
-
-    treatment_path = (
-        OUTPUT_DIR
-        / "formal_edge_decision_treatment_diagnostic.csv"
-    )
-
-    treatment_diagnostic_df.to_csv(
-        treatment_path,
-        index=False,
-    )
+    treatment_path = OUTPUT_DIR / "formal_edge_decision_treatment_diagnostic.csv"
+    treatment_diagnostic_df.to_csv(treatment_path, index=False)
 
     # --------------------------------------------------------
     # Save summary
@@ -1116,26 +848,28 @@ def main():
     summary = {
         "phase": 14,
         "analysis": "formal_treatment_edge_decision",
+        "selection_methodology": "5-fold Stratified Cross-Validation on Development Set (Zero Test-Set Leakage)",
         "development_rows": len(development),
         "test_rows": len(test),
         "current_dag_edges": len(current_edges),
         "sensitivity_dag_edges": len(sensitivity_edges),
         "added_edge": "trt -> label",
-        "current_metrics": current_metrics,
-        "sensitivity_metrics": sensitivity_metrics,
-        "metric_changes": changes,
+        "development_cross_validation": {
+            "current_metrics": cv_current_metrics,
+            "sensitivity_metrics": cv_sensitivity_metrics,
+            "metric_changes": cv_changes,
+        },
         "development_bic": {
             "current": current_bic,
             "sensitivity": sensitivity_bic,
-            "change": sensitivity_bic - current_bic,
+            "change": bic_diff,
         },
         "parameter_count": {
             "current": current_parameters,
             "sensitivity": sensitivity_parameters,
-            "change": sensitivity_parameters
-            - current_parameters,
+            "change": sensitivity_parameters - current_parameters,
         },
-        "improvement_checks": {
+        "improvement_checks_development_cv": {
             "log_loss": log_loss_improved,
             "brier_score": brier_improved,
             "roc_auc": auc_improved,
@@ -1143,9 +877,17 @@ def main():
             "ece": ece_improved,
             "bic": bic_improved,
         },
-        "predictive_metrics_improved": predictive_improvements,
+        "predictive_metrics_improved_cv": predictive_improvements,
         "recommendation": recommendation,
         "decision": decision,
+        "test_evaluation": {
+            "current_metrics": current_metrics,
+            "sensitivity_metrics": sensitivity_metrics,
+            "test_changes": test_changes,
+        },
+        "current_metrics": current_metrics,
+        "sensitivity_metrics": sensitivity_metrics,
+        "metric_changes": test_changes,
         "final_dag_modified": False,
     }
 

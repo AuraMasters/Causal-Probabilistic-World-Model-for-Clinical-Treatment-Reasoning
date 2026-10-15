@@ -46,8 +46,16 @@ def main():
             ["-c", "from src.continuous_model.model import ContinuousCausalModel; import pandas as pd; dev=pd.read_csv('data/processed/actg175_development.csv'); cm=ContinuousCausalModel(c_reg=0.5, random_seed=42).fit(dev); cm.save(); print('Continuous Model fitted & saved.')"],
             "Fitting Continuous Causal SCM (Model B)",
         )
+        run_cmd(
+            ["scripts/export_discretized_model.py"],
+            "Exporting Model A Discretized CPT Parameters for Frontend",
+        )
 
     if args.all or args.validate:
+        run_cmd(
+            ["src/validation/threshold_analysis.py"],
+            "Running Development-Only Threshold Optimization Analysis",
+        )
         run_cmd(
             ["src/validation/comprehensive_validation.py"],
             "Validating Baseline Discretized Bayesian Network (Model A)",
@@ -66,7 +74,7 @@ def main():
     if args.all or args.test:
         run_cmd(
             ["-m", "unittest", "tests/test_validation_pipeline.py"],
-            "Executing Comprehensive Automated Test Suite (15 Unit Tests)",
+            "Executing Comprehensive Automated Test Suite (22 Unit Tests)",
         )
 
     print("\n" + "=" * 75)

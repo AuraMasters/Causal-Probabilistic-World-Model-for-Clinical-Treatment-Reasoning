@@ -43,23 +43,23 @@ const PRESETS: { name: string; tag: string; desc: string; inputs: PatientInputs 
     },
   },
   {
-    name: 'Sample 2 · Moderate',
+    name: 'Sample 2 · Moderate (Female)',
     tag: 'Prior ZDV',
-    desc: 'CD4 350 · 366 prior ART days · ZDV Experienced',
+    desc: 'Female · CD4 350 · 366 prior ART days · ZDV Experienced',
     inputs: {
       age: '44',
-      wtkg: '70',
+      wtkg: '64',
       karnof: '90',
       preanti: '366',
       cd40: '350',
       cd80: '900',
       hemo: '0',
-      homo: '1',
+      homo: '0',
       drugs: '0',
       oprior: '0',
       z30: '1',
       race: '0',
-      gender: '1',
+      gender: '0',
       strat: '2',
       symptom: '0',
     },
@@ -379,7 +379,7 @@ function NumericalInputCard({
   return (
     <div className="rounded-xl border border-slate-700/60 bg-ink-900/90 p-4 shadow-sm hover:border-slate-600 transition-colors">
       <div className="flex items-center justify-between">
-        <label className="font-mono text-xs font-bold text-slate-300">
+        <label htmlFor={`input-${field.key}`} className="font-mono text-xs font-bold text-slate-300">
           {field.label} {field.unit && <span className="text-[10px] text-slate-400">({field.unit})</span>}
         </label>
         {tooltip && (
@@ -391,6 +391,8 @@ function NumericalInputCard({
 
       <div className="mt-2 relative">
         <input
+          id={`input-${field.key}`}
+          name={field.key}
           type="number"
           step="any"
           value={value}
@@ -426,7 +428,7 @@ function CategoricalInputCard({
   return (
     <div className="rounded-xl border border-slate-700/60 bg-ink-900/90 p-4 shadow-sm hover:border-slate-600 transition-colors">
       <div className="flex items-center justify-between">
-        <label className="font-mono text-xs font-bold text-slate-300">{field.label}</label>
+        <label htmlFor={`select-${field.key}`} className="font-mono text-xs font-bold text-slate-300">{field.label}</label>
         {tooltip && (
           <span className="text-slate-500 hover:text-slate-300 cursor-help" title={tooltip}>
             <Info className="h-3.5 w-3.5" />
@@ -436,6 +438,8 @@ function CategoricalInputCard({
 
       <div className="mt-2">
         <select
+          id={`select-${field.key}`}
+          name={field.key}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="w-full rounded-lg border border-slate-700 bg-ink-950 px-3 py-2 text-sm font-mono text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-all cursor-pointer"

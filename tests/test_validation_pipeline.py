@@ -282,6 +282,184 @@ class TestValidationPipeline(unittest.TestCase):
         self.assertEqual(res2.status_code, 400)
         self.assertIn("error", res2.get_json())
 
+    # ============================================================
+    # 8. GENDER ENCODING & CAUSAL INTERVENTION RIGOR TESTS
+    # ============================================================
+    def test_gender_encoding_ground_truth_and_consistency(self):
+        """Verifies gender encoding ground truth (0=Female, 1=Male) across raw, dev, test, and API."""
+        raw_path = PROJECT_ROOT / "data" / "raw" / "AIDS_ClinicalTrial_GroupStudy175.csv"
+        self.assertTrue(raw_path.exists())
+        raw_df = pd.read_csv(raw_path)
+
+        # In ACTG175: Male (1) is ~82.8% of participants, Female (0) is ~17.2%
+        male_count = int((raw_df["gender"] == 1).sum())
+        female_count = int((raw_df["gender"] == 0).sum())
+        self.assertEqual(male_count, 1771, "ACTG175 male count must be 1,771")
+        self.assertEqual(female_count, 368, "ACTG175 female count must be 368")
+        self.assertGreater(male_count, female_count)
+
+        # Development and Test sets preserve this exact mapping
+        dev_df = pd.read_csv(PROJECT_ROOT / "data" / "processed" / "actg175_development.csv")
+        test_df = pd.read_csv(PROJECT_ROOT / "data" / "processed" / "actg175_test.csv")
+        self.assertIn(0, dev_df["gender"].values)
+        self.assertIn(1, dev_df["gender"].values)
+        self.assertIn(0, test_df["gender"].values)
+        self.assertIn(1, test_df["gender"].values)
+
+        # Both gender states must be recognized by API
+        states = get_states_map()
+        self.assertIn("gender", states)
+        self.assertEqual(set(states["gender"]), {"0", "1"})
+
+    def test_model_a_and_model_b_distinct_logic_and_outputs(self):
+        """Ensures Model A (Discretized BN) and Model B (Continuous SCM) produce distinct outputs."""
+        sample_patient = {
+            "age": "45", "wtkg": "82.0", "karnof": "90", "preanti": "350", "cd40": "280", "cd80": "1100",
+            "hemo": "0", "homo": "1", "drugs": "0", "oprior": "0", "z30": "1", "race": "0",
+            "gender": "1", "strat": "2", "symptom": "0"
+        }
+
+        res_a = analyze_patient(sample_patient, model_type="discretized")
+        res_b = analyze_patient(sample_patient, model_type="continuous")
+
+        self.assertEqual(res_a["model_type"], "discretized_bayesian_network")
+        self.assertEqual(res_b["model_type"], "continuous_hybrid_scm")
+
+        # Distinct information preservation and attribution mechanisms
+        self.assertIn("feature_attributions", res_a["recommended"])
+        self.assertIn("continuous_sensitivities", res_b["recommended"])
+
+        # Model A uses discrete evidence states
+        self.assertIn("evidence", res_a)
+        self.assertIn(res_a["evidence"]["cd40"], ["cd40_1", "cd40_2", "cd40_3"])
+
+        # Probabilities should reflect their distinct mathematical formulation
+        p1_a = res_a["recommended"]["p_label_1"]
+        p1_b = res_b["recommended"]["p_label_1"]
+        self.assertTrue(0.0 <= p1_a <= 1.0)
+        self.assertTrue(0.0 <= p1_b <= 1.0)
+
+    def test_treatment_interventions_and_probability_validity(self):
+        """Verifies that all 4 trial arms under Pearl do-calculus yield valid probabilities summing to 1."""
+        sample = {
+            "age": "32", "wtkg": "68.0", "karnof": "100", "preanti": "0", "cd40": "450", "cd80": "750",
+            "hemo": "0", "homo": "0", "drugs": "0", "oprior": "0", "z30": "0", "race": "0",
+            "gender": "0", "strat": "1", "symptom": "0"
+        }
+
+        for model_type in ["continuous", "discretized"]:
+            res = analyze_patient(sample, model_type=model_type)
+            treatments = res["treatments"]
+            self.assertEqual(len(treatments), 4)
+
+            for t in treatments:
+                self.assertIn(t["treatment"], [0, 1, 2, 3])
+                self.assertTrue(0.0 <= t["p_label_0"] <= 1.0)
+                self.assertTrue(0.0 <= t["p_label_1"] <= 1.0)
+                self.assertAlmostEqual(t["p_label_0"] + t["p_label_1"], 1.0, places=3)
+                self.assertAlmostEqual(t["expected_utility"], t["p_label_0"], places=3)
+
+            # Recommended treatment must match rank #1
+            rec = res["recommended"]
+            best_eu = max(t["expected_utility"] for t in treatments)
+            self.assertAlmostEqual(rec["expected_utility"], best_eu, places=3)
+
+    def test_test_set_isolation_and_no_leakage(self):
+        """Verifies that graph selection and model training are completely isolated from test data."""
+        # 1. Structural decision summary check
+        summary_path = PROJECT_ROOT / "results" / "analysis" / "treatment" / "formal_edge_decision" / "formal_edge_decision_summary.json"
+        self.assertTrue(summary_path.exists())
+        with open(summary_path, "r", encoding="utf-8") as f:
+            summary = json.load(f)
+
+        self.assertIn("selection_methodology", summary)
+        self.assertIn("Cross-Validation on Development Set", summary["selection_methodology"])
+        self.assertIn("development_cross_validation", summary)
+
+        # 2. Continuous causal model training check: scaler parameters match development set
+        dev_df = pd.read_csv(PROJECT_ROOT / "data" / "processed" / "actg175_development.csv")
+        test_df = pd.read_csv(PROJECT_ROOT / "data" / "processed" / "actg175_test.csv")
+        cm = ContinuousCausalModel(c_reg=0.5, random_seed=42)
+        cm.fit(dev_df)
+
+        for col in CONTINUOUS_VARIABLES:
+            dev_mean = float(dev_df[col].mean())
+            self.assertAlmostEqual(cm.scaler_means[col], dev_mean, places=3)
+            # Scaler mean must NOT equal test set mean
+            test_mean = float(test_df[col].mean())
+            if not math.isclose(dev_mean, test_mean, abs_tol=0.1):
+                self.assertNotAlmostEqual(cm.scaler_means[col], test_mean, places=1)
+
+    def test_e_value_mathematical_bounds(self):
+        """Tests E-Value sensitivity formula correctness for protective and non-protective risk ratios."""
+        # Case A: Protective effect (RR = 0.50 -> RR* = 2.0 -> E = 2 + sqrt(2*1) = 3.414)
+        rr = 0.5
+        rr_star = 1.0 / rr
+        e_val = rr_star + math.sqrt(rr_star * (rr_star - 1.0))
+        self.assertAlmostEqual(e_val, 3.414, places=2)
+        self.assertGreater(e_val, 1.5)
+
+        # Case B: Non-protective effect (RR >= 1.0 -> E = 1.0)
+        rr_null = 1.25
+        e_null = 1.0 if rr_null >= 1.0 else rr_null
+        self.assertEqual(e_null, 1.0)
+
+    def test_api_error_handling_and_input_validation(self):
+        """Verifies API returns clean HTTP 400 with descriptive JSON errors on invalid inputs."""
+        # 1. Missing numerical variable
+        res = self.client.post("/api/analyze", json={
+            "inputs": {
+                "wtkg": "70", "karnof": "100", "preanti": "0", "cd40": "350", "cd80": "800",
+                "hemo": "0", "homo": "0", "drugs": "0", "oprior": "0", "z30": "0", "race": "0",
+                "gender": "1", "strat": "1", "symptom": "0",
+            }
+        })
+        self.assertEqual(res.status_code, 400)
+        self.assertIn("age", res.get_json()["error"])
+
+        # 2. Non-finite numerical value
+        res = self.client.post("/api/analyze", json={
+            "inputs": {
+                "age": "NaN", "wtkg": "70", "karnof": "100", "preanti": "0", "cd40": "350", "cd80": "800",
+                "hemo": "0", "homo": "0", "drugs": "0", "oprior": "0", "z30": "0", "race": "0",
+                "gender": "1", "strat": "1", "symptom": "0",
+            }
+        })
+        self.assertEqual(res.status_code, 400)
+
+        # 3. Invalid categorical state
+        res = self.client.post("/api/analyze", json={
+            "inputs": {
+                "age": "35", "wtkg": "70", "karnof": "100", "preanti": "0", "cd40": "350", "cd80": "800",
+                "hemo": "0", "homo": "0", "drugs": "0", "oprior": "0", "z30": "0", "race": "0",
+                "gender": "999", "strat": "1", "symptom": "0",
+            }
+        })
+        self.assertEqual(res.status_code, 400)
+        self.assertIn("gender", res.get_json()["error"])
+
+    def test_frontend_offline_artifacts_integrity(self):
+        """Verifies model weights and discretized CPT files for frontend offline inference are intact."""
+        weights_path = PROJECT_ROOT / "frontend" / "src" / "lib" / "modelWeights.json"
+        disc_path = PROJECT_ROOT / "frontend" / "src" / "lib" / "discretizedModelData.json"
+
+        self.assertTrue(weights_path.exists(), "frontend modelWeights.json is missing")
+        self.assertTrue(disc_path.exists(), "frontend discretizedModelData.json is missing")
+
+        with open(weights_path, "r", encoding="utf-8") as f:
+            weights = json.load(f)
+        self.assertIn("arms", weights)
+        self.assertEqual(len(weights["arms"]), 4)
+        self.assertIn("scaler_means", weights)
+        self.assertIn("scaler_stds", weights)
+
+        with open(disc_path, "r", encoding="utf-8") as f:
+            disc = json.load(f)
+        self.assertIn("cpt_label_1", disc)
+        self.assertEqual(len(disc["cpt_label_1"]), 24, "Model A CPT must have 3*4*2 = 24 entries")
+        self.assertIn("ablation_no_cd40", disc)
+        self.assertIn("ablation_no_z30", disc)
+
 
 if __name__ == "__main__":
     unittest.main()

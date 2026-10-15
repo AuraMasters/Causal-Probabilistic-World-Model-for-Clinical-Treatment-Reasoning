@@ -55,7 +55,7 @@ export async function analyzePatient(
       body: JSON.stringify({ inputs, model_type: modelType }),
     })
   } catch {
-    console.info('[Clinical AI] Running high-precision continuous causal inference client-side.')
+    console.info(`[Clinical AI] Running offline ${modelType === 'discretized' ? 'discretized Bayesian network' : 'continuous SCM'} inference client-side.`)
     return runClientInference(inputs, modelType)
   }
 }

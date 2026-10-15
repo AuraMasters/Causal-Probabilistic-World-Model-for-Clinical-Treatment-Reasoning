@@ -283,7 +283,7 @@ def run_continuous_validation():
     eps = 1e-6
     clipped = np.clip(test_probs, eps, 1.0 - eps)
     logits = np.log(clipped / (1.0 - clipped)).reshape(-1, 1)
-    calib_lr = LogisticRegression(penalty=None, solver="lbfgs", max_iter=500)
+    calib_lr = LogisticRegression(C=np.inf, solver="lbfgs", max_iter=500)
     calib_lr.fit(logits, y_test)
     calib_intercept = round(float(calib_lr.intercept_[0]), 4)
     calib_slope = round(float(calib_lr.coef_[0][0]), 4)

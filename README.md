@@ -146,14 +146,21 @@ python src/pipeline.py --all
 python src/pipeline.py --train      # Fit Continuous SCM strictly on development partition
 python src/pipeline.py --validate   # Run full test cohort validation for both models
 python src/pipeline.py --compare    # Compile side-by-side benchmark artifact
-python src/pipeline.py --test       # Run automated unit tests (15/15 tests)
+python src/pipeline.py --test       # Run automated unit tests (22/22 tests)
 ```
 
-### 4. Automated Test Suite
+### 4. Automated Test Suites
+Run the backend validation and causal inference unit tests:
 ```bash
 python -m unittest tests/test_validation_pipeline.py
 ```
-*Guarantees zero test set leakage, DAG acyclicity, metric correctness, threshold sweep calibration, E-value calculations, and live API endpoints.*
+*Guarantees zero test set leakage, 5-fold development cross-validation for DAG selection, DAG acyclicity, metric correctness, threshold sweep calibration, E-value calculations, gender encoding alignment, and live API endpoints (22 passed).*
+
+Run the frontend client inference test suite:
+```bash
+cd frontend && npm test
+```
+*Validates client-side offline inference for Model A (discretized BN CPT queries), Model B (continuous logistic regression), E-value confounding calculations, risk derivative calculations, and boundary conditions (5 passed).*
 
 ---
 
@@ -168,10 +175,13 @@ python -m unittest tests/test_validation_pipeline.py
 │   │   ├── components/                  # UI components (Header, What-If, DAG, etc.)
 │   │   ├── lib/
 │   │   │   ├── api.ts                   # Resilient API client with static fallback
-│   │   │   ├── clientInference.ts       # Embedded high-precision continuous SCM
+│   │   │   ├── clientInference.ts       # Embedded dual-model causal inference engine
+│   │   │   ├── discretizedModelData.json# CPT tables and ablations for Model A
 │   │   │   ├── modelWeights.json        # Precomputed continuous model coefficients
 │   │   │   └── precomputedOverview.json # Bundled validation benchmark artifacts
 │   │   └── types.ts                     # Strict TypeScript interfaces
+│   ├── test/
+│   │   └── clientInference.test.js      # Frontend client-side inference tests
 │   └── vite.config.ts                   # Vite configuration with relative base
 ├── results/
 │   ├── continuous_model/                # Model B serialized artifacts
@@ -181,6 +191,7 @@ python -m unittest tests/test_validation_pipeline.py
 │       └── continuous/                  # Model B test cohort validation results
 ├── scripts/
 │   ├── deploy_gh_pages.py               # Native Git GitHub Pages deployment utility
+│   ├── export_discretized_model.py      # Exports Model A CPTs for client inference
 │   ├── run_api.sh                       # Backend launch script
 │   └── run_frontend.sh                  # Frontend launch script
 ├── src/
@@ -190,7 +201,7 @@ python -m unittest tests/test_validation_pipeline.py
 │   ├── validation/                      # Benchmark validation & threshold sweep
 │   └── pipeline.py                      # Master CLI pipeline orchestrator
 └── tests/
-    └── test_validation_pipeline.py      # 15 automated validation unit tests
+    └── test_validation_pipeline.py      # 22 automated validation unit tests
 ```
 
 ---
@@ -199,7 +210,9 @@ python -m unittest tests/test_validation_pipeline.py
 
 1. **Investigational Tool**: This software is developed for research and educational purposes to demonstrate causal inference and probabilistic decision-making. It does not constitute medical advice or a prescriptive treatment guideline.
 2. **Causal Assumptions**: Interventional estimates rest on the standard identification assumptions: Positivity, Consistency, and Conditional Exchangeability (No Unmeasured Confounders). The E-Value analysis is explicitly provided to assess vulnerability to unmeasured confounding.
-3. **Threshold Calibration**: Because HIV disease progression occurred in 24.3% of trial patients, the standard decision cutoff ($\tau = 0.50$) produces low clinical sensitivity. Threshold optimization on development data established $\tau^* = 0.24$ for Model B to balance sensitivity (67.3%) and specificity (62.6%).
+3. **Leakage-Free Model Selection**: The treatment edge ($trt \to label$) and DAG architecture were selected using 5-fold Stratified Cross-Validation and BIC exclusively on the development cohort ($N = 1,711$). The selected 23-edge DAG was frozen prior to a single, uncompromised evaluation on the held-out test cohort ($N = 428$).
+4. **Encoding Alignment**: Gender is encoded as $0 = \text{Female}$ and $1 = \text{Male}$ consistently across datasets, preprocessing transforms, API endpoints, and client-side inference engines, matching the ACTG 175 study protocol (368 female, 1,771 male participants).
+5. **Threshold Calibration**: Because HIV disease progression occurred in 24.3% of trial patients, the standard decision cutoff ($\tau = 0.50$) produces low clinical sensitivity. Threshold optimization on development data established $\tau^* = 0.24$ for Model B to balance sensitivity (67.3%) and specificity (62.6%).
 
 ---
 

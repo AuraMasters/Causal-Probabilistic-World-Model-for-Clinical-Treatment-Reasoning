@@ -82,8 +82,8 @@ export const CATEGORICAL_FIELDS: CategoricalFieldDef[] = [
     label: 'Gender',
     description: 'Gender',
     options: [
-      { value: '0', label: 'Male' },
-      { value: '1', label: 'Female' },
+      { value: '0', label: 'Female' },
+      { value: '1', label: 'Male' },
     ],
   },
   {

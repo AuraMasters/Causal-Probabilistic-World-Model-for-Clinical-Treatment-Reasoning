@@ -284,15 +284,16 @@ def build_model(data, edges):
         edges,
     )
 
-    estimator = BayesianEstimator(
-        model,
-        data,
-    )
-
-    cpds = estimator.get_parameters(
-        prior_type="BDeu",
-        equivalent_sample_size=ESS,
-    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=FutureWarning)
+        estimator = BayesianEstimator(
+            model,
+            data,
+        )
+        cpds = estimator.get_parameters(
+            prior_type="BDeu",
+            equivalent_sample_size=ESS,
+        )
 
     model.add_cpds(*cpds)
 
