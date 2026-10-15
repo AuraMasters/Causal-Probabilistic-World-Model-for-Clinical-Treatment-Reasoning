@@ -64,11 +64,19 @@ def main():
             ["src/continuous_model/validation.py"],
             "Validating Continuous / Hybrid SCM (Model B)",
         )
+        run_cmd(
+            ["src/validation/survival_analysis.py"],
+            "Executing Clinical Survival Analysis & Censoring Audit",
+        )
 
     if args.all or args.compare:
         run_cmd(
             ["src/validation/compare_models.py"],
             "Compiling Side-by-Side Model Benchmark Report",
+        )
+        run_cmd(
+            ["-c", "from src.api.service import get_overview; import json; p=json.dumps(get_overview(), indent=2); open('frontend/src/lib/precomputedOverview.json', 'w').write(p); print('precomputedOverview.json synchronized.')"],
+            "Synchronizing Frontend Precomputed Overview Artifact",
         )
 
     if args.all or args.test:

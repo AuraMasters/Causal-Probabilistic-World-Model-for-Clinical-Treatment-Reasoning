@@ -5,42 +5,45 @@
   --font-display: "Outfit", "Plus Jakarta Sans", ui-sans-serif, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Color Hunt Palette: #E3F2FD, #90CAF9, #2196F3, #0D47A1 */
-  --color-palette-ice: #e3f2fd;
-  --color-palette-sky: #90caf9;
-  --color-palette-royal: #2196f3;
-  --color-palette-navy: #0d47a1;
+  /* Color Hunt Palette: #086288, #4D8DBA, #97D7FF, #FFEFC4 */
+  --color-palette-marine: #086288;
+  --color-palette-steel: #4d8dba;
+  --color-palette-sky: #97d7ff;
+  --color-palette-cream: #ffefc4;
 
-  /* Deep Royal Medical Midnight Base */
-  --color-ink-950: #060b17;
-  --color-ink-900: #0a1329;
-  --color-ink-850: #0e1b3a;
-  --color-ink-800: #14254f;
-  --color-ink-700: #1c356e;
-  --color-ink-600: #264a98;
+  /* Deep Oceanic Medical Base (Derived from #086288) */
+  --color-ink-950: #031722;
+  --color-ink-900: #062232;
+  --color-ink-850: #092c40;
+  --color-ink-800: #0c374f;
+  --color-ink-700: #114562;
+  --color-ink-600: #185577;
 
   /* Semantic UI color mappings based on Color Hunt Palette */
-  --color-cyan-100: #f0f7fe;
-  --color-cyan-200: #e3f2fd;
-  --color-cyan-300: #90caf9;
-  --color-cyan-400: #2196f3;
-  --color-cyan-500: #1976d2;
-  --color-cyan-600: #0d47a1;
+  /* Cyan / Steel / Sky -> #97D7FF & #4D8DBA */
+  --color-cyan-100: #f0f9ff;
+  --color-cyan-200: #d3edff;
+  --color-cyan-300: #97d7ff;
+  --color-cyan-400: #4d8dba;
+  --color-cyan-500: #086288;
+  --color-cyan-600: #054662;
 
-  --color-mint-100: #f0f7fe;
-  --color-mint-200: #e3f2fd;
-  --color-mint-300: #90caf9;
-  --color-mint-400: #2196f3;
-  --color-mint-500: #0d47a1;
+  /* Mint / Warm Cream Vanilla -> #FFEFC4 */
+  --color-mint-100: #fffbf0;
+  --color-mint-200: #ffefc4;
+  --color-mint-300: #f7df9e;
+  --color-mint-400: #eed078;
+  --color-mint-500: #deb84f;
 
-  --color-violet-100: #f0f7fe;
-  --color-violet-200: #e3f2fd;
-  --color-violet-300: #90caf9;
-  --color-violet-400: #2196f3;
-  --color-violet-500: #0d47a1;
+  /* Violet / Steel Marine -> #4D8DBA & #086288 */
+  --color-violet-100: #f0f7ff;
+  --color-violet-200: #d3edff;
+  --color-violet-300: #97d7ff;
+  --color-violet-400: #4d8dba;
+  --color-violet-500: #086288;
 
   --color-rose-risk: #f43f5e;
-  --color-amber-warn: #90caf9;
+  --color-amber-warn: #ffefc4;
 }
 
 html {
@@ -49,7 +52,7 @@ html {
 
 body {
   background-color: var(--color-ink-950);
-  color: #e3f2fd;
+  color: #f1f5f9;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -57,23 +60,28 @@ body {
   overflow-x: hidden;
 }
 
-/* Ambient glowing backdrop using #2196F3, #0D47A1, #90CAF9 */
+/* Ambient glowing backdrop using #086288, #4D8DBA, #97D7FF, #FFEFC4 */
 .app-bg {
   background:
     radial-gradient(
       1200px 650px at 75% -10%,
-      rgba(33, 150, 243, 0.22),
+      rgba(77, 141, 186, 0.35),
       transparent 60%
     ),
     radial-gradient(
       1000px 500px at 5% 15%,
-      rgba(13, 71, 161, 0.32),
+      rgba(8, 98, 136, 0.55),
       transparent 55%
     ),
     radial-gradient(
       900px 500px at 50% 105%,
-      rgba(144, 202, 249, 0.16),
+      rgba(151, 215, 255, 0.22),
       transparent 60%
+    ),
+    radial-gradient(
+      700px 350px at 85% 80%,
+      rgba(255, 239, 196, 0.10),
+      transparent 50%
     ),
     var(--color-ink-950);
 }
@@ -81,43 +89,43 @@ body {
 /* Subtle modern grid backdrop */
 .app-grid {
   background-image:
-    linear-gradient(rgba(144, 202, 249, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(144, 202, 249, 0.05) 1px, transparent 1px);
+    linear-gradient(rgba(151, 215, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(151, 215, 255, 0.06) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
 .glass {
-  background: rgba(10, 19, 41, 0.85);
+  background: rgba(6, 34, 50, 0.82);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(144, 202, 249, 0.22);
+  border: 1px solid rgba(151, 215, 255, 0.22);
 }
 
 .card-surface {
-  background: linear-gradient(180deg, rgba(14, 27, 58, 0.94), rgba(10, 19, 41, 0.98));
-  border: 1px solid rgba(144, 202, 249, 0.16);
-  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(180deg, rgba(9, 44, 64, 0.92), rgba(6, 34, 50, 0.98));
+  border: 1px solid rgba(151, 215, 255, 0.18);
+  box-shadow: 0 4px 24px -2px rgba(3, 23, 34, 0.75);
 }
 
 .card-surface:hover {
-  border-color: rgba(33, 150, 243, 0.38);
+  border-color: rgba(151, 215, 255, 0.45);
 }
 
 .text-gradient-title {
-  background: linear-gradient(135deg, #ffffff 0%, #e3f2fd 35%, #90caf9 70%, #2196f3 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #ffefc4 35%, #97d7ff 70%, #4d8dba 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .text-gradient-brand {
-  background: linear-gradient(135deg, #e3f2fd 0%, #90caf9 45%, #2196f3 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #ffefc4 45%, #97d7ff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .ring-focus:focus {
   outline: none;
-  border-color: rgba(33, 150, 243, 0.75);
-  box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.35);
+  border-color: rgba(151, 215, 255, 0.85);
+  box-shadow: 0 0 0 3px rgba(8, 98, 136, 0.45);
 }
 
 /* React Flow dark theme */
@@ -126,8 +134,8 @@ body {
 }
 
 .react-flow__controls {
-  background: #0e1b3a !important;
-  border: 1px solid rgba(144, 202, 249, 0.25) !important;
+  background: #092c40 !important;
+  border: 1px solid rgba(151, 215, 255, 0.30) !important;
   border-radius: 12px !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
   overflow: hidden !important;
@@ -138,8 +146,8 @@ body {
 }
 
 .react-flow__controls-button {
-  background-color: #14254f !important;
-  border: 1px solid rgba(144, 202, 249, 0.15) !important;
+  background-color: #0c374f !important;
+  border: 1px solid rgba(151, 215, 255, 0.18) !important;
   border-radius: 8px !important;
   width: 32px !important;
   height: 32px !important;
@@ -152,20 +160,20 @@ body {
 }
 
 .react-flow__controls-button:hover {
-  background-color: #1c356e !important;
-  border-color: rgba(33, 150, 243, 0.6) !important;
+  background-color: #185577 !important;
+  border-color: rgba(151, 215, 255, 0.70) !important;
   transform: scale(1.04);
 }
 
 .react-flow__controls-button svg {
-  fill: #90caf9 !important;
+  fill: #97d7ff !important;
   width: 14px !important;
   height: 14px !important;
   transition: fill 0.2s ease !important;
 }
 
 .react-flow__controls-button:hover svg {
-  fill: #e3f2fd !important;
+  fill: #ffefc4 !important;
 }
 
 .react-flow__controls-button:disabled {
@@ -174,9 +182,9 @@ body {
 }
 
 .react-flow__minimap {
-  background-color: #0a1329 !important;
+  background-color: #062232 !important;
   border-radius: 12px !important;
-  border: 1px solid rgba(144, 202, 249, 0.2) !important;
+  border: 1px solid rgba(151, 215, 255, 0.25) !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
   overflow: hidden !important;
 }
@@ -190,9 +198,9 @@ body {
   background: var(--color-ink-950);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-ink-700);
+  background: #114562;
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #264a98;
+  background: #185577;
 }

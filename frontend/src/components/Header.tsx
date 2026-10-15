@@ -58,7 +58,7 @@ export function Header({ activeModel = 'continuous', onSelectModel }: HeaderProp
                   onClick={() => onSelectModel('continuous')}
                   className={`rounded-lg px-3 py-1.5 font-mono text-xs font-bold transition-all cursor-pointer ${
                     activeModel === 'continuous'
-                      ? 'bg-gradient-to-r from-cyan-400 to-sky-500 text-ink-950 shadow-md shadow-cyan-400/20'
+                      ? 'bg-gradient-to-r from-cyan-300 to-mint-200 text-ink-950 shadow-md shadow-cyan-300/20'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >

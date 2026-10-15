@@ -35,9 +35,9 @@ const FEATURE_LABELS: Record<string, string> = {
 
 const ARM_COLORS: Record<number, { stroke: string; fill: string; name: string }> = {
   0: { stroke: '#f43f5e', fill: 'bg-rose-500', name: 'ZDV Monotherapy' },
-  1: { stroke: '#90caf9', fill: 'bg-sky-400', name: 'ZDV + ddI' },
-  2: { stroke: '#2196f3', fill: 'bg-blue-500', name: 'ZDV + ddC (Recommended)' },
-  3: { stroke: '#64b5f6', fill: 'bg-blue-400', name: 'ddI Monotherapy' },
+  1: { stroke: '#4d8dba', fill: 'bg-sky-600', name: 'ZDV + ddI' },
+  2: { stroke: '#97d7ff', fill: 'bg-cyan-400', name: 'ZDV + ddC (Recommended)' },
+  3: { stroke: '#ffefc4', fill: 'bg-amber-200', name: 'ddI Monotherapy' },
 }
 
 export function RecommendedTreatment({ result }: { result: AnalyzeResult }) {
@@ -506,8 +506,8 @@ function WhatIfTrajectorySvg({
 
   return (
     <svg width={width} height={height} className="overflow-visible w-full max-w-[500px]">
-      <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#334155" strokeWidth="1" />
-      <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#334155" strokeWidth="1" />
+      <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#114562" strokeWidth="1" />
+      <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#114562" strokeWidth="1" />
 
       {/* Grid lines */}
       {[0.1, 0.2, 0.3, 0.4].map((yVal) => (
@@ -517,7 +517,7 @@ function WhatIfTrajectorySvg({
           y1={scaleY(yVal)}
           x2={width - padding}
           y2={scaleY(yVal)}
-          stroke="#1e293b"
+          stroke="#092c40"
           strokeDasharray="2 2"
           strokeWidth="1"
         />
@@ -557,16 +557,16 @@ function WhatIfTrajectorySvg({
           y1={padding}
           x2={simX}
           y2={height - padding}
-          stroke="#38bdf8"
+          stroke="#ffefc4"
           strokeWidth="2"
           strokeDasharray="2 2"
         />
       )}
 
-      <text x={width / 2} y={height - 8} fill="#94a3b8" fontSize="10" textAnchor="middle" fontFamily="monospace">
+      <text x={width / 2} y={height - 8} fill="#97d7ff" fontSize="10" textAnchor="middle" fontFamily="monospace">
         Baseline CD4 Count (cells/mm³)
       </text>
-      <text x={12} y={height / 2} fill="#94a3b8" fontSize="10" textAnchor="middle" transform={`rotate(-90 12 ${height/2})`} fontFamily="monospace">
+      <text x={12} y={height / 2} fill="#97d7ff" fontSize="10" textAnchor="middle" transform={`rotate(-90 12 ${height/2})`} fontFamily="monospace">
         Progression Risk P(Y=1)
       </text>
     </svg>

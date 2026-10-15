@@ -93,3 +93,23 @@ test('5. Precomputed overview and DAG structure integrity', () => {
   const trtLabelEdge = overview.dag.find(e => e.source === 'trt' && e.target === 'label')
   assert.ok(trtLabelEdge, 'Must include trt -> label edge')
 })
+
+test('6. Survival analysis and right-censoring audit artifact integrity', () => {
+  const overview = JSON.parse(fs.readFileSync(path.join(libDir, 'precomputedOverview.json'), 'utf-8'))
+  
+  assert.ok(overview.survival_audit, 'Overview must include survival_audit')
+  assert.equal(overview.survival_audit.total_patients, 2139)
+  assert.equal(overview.survival_audit.n_events, 521)
+  assert.equal(overview.survival_audit.n_censored, 1618)
+  
+  // Follow-up & censoring metrics
+  assert.ok(overview.survival_audit.pct_censored_ge_2yr >= 80.0, 'Over 80% censored followed >= 2 years')
+  assert.ok(overview.survival_audit.median_followup_censored_days >= 1000)
+  
+  // Cox Proportional Hazards
+  const cox = overview.survival_audit.cox_proportional_hazards
+  assert.ok(cox.harrell_c_index > 0.65, 'Harrell C-index must exceed 0.65')
+  assert.ok(cox.treatment_hazard_ratios.Arm_1_vs_0.hazard_ratio < 0.70)
+  assert.ok(cox.treatment_hazard_ratios.Arm_2_vs_0.hazard_ratio < 0.70)
+})
+

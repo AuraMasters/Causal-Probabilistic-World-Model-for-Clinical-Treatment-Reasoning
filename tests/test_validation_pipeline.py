@@ -460,6 +460,42 @@ class TestValidationPipeline(unittest.TestCase):
         self.assertIn("ablation_no_cd40", disc)
         self.assertIn("ablation_no_z30", disc)
 
+    def test_survival_analysis_and_censoring_audit(self):
+        """Verifies clinical survival analysis, Kaplan-Meier curves, Cox PH regression, and censoring audit."""
+        from src.validation.survival_analysis import run_survival_audit
+        
+        audit = run_survival_audit()
+        self.assertIn("kaplan_meier_by_arm", audit)
+        self.assertIn("cox_proportional_hazards", audit)
+        self.assertIn("model_comparison", audit)
+        
+        # 1. Censoring distribution verification
+        self.assertGreater(audit["pct_censored_ge_2yr"], 80.0, "Over 80% of censored patients must be followed >= 2 years")
+        self.assertLess(audit["pct_early_censored_lt_2yr"], 20.0, "Early drop-out rate must be under 20%")
+        
+        # 2. Kaplan-Meier monotonicity verification
+        for arm_str, km in audit["kaplan_meier_by_arm"].items():
+            self.assertGreaterEqual(km["survival_1yr"], km["survival_2yr"], f"Arm {arm_str} KM survival must be non-increasing")
+            self.assertGreaterEqual(km["survival_2yr"], km["survival_study_end"], f"Arm {arm_str} KM survival must be non-increasing")
+            self.assertLessEqual(km["risk_1yr"], km["risk_2yr"], f"Arm {arm_str} KM risk must be non-decreasing")
+            self.assertLessEqual(km["risk_2yr"], km["risk_study_end"], f"Arm {arm_str} KM risk must be non-decreasing")
+            
+        # 3. Cox PH Hazard Ratios & Harrell's C-index
+        cox_data = audit["cox_proportional_hazards"]
+        hrs = cox_data["treatment_hazard_ratios"]
+        
+        self.assertIn("Arm_1_vs_0", hrs)
+        self.assertIn("Arm_2_vs_0", hrs)
+        
+        # Dual therapy must be protective (HR < 0.70)
+        self.assertLess(hrs["Arm_1_vs_0"]["hazard_ratio"], 0.70, "ZDV+ddI must show protective hazard ratio vs ZDV mono")
+        self.assertLess(hrs["Arm_2_vs_0"]["hazard_ratio"], 0.70, "ZDV+ddC must show protective hazard ratio vs ZDV mono")
+        self.assertGreater(hrs["Arm_1_vs_0"]["hazard_ratio"], 0.20)
+        self.assertGreater(hrs["Arm_2_vs_0"]["hazard_ratio"], 0.20)
+        
+        # Test C-index must be clinically informative (> 0.65)
+        self.assertGreater(cox_data["harrell_c_index"], 0.65, "Cox PH test Harrell C-index must exceed 0.65")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -297,6 +297,7 @@ export interface Overview {
   comprehensive_validation?: ComprehensiveValidation | null
   continuous_validation?: ComprehensiveValidation | null
   model_comparison?: ModelComparisonData | null
+  survival_audit?: any | null
   key_findings?: KeyFindings
   utility_model: {
     label_0_utility: number
