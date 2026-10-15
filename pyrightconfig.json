@@ -3,9 +3,9 @@
   "venv": ".venv",
   "extraPaths": [
     ".",
-    "src"
+    "backend"
   ],
-  "include": ["src"],
+  "include": ["backend"],
   "exclude": ["**/node_modules", "**/__pycache__", ".venv", ".venv-linux"],
   "pythonVersion": "3.10",
   "typeCheckingMode": "basic",

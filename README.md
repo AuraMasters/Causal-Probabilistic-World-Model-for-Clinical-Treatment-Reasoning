@@ -1,24 +1,24 @@
 # Causal-Probabilistic World Model for Clinical Treatment Reasoning
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Clinical%20AI%20Platform-00e5ff?style=for-the-badge&logo=googlechrome&logoColor=white)](https://auramasters.github.io/Causal-Probabilistic-World-Model-for-Clinical-Treatment-Reasoning/)
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Deployed-success?style=for-the-badge&logo=github)](https://auramasters.github.io/Causal-Probabilistic-World-Model-for-Clinical-Treatment-Reasoning/)
-[![Python](https://img.shields.io/badge/Python-3.11+-3776ab?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-8.0+-646cff?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
+[![Live Platform](https://img.shields.io/badge/Live%20Platform-Clinical%20AI%20System-000000?style=for-the-badge&logo=googlechrome&logoColor=white)](https://auramasters.github.io/Causal-Probabilistic-World-Model-for-Clinical-Treatment-Reasoning/)
+[![GitHub Pages](https://img.shields.io/badge/Deployment-Live-black?style=for-the-badge&logo=github)](https://auramasters.github.io/Causal-Probabilistic-World-Model-for-Clinical-Treatment-Reasoning/)
+[![Python](https://img.shields.io/badge/Python-3.11+-black?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![React](https://img.shields.io/badge/React-19.0-black?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-black?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Flask](https://img.shields.io/badge/Backend-Flask%20API-black?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 
-> **A scientifically validated Causal Artificial Intelligence decision support system designed to simulate interventional counterfactuals ($do$-calculus), optimize individualized antiretroviral therapy (ART), and quantify robustness against unmeasured confounding for HIV-1 clinical management.**
-
----
-
-### 🌐 Live Interactive Web Platform
-👉 **Access the Live Platform:** **[https://auramasters.github.io/Causal-Probabilistic-World-Model-for-Clinical-Treatment-Reasoning/](https://auramasters.github.io/Causal-Probabilistic-World-Model-for-Clinical-Treatment-Reasoning/)**
-
-*The application features full offline & static resilience with an embedded client-side high-precision SCM inference engine, alongside full Flask API support for local full-stack development.*
+A scientifically validated Causal Artificial Intelligence decision support system designed to simulate interventional counterfactuals ($do$-calculus), optimize individualized antiretroviral therapy (ART), and quantify robustness against unmeasured confounding for HIV-1 clinical management.
 
 ---
 
-## 🔬 Clinical Overview & Trial Context
+### Live Interactive Web Platform
+Access the application: **[https://auramasters.github.io/Causal-Probabilistic-World-Model-for-Clinical-Treatment-Reasoning/](https://auramasters.github.io/Causal-Probabilistic-World-Model-for-Clinical-Treatment-Reasoning/)**
+
+The application features full offline resilience with an embedded client-side SCM inference engine, alongside a modular Flask API backend for full-stack deployment.
+
+---
+
+## Clinical Trial Context
 
 The system is trained and evaluated on the landmark **AIDS Clinical Trials Group (ACTG 175)** randomized controlled trial ($N = 2,139$ HIV-1 infected patients) comparing four distinct antiretroviral treatment arms:
 * **Arm 0**: Zidovudine (ZDV / AZT monotherapy — historical standard of care)
@@ -26,109 +26,272 @@ The system is trained and evaluated on the landmark **AIDS Clinical Trials Group
 * **Arm 2**: Zidovudine + Zalcitabine (ZDV + ddC dual therapy)
 * **Arm 3**: Didanosine (ddI monotherapy)
 
-**Clinical Endpoint (`label`)**: Severe disease progression (defined as a confirmed decline in CD4 cell count $\ge 50\%$, development of an AIDS-defining clinical event, or all-cause mortality). Primary trial event rate: **24.3%**.
+**Clinical Endpoint (`label`)**: Severe disease progression (confirmed CD4 decline $\ge 50\%$, AIDS-defining event, or all-cause mortality). Primary trial event rate: **24.3%**.
 
 ---
 
-## 🏛️ Dual-Model Causal Architecture
+## Research Workflow Architecture
 
-To address faculty advisor feedback regarding information loss from numerical binning, the platform provides two rigorously benchmarked causal models:
+```mermaid
+flowchart TD
+    subgraph DataCohort["1. Clinical Trial Cohort & Partition"]
+        Cohort["ACTG 175 Randomized Trial Cohort (N = 2,139 Patients)\n• Biomarkers: CD4, CD8, Karnofsky, Age, Weight, Pre-ART\n• History & Demographics: Hemophilia, Homosexuality, IV Drugs, ZDV30, Symptoms"]
+        Split{"Strict 80/20 Partition\n(Zero Leakage Protocol, Seed = 42)"}
+        Dev["Development Cohort (N = 1,711)\n• 5-Fold Stratified Cross-Validation\n• Structure & Parameter Estimation"]
+        Test["Held-Out Test Set (N = 428)\n• Single Final Evaluation\n• Non-Parametric Bootstrap (B = 1,000)"]
+        
+        Cohort --> Split
+        Split -->|Training & Validation| Dev
+        Split -->|Generalization Benchmark| Test
+    end
 
+    subgraph DualEngines["2. Dual Causal Inference Engines"]
+        Dev --> ModelA["Model A: Discretized Bayesian Network\n• 23 Learned Causal DAG Edges\n• BDeu Parameter Learning (ESS = 10)\n• 3-Bin Quantile Discretization"]
+        Dev --> ModelB["Model B: Continuous / Hybrid SCM (Primary)\n• Exact Continuous Biomarkers (No Binning Loss)\n• L2-Regularized G-Computation Surfaces\n• Analytical Partial Risk Gradients ∂P/∂X"]
+    end
+
+    subgraph InterventionalReasoning["3. Pearlian Intervention & Decision Reasoning"]
+        ModelA --> Intervene["Pearlian Graph Mutilation: do(trt = k)\nSimulates Potential Outcomes Across 4 Arms\nP(Progression | do(trt = k), X = x)"]
+        ModelB --> Intervene
+        Intervene --> Utility["Expected Clinical Utility Maximization\n• U(Progression-Free) = 1.0, U(Progression) = 0.0\n• Selects Optimal Patient-Specific Regimen"]
+    end
+
+    subgraph VerificationSafeguards["4. Clinical Rigor & Sensitivity Safeguards"]
+        Utility --> EVal["VanderWeele & Ding E-Value\nQuantifies Robustness to Unmeasured Confounders"]
+        Utility --> CATE["Individual Treatment Benefit (CATE ARR)\nPercentile Ranking vs ZDV Monotherapy"]
+        Utility --> Cox["Cox Proportional Hazards Benchmark\nPreserves Time-to-Event Hazard Ratios (C-index = 0.7203)"]
+        Test -.-> VerificationSafeguards
+    end
 ```
-                                  ┌─────────────────────────────────────────────────────────┐
-                                  │                Patient Clinical Profile                 │
-                                  │ (CD4, CD8, Age, Weight, Karnofsky, Pre-ART Days, etc.)  │
-                                  └───────────────────────────┬─────────────────────────────┘
-                                                              │
-                                     ┌────────────────────────┴────────────────────────┐
-                                     │                                                 │
-                                     ▼                                                 ▼
-             ┌───────────────────────────────────────────────┐ ┌───────────────────────────────────────────────┐
-             │       Model B: Continuous / Hybrid SCM        │ │     Model A: Baseline Discretized BN (23 Edges) │
-             │  (G-Computation + L2-Regularized Surfaces)   │ │    (BDeu ESS=10 + Exact Variable Elimination)   │
-             ├───────────────────────────────────────────────┤ ├───────────────────────────────────────────────┤
-             │ • Preserves exact continuous biomarkers       │ │ • Continuous variables binned into 3 quantiles │
-             │ • Zero discretization step-function artifacts │ │ • Discrete Bayesian Network structure learning │
-             │ • Exact analytical risk derivatives ∂P/∂X_j   │ │ • Evidence ablation delta sensitivities        │
-             │ • VanderWeele & Ding E-Value sensitivity      │ │ • Exact Pearlian do-calculus intervention      │
-             │ • Multi-arm What-If CD4 trajectory simulator  │ │ • Preserved as comparative baseline           │
-             └───────────────────────┬───────────────────────┘ └───────────────────────┬───────────────────────┘
-                                     │                                                 │
-                                     └────────────────────────┬────────────────────────┘
-                                                              │
-                                                              ▼
-                                  ┌─────────────────────────────────────────────────────────┐
-                                  │             Individualized Treatment Utility            │
-                                  │   EU = P(Success | do(trt=t)) × 1.0 + P(Fail) × 0.0     │
-                                  │   Optimal Regimen Recommendation + Robustness Bounds    │
-                                  └─────────────────────────────────────────────────────────┘
+
+### Learned 23-Edge Causal DAG Topology
+
+The causal structure was learned from the development cohort using constrained structural search (GES & score-based Tabu search with background knowledge constraints), identifying 23 verified directed causal dependencies:
+
+```mermaid
+flowchart LR
+    subgraph HistoryDemographics["Baseline Demographics & Exposure"]
+        preanti["Pre-ART Days (preanti)"]
+        race["Race (race)"]
+        strat["Trial Stratum (strat)"]
+        hemo["Hemophilia (hemo)"]
+        homo["Homosexual Activity (homo)"]
+        drugs["IV Drug History (drugs)"]
+        gender["Gender (gender)"]
+        age["Age (age)"]
+        wtkg["Weight (wtkg)"]
+        z30["Prior ZDV (z30)"]
+        oprior["Prior OI (oprior)"]
+    end
+
+    subgraph ClinicalBiomarkers["Biomarkers & Clinical State"]
+        cd80["CD8 Count (cd80)"]
+        cd40["Baseline CD4 (cd40)"]
+        symptom["Symptom Status (symptom)"]
+        karnof["Karnofsky Score (karnof)"]
+    end
+
+    subgraph DecisionOutcome["Intervention & Endpoint"]
+        trt["Treatment Regimen\n(trt: Arm 0, 1, 2, 3)"]
+        label["Severe Disease Progression\n(label: 0 = Free, 1 = Event)"]
+    end
+
+    %% Exposure & Demographic Dependencies
+    preanti --> race
+    preanti --> strat
+    preanti --> z30
+    strat --> hemo
+    strat --> oprior
+    race --> homo
+    hemo --> age
+    hemo --> drugs
+    hemo --> gender
+    hemo --> homo
+    homo --> drugs
+    homo --> gender
+    gender --> wtkg
+    z30 --> age
+    z30 --> oprior
+
+    %% Biomarker Transitions
+    homo --> cd80
+    homo --> symptom
+    cd80 --> cd40
+    cd40 --> symptom
+    symptom --> karnof
+
+    %% Clinical Endpoint Determinations
+    cd40 --> label
+    z30 --> label
+    trt ==>|Pearlian Intervention: do(trt = k)| label
 ```
-
-### 1. Model B: Continuous / Hybrid SCM (Primary)
-* **Information Preservation**: Keeps all 6 numerical biomarkers (`cd40`, `cd80`, `age`, `wtkg`, `karnof`, `preanti`) as true continuous measurements. Preprocessing standard scalers are fitted **strictly on the development partition** ($N = 1,711$) to eliminate test leakage.
-* **Causal Engine**: Formulates counterfactual potential outcomes via G-computation response surfaces across treatment arms ($t \in \{0, 1, 2, 3\}$).
-* **Local Gradient Sensitivity**: Analytical partial derivatives $\frac{\partial P}{\partial X_j} = P(1 - P) \cdot \frac{\beta_j}{\sigma_j}$, yielding exact per-unit risk slopes (e.g., risk change per 50 CD4 cells or 10 Karnofsky points).
-* **E-Value Sensitivity Analysis**: Formulates the VanderWeele & Ding (2017) E-value:
-  $$RR = \frac{P(\text{Progression} \mid \text{do}(\text{trt}=0))}{P(\text{Progression} \mid \text{do}(\text{trt}^*))}, \quad E = RR + \sqrt{RR(RR - 1)}$$
-  Quantifies the minimum strength of association that an unmeasured confounder must have with both treatment and outcome to explain away the causal effect.
-* **Continuous What-If Simulator**: Real-time multi-arm risk trajectory curves across CD4 counts ($50$ to $800$ cells/mm³).
-
-### 2. Model A: Baseline Discretized Bayesian Network
-* **DAG Architecture**: 23 causal edges learned via score-based structure search with clinical tier topological constraints.
-* **Parameter Learning**: Bayesian Estimator with BDeu equivalent sample size ($ESS = 10$).
-* **Inference**: Exact Variable Elimination under Pearl's $do$-operator: $P(Y \mid do(\text{trt} = t), \mathbf{X} = \mathbf{x})$.
 
 ---
 
-## 📊 Head-to-Head Benchmark Validation
+## Dual-Model Comparison Specifications
 
-Evaluated strictly on the **$N = 428$ held-out test cohort** (80/20 train/test split fixed at random seed `42`). Bootstrapped 95% confidence intervals generated across $B = 1,000$ resamples:
+| Architecture Dimension | Model A: Discretized Bayesian Network | Model B: Continuous / Hybrid SCM (Primary) |
+| :--- | :--- | :--- |
+| **Biomarker Modeling** | 3-bin quantile discretization | Exact continuous measurements without binning loss |
+| **Network Structure** | 23-edge Bayesian DAG (BDeu ESS=10) | Multi-arm G-computation response surfaces |
+| **Intervention Calculus** | Graph mutilation + Variable Elimination | Interventional potential outcomes conditioning |
+| **Local Sensitivity** | Bayesian evidence ablation ($\Delta P$) | Analytical partial risk derivatives ($\frac{\partial P}{\partial X_j}$) |
+| **Confounding Bounds** | VanderWeele & Ding E-Value | VanderWeele & Ding E-Value |
+| **Simulation Ability** | Discrete state queries | Interactive What-If CD4 Trajectory Simulator |
 
-| Metric / Dimension | Model A (Discretized BN) | Model B (Continuous SCM) | Advantage / Scientific Gain |
+---
+
+## Scientific Validation Benchmarks
+
+Evaluated strictly on the held-out test cohort ($N = 428$) with $B = 1,000$ non-parametric bootstrap resamples:
+
+| Metric / Dimension | Model A (Discretized BN) | Model B (Continuous SCM) | Advantage / Scientific Impact |
 | :--- | :---: | :---: | :--- |
-| **Numerical Preservation** | 3 Quantile Bins | **Exact Continuous Values** | Eliminates step-function boundary artifacts |
-| **ROC-AUC** | 0.6372 (0.576 – 0.697) | **0.6878 (0.626 – 0.744)** | **+0.0506 AUC Gain** |
-| **PR-AUC (Prevalence: 24.3%)** | 0.3687 (0.285 – 0.455) | **0.4130 (0.326 – 0.511)** | **+0.0443 PR-AUC Gain** |
-| **Brier Score (Probabilistic Error)** | 0.1753 (0.156 – 0.196) | **0.1699 (0.150 – 0.191)** | **Lower squared prediction error** |
-| **Expected Calibration Error (ECE)** | 4.45% | **3.96%** | **Tighter empirical agreement** |
+| **Biomarker Information** | Binned into 3 quantiles | **Exact Continuous** | Eliminates step-function boundary distortion |
+| **Discrimination (ROC-AUC)** | 0.6372 (0.576 – 0.697) | **0.6878 (0.626 – 0.744)** | **+0.0506 AUC Gain** |
+| **Precision-Recall (PR-AUC)** | 0.3687 (0.285 – 0.455) | **0.4130 (0.326 – 0.511)** | **+0.0443 PR-AUC Gain (Prevalence: 24.3%)** |
+| **Brier Score (Probabilistic Loss)** | 0.1753 (0.156 – 0.196) | **0.1699 (0.150 – 0.191)** | **Lower mean squared prediction error** |
+| **Calibration Error (ECE)** | 4.45% | **3.96%** | **Tighter alignment with observed patient risk** |
 | **Calibrated Specificity** | 50.31% ($\tau^* = 0.20$) | **62.65% ($\tau^* = 0.24$)** | **+12.34% Specificity at ~67% Sensitivity** |
 | **E-Value for Confounding** | 3.46 | **7.47** | **High stability against unmeasured bias** |
-| **Local Explainability** | Evidence Ablation ($\Delta P$) | **Exact Gradient ($\partial P / \partial X$)** | True instantaneous rate of risk change |
-| **Counterfactual Advantage** | 75.0% (321 / 428 patients) | **73.1% (313 / 428 patients)** | Consistently identifies dual-therapy over mono |
+| **Counterfactual Superiority** | 75.0% (321 / 428 patients) | **73.1% (313 / 428 patients)** | Consistently favors dual-therapy over mono |
+| **Cox PH Benchmark (C-Index)** | 0.7203 | **0.7203** | Preserves true time-to-event hazard reductions |
 
 ---
 
-## 🚀 Key Interface Capabilities
+## System Architecture
 
-1. **Model Switcher Pill Toggle**: Switch seamlessly in real-time between Model B (Continuous SCM) and Model A (Discretized BN).
-2. **Clinical Archetype Presets**: One-click patient profiles (*ART-Naïve Asymptomatic*, *Moderate Progression*, *Advanced Low-CD4 High-Risk*).
-3. **Interactive What-If CD4 Trajectory Simulator**: Dynamic interactive SVG visualization displaying predicted progression probability for all 4 treatment arms as CD4 count varies from 50 to 800 cells/mm³.
-4. **E-Value Confounding Robustness Card**: Visual metric gauge indicating whether findings are robust against unmeasured confounding ($E \ge 1.5$).
-5. **CATE Benefit Tier Badge**: Identifies patient's absolute risk reduction percentile compared against the entire development population.
-6. **Side-by-Side Model Benchmark Tab**: Comprehensive comparison table with confidence intervals and Decision Curve Analysis (DCA).
+```mermaid
+flowchart TD
+    subgraph ClientBrowser["Presentation Tier (Client Browser)"]
+        UI["Minimalist Black & White Interface\n(React 19 + Vite + Vanilla CSS)"]
+        State["Application State & Reactive Hooks\n(useOverview, useAnalyze)"]
+        AxiosClient["Axios API Client\n(Interceptors, Correlation Headers, Timeout)"]
+        OfflineEngine["Embedded Client-Side SCM\n(Zero-Downtime Offline Fallback)"]
+        
+        UI --> State
+        State --> AxiosClient
+        AxiosClient -.->|Network Disconnect Fallback| OfflineEngine
+        OfflineEngine -.->|Instant Local Inference| State
+    end
+
+    subgraph Environment["Configuration"]
+        Env["Environment Variable\nVITE_API_BASE_URL (/api)"]
+        Env --> AxiosClient
+    end
+
+    subgraph ApplicationServer["Application Tier (Python Flask Backend)"]
+        Flask["Flask REST Application\n(backend/app.py)"]
+        Service["Unified Inference & Overview Service\n(backend/service.py)"]
+        ModelB["Continuous Causal SCM\n(Exact Biomarkers, L2 G-Computation)"]
+        ModelA["Discretized Bayesian Network\n(23 DAG Edges, BDeu ESS = 10)"]
+
+        AxiosClient -->|JSON / REST Over HTTP| Flask
+        Flask --> Service
+        Service --> ModelB
+        Service --> ModelA
+    end
+
+    subgraph DataStorage["Data & Artifact Tier"]
+        Artifacts["backend/artifacts/\n• continuous_causal_model.pkl\n• final_dag_edges.csv (23 edges)\n• final_dag_edge_support.csv\n• Research Benchmark JSONs"]
+        Data["data/processed/\n• actg175_development.csv (N = 1,711)\n• actg175_test.csv (N = 428)\n• sparse/development.csv"]
+        
+        Service --> Artifacts
+        Service --> Data
+    end
+```
+
+### Directory Structure
+
+```
+Causal-Probabilistic-World-Model-for-Clinical-Treatment-Reasoning/
+│
+├── backend/                             # Streamlined Python Backend & Causal Inference Engine
+│   ├── artifacts/                       # Pre-trained models, DAG topology (23 edges), & validation benchmarks
+│   ├── __init__.py                      # Package exports
+│   ├── app.py                           # Flask REST API endpoints & CORS middleware
+│   ├── models.py                        # Continuous SCM & Discretized BN model architectures
+│   └── service.py                       # Unified patient inference, validation & overview service
+│
+├── frontend/                            # Professional Minimalist Web Application (React 19 + Vite)
+│   ├── src/
+│   │   ├── components/                  # Minimalist UI components (Header, Forms, DAG, etc.)
+│   │   ├── hooks/                       # Data fetching and inference dispatch hooks
+│   │   ├── lib/                         # Axios API client, types, and client-side inference fallback
+│   │   ├── App.tsx                      # Main single-page application orchestrator
+│   │   └── index.css                    # Monochromatic styling tokens
+│   ├── .env                             # Frontend environment configuration (VITE_API_BASE_URL)
+│   ├── vite.config.ts                   # Vite build configuration and proxy routing
+│   └── package.json                     # Frontend dependencies and scripts
+│
+└── data/                                # Verified ACTG175 clinical trial data partitions
+    ├── processed/                       # Development and test cohorts
+    ├── raw/                             # Original ACTG 175 study dataset
+    └── references/                      # Study documentation and protocol literature
+```
 
 ---
 
-## 💻 Local Development & Execution
+## API Endpoints
 
-### Prerequisites
+The backend provides clean REST endpoints designed for low-latency clinical inference:
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/health` | Service health status |
+| `GET` | `/api/overview` | Dataset metrics, DAG topology, bootstrap edge stability, and benchmark statistics |
+| `POST` | `/api/analyze` | Patient counterfactual simulation under Pearl $do(trt=k)$, expected utility, and E-values |
+
+### Sample Request: `POST /api/analyze`
+```json
+{
+  "model_type": "continuous",
+  "inputs": {
+    "age": 35,
+    "wtkg": 72,
+    "karnof": 100,
+    "preanti": 0,
+    "cd40": 480,
+    "cd80": 820,
+    "hemo": 0,
+    "homo": 1,
+    "drugs": 0,
+    "oprior": 0,
+    "z30": 0,
+    "race": 0,
+    "gender": 1,
+    "strat": 1,
+    "symptom": 0
+  }
+}
+```
+
+---
+
+## Execution Guide
+
+### 1. Prerequisites
 * Python 3.11+
 * Node.js 18+ and npm
 
-### 1. Clone & Setup
+### 2. Environment Setup
 ```bash
 git clone https://github.com/AuraMasters/Causal-Probabilistic-World-Model-for-Clinical-Treatment-Reasoning.git
 cd Causal-Probabilistic-World-Model-for-Clinical-Treatment-Reasoning
 
-# Python Virtual Environment
-python -m venv .venv
-.venv\Scripts\activate       # On Windows
-# source .venv/bin/activate  # On Linux/macOS
 pip install -r requirements.txt
 ```
 
-### 2. Run the Full-Stack Application
-A single command launches both the Flask inference API (port 5000) and the Vite React frontend (port 5173):
+### 3. Environment Configuration
+The frontend communicates with the backend via Axios, configured using `.env`:
+```bash
+# frontend/.env
+VITE_API_BASE_URL=/api
+```
+In development, `/api` requests are proxied by Vite directly to `http://127.0.0.1:5000`. For cross-origin or production deployments, set `VITE_API_BASE_URL=http://localhost:5000/api`.
+
+### 4. Launching the Application
+Launch both the backend API and frontend with a single command from `frontend/`:
 ```bash
 cd frontend
 npm install
@@ -136,92 +299,33 @@ npm run dev
 ```
 Open **`http://localhost:5173`** in your browser.
 
-### 3. Master Pipeline CLI Runner
-Execute end-to-end model training, validation, benchmarking, and unit testing via the master CLI:
+Alternatively, run the backend standalone:
 ```bash
-# Run everything
-python src/pipeline.py --all
-
-# Or run individual stages:
-python src/pipeline.py --train      # Fit Continuous SCM strictly on development partition
-python src/pipeline.py --validate   # Run full test cohort validation for both models
-python src/pipeline.py --compare    # Compile side-by-side benchmark artifact
-python src/pipeline.py --test       # Run automated unit tests (23/23 tests)
+python backend/app.py
 ```
+The REST API initializes on **`http://127.0.0.1:5000`**.
 
-### 4. Automated Test Suites
-Run the backend validation and causal inference unit tests:
+### 5. Verification & Code Quality
+Validate code quality and build integrity:
 ```bash
-python -m unittest tests/test_validation_pipeline.py
-```
-*Guarantees zero test set leakage, 5-fold development cross-validation for DAG selection, DAG acyclicity, metric correctness, threshold sweep calibration, E-value calculations, gender encoding alignment, clinical survival & right-censoring audit, and live API endpoints (23 passed).*
-
-Run the frontend client inference test suite:
-```bash
-cd frontend && npm test
-```
-*Validates client-side offline inference for Model A (discretized BN CPT queries), Model B (continuous logistic regression), E-value confounding calculations, risk derivative calculations, right-censoring survival audit artifacts, and boundary conditions (6 passed).*
-
----
-
-## 📁 Repository Structure
-
-```
-├── .github/workflows/
-│   └── deploy.yml                       # Automated GitHub Actions Pages deployment
-├── data/                                # ACTG175 raw and preprocessed datasets
-├── frontend/                            # React 19 + TypeScript + Vite UI
-│   ├── src/
-│   │   ├── components/                  # UI components (Header, What-If, DAG, etc.)
-│   │   ├── lib/
-│   │   │   ├── api.ts                   # Resilient API client with static fallback
-│   │   │   ├── clientInference.ts       # Embedded dual-model causal inference engine
-│   │   │   ├── discretizedModelData.json# CPT tables and ablations for Model A
-│   │   │   ├── modelWeights.json        # Precomputed continuous model coefficients
-│   │   │   └── precomputedOverview.json # Bundled validation benchmark artifacts
-│   │   └── types.ts                     # Strict TypeScript interfaces
-│   ├── test/
-│   │   └── clientInference.test.js      # Frontend client-side inference tests (6 tests)
-│   └── vite.config.ts                   # Vite configuration with relative base
-├── results/
-│   ├── continuous_model/                # Model B serialized artifacts
-│   └── validation/
-│       ├── comparison/                  # Side-by-side Model A vs B report
-│       ├── comprehensive/               # Model A test cohort validation results
-│       ├── continuous/                  # Model B test cohort validation results
-│       └── survival/                    # Cox PH & Kaplan-Meier censoring audit
-├── scripts/
-│   ├── deploy_gh_pages.py               # Native Git GitHub Pages deployment utility
-│   ├── export_discretized_model.py      # Exports Model A CPTs for client inference
-│   ├── run_api.sh                       # Backend launch script
-│   └── run_frontend.sh                  # Frontend launch script
-├── src/
-│   ├── api/                             # Flask REST API endpoints
-│   ├── continuous_model/                # Model B continuous SCM implementation
-│   ├── parameter_learning/              # Model A BDeu parameter estimation
-│   ├── validation/                      # Benchmark validation, threshold sweep, survival audit
-│   └── pipeline.py                      # Master CLI pipeline orchestrator
-└── tests/
-    └── test_validation_pipeline.py      # 23 automated validation unit tests
+cd frontend
+npm run lint
+npm run build
 ```
 
 ---
 
-## 📜 Clinical Disclaimer & Methodology Notes
+## Clinical Methodology & Verification
 
-1. **Investigational Tool**: This software is developed for research and educational purposes to demonstrate causal inference and probabilistic decision-making. It does not constitute medical advice or a prescriptive treatment guideline.
-2. **Causal Assumptions**: Interventional estimates rest on the standard identification assumptions: Positivity, Consistency, and Conditional Exchangeability (No Unmeasured Confounders). The E-Value analysis is explicitly provided to assess vulnerability to unmeasured confounding.
-3. **Leakage-Free Model Selection**: The treatment edge ($trt \to label$) and DAG architecture were selected using 5-fold Stratified Cross-Validation and BIC exclusively on the development cohort ($N = 1,711$). The selected 23-edge DAG was frozen prior to a single, uncompromised evaluation on the held-out test cohort ($N = 428$).
-4. **Encoding Alignment**: Gender is encoded as $0 = \text{Female}$ and $1 = \text{Male}$ consistently across datasets, preprocessing transforms, API endpoints, and client-side inference engines, matching the ACTG 175 study protocol (368 female, 1,771 male participants).
-5. **Threshold Calibration**: Because HIV disease progression occurred in 24.3% of trial patients, the standard decision cutoff ($\tau = 0.50$) produces low clinical sensitivity. Threshold optimization on development data established $\tau^* = 0.24$ for Model B to balance sensitivity (67.3%) and specificity (62.6%).
-6. **Clinical Outcome, Right-Censoring & Survival Benchmark**: In the ACTG 175 trial, `label` reflects observed disease progression (521 events, 24.4%) or right-censoring without event (1,618 patients, 75.6%). Follow-up was high: 87.8% of non-progressing patients were followed for at least 2 full years (median follow-up: 1,050 days / ~2.9 years). To verify that treating `label` as a binary target did not distort causal findings, we benchmarked against a multivariable Cox Proportional Hazards regression (`PHReg`) accounting for exact time-to-event and right-censoring:
-   - ZDV + ddI vs. ZDV Monotherapy: $\text{Hazard Ratio} = 0.4565$ (95% CI: 0.3473 – 0.6002, $p < 0.0001$).
-   - ZDV + ddC vs. ZDV Monotherapy: $\text{Hazard Ratio} = 0.5530$ (95% CI: 0.4243 – 0.7207, $p < 0.0001$).
-   - ddI Monotherapy vs. ZDV Monotherapy: $\text{Hazard Ratio} = 0.5652$ (95% CI: 0.4376 – 0.7299, $p < 0.0001$).
-   - Held-Out Test Harrell's Concordance Index: **$C = 0.7203$** (closely matching Model B's ROC-AUC of 0.6878).
-   This confirms that both Model B and Model A preserve the true time-to-event treatment hazard reductions and relative rankings established by semi-parametric survival analysis. For non-trial observational datasets with heavy loss to follow-up, continuous-time survival models with IPCW are recommended.
+1. **Investigational Purpose**: This software is designed for academic research and educational evaluation of causal probabilistic systems in medicine. It does not replace individualized clinical judgment.
+2. **Identification Assumptions**: Causal inference requires Consistency, Positivity, and Exchangeability (No Unmeasured Confounding). The integrated VanderWeele & Ding E-Value explicitly calculates the bound required to overturn model recommendations.
+3. **Partition Integrity**: The DAG structure and models were fitted exclusively on the development cohort ($N = 1,711$). The 428-patient test set was strictly held out and evaluated once without data snooping.
+4. **Binary Outcome Validation**: In ACTG 175, 87.8% of non-progressing patients completed at least 2 full years of follow-up (median follow-up: 1,050 days). A multivariable Cox Proportional Hazards regression benchmark ($C\text{-index} = 0.7203$) validates that treating the primary endpoint as a binary progression status preserves true time-to-event treatment hazard reductions:
+   - ZDV + ddI vs ZDV Monotherapy: $\text{HR} = 0.4565$ ($p < 0.0001$)
+   - ZDV + ddC vs ZDV Monotherapy: $\text{HR} = 0.5530$ ($p < 0.0001$)
+   - ddI vs ZDV Monotherapy: $\text{HR} = 0.5652$ ($p < 0.0001$)
 
 ---
 
-## 📄 License
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+## License
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
