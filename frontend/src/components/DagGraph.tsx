@@ -227,18 +227,18 @@ function DagGraphInner({ overview }: { overview: Overview }) {
       const isHighlighted = highlight !== null && (edge.source === highlight || edge.target === highlight)
       const data = edge.data as { stability: number; isIntervention: boolean; isVeryStable: boolean; isWeak: boolean }
 
-      let strokeColor = '#2a4365' // default slate blue
+      let strokeColor = '#2d3366' // default slate violet
       let strokeDash = undefined
 
       if (data.isIntervention) {
-        strokeColor = isHighlighted ? '#92eeff' : '#00e5a3'
+        strokeColor = isHighlighted ? '#a1eafb' : '#ffcef3'
       } else if (data.isVeryStable) {
-        strokeColor = isHighlighted ? '#92eeff' : '#30afff'
+        strokeColor = isHighlighted ? '#a1eafb' : '#cabbe9'
       } else if (data.isWeak) {
-        strokeColor = isHighlighted ? '#92eeff' : '#4a5568'
+        strokeColor = isHighlighted ? '#a1eafb' : '#3a447f'
         strokeDash = '5 5'
       } else {
-        strokeColor = isHighlighted ? '#92eeff' : '#5f8cb8'
+        strokeColor = isHighlighted ? '#a1eafb' : '#6b7db3'
       }
 
       return {

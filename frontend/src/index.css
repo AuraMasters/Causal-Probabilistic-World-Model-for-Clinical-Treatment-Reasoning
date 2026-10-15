@@ -5,36 +5,41 @@
   --font-display: "Outfit", "Plus Jakarta Sans", ui-sans-serif, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Deep Oceanic Cobalt / Midnight Navy Base */
-  --color-ink-950: #050a14;
-  --color-ink-900: #091222;
-  --color-ink-850: #0e1a30;
-  --color-ink-800: #142340;
-  --color-ink-700: #1d3158;
-  --color-ink-600: #294477;
+  /* Color Hunt Palette: #A1EAFB, #FDFDFD, #FFCEF3, #CABBE9 */
+  --color-palette-cyan: #a1eafb;
+  --color-palette-white: #fdfdfd;
+  --color-palette-pink: #ffcef3;
+  --color-palette-lavender: #cabbe9;
 
-  /* Color Hunt Palette: #30AFFF, #92EEFF, #D8FFC5, #C4F7CA */
-  --color-electric-blue: #30afff;
-  --color-cyan-ice: #92eeff;
-  --color-mint-lime: #d8ffc5;
-  --color-mint-fresh: #c4f7ca;
+  /* Refined Midnight Twilight Base designed to make the pastels glow */
+  --color-ink-950: #0a0b18;
+  --color-ink-900: #101226;
+  --color-ink-850: #171a36;
+  --color-ink-800: #1f2348;
+  --color-ink-700: #2d3366;
+  --color-ink-600: #3f478a;
 
-  /* Semantic UI color mappings */
-  --color-mint-200: #d8ffc5;
-  --color-mint-300: #c4f7ca;
-  --color-mint-400: #92eeff;
-  --color-mint-500: #30afff;
+  /* Semantic UI color mappings based on Color Hunt Palette */
+  --color-mint-100: #fff5fd;
+  --color-mint-200: #ffe4fa;
+  --color-mint-300: #ffcef3;
+  --color-mint-400: #f6a7e4;
+  --color-mint-500: #ea7ad2;
 
-  --color-cyan-200: #d8ffc5;
-  --color-cyan-300: #92eeff;
-  --color-cyan-400: #30afff;
-  --color-cyan-500: #1d8edb;
+  --color-cyan-100: #eefbff;
+  --color-cyan-200: #c9f4fd;
+  --color-cyan-300: #a1eafb;
+  --color-cyan-400: #74daf5;
+  --color-cyan-500: #46c4e6;
 
-  --color-violet-300: #92eeff;
-  --color-violet-400: #30afff;
+  --color-violet-100: #f5f1fc;
+  --color-violet-200: #e3dcf6;
+  --color-violet-300: #cabbe9;
+  --color-violet-400: #b19ddb;
+  --color-violet-500: #937ec8;
 
-  --color-rose-risk: #fb7185;
-  --color-amber-warn: #92eeff;
+  --color-rose-risk: #f472b6;
+  --color-amber-warn: #cabbe9;
 }
 
 html {
@@ -43,7 +48,7 @@ html {
 
 body {
   background-color: var(--color-ink-950);
-  color: #eaf6ff;
+  color: #fdfdfd;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -51,22 +56,22 @@ body {
   overflow-x: hidden;
 }
 
-/* Ambient glowing backdrop using #30AFFF, #92EEFF, #C4F7CA */
+/* Ambient glowing backdrop using #A1EAFB, #CABBE9, #FFCEF3 */
 .app-bg {
   background:
     radial-gradient(
       1200px 650px at 75% -10%,
-      rgba(48, 175, 255, 0.16),
+      rgba(161, 234, 251, 0.18),
       transparent 60%
     ),
     radial-gradient(
       1000px 500px at 5% 15%,
-      rgba(146, 238, 255, 0.13),
+      rgba(202, 187, 233, 0.20),
       transparent 55%
     ),
     radial-gradient(
       900px 500px at 50% 105%,
-      rgba(196, 247, 202, 0.09),
+      rgba(255, 206, 243, 0.16),
       transparent 60%
     ),
     var(--color-ink-950);
@@ -75,43 +80,43 @@ body {
 /* Subtle modern grid backdrop */
 .app-grid {
   background-image:
-    linear-gradient(rgba(146, 238, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(146, 238, 255, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(161, 234, 251, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(161, 234, 251, 0.04) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
 .glass {
-  background: rgba(9, 18, 34, 0.84);
+  background: rgba(16, 18, 38, 0.85);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(146, 238, 255, 0.18);
+  border: 1px solid rgba(161, 234, 251, 0.22);
 }
 
 .card-surface {
-  background: linear-gradient(180deg, rgba(14, 26, 48, 0.94), rgba(9, 18, 34, 0.98));
-  border: 1px solid rgba(146, 238, 255, 0.14);
+  background: linear-gradient(180deg, rgba(23, 26, 54, 0.94), rgba(16, 18, 38, 0.98));
+  border: 1px solid rgba(161, 234, 251, 0.16);
   box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.45);
 }
 
 .card-surface:hover {
-  border-color: rgba(146, 238, 255, 0.28);
+  border-color: rgba(202, 187, 233, 0.35);
 }
 
 .text-gradient-title {
-  background: linear-gradient(135deg, #ffffff 0%, #d8ffc5 50%, #92eeff 100%);
+  background: linear-gradient(135deg, #fdfdfd 0%, #a1eafb 45%, #ffcef3 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .text-gradient-brand {
-  background: linear-gradient(135deg, #d8ffc5 0%, #92eeff 45%, #30afff 100%);
+  background: linear-gradient(135deg, #a1eafb 0%, #cabbe9 50%, #ffcef3 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .ring-focus:focus {
   outline: none;
-  border-color: rgba(146, 238, 255, 0.75);
-  box-shadow: 0 0 0 3px rgba(48, 175, 255, 0.25);
+  border-color: rgba(161, 234, 251, 0.75);
+  box-shadow: 0 0 0 3px rgba(202, 187, 233, 0.3);
 }
 
 /* React Flow dark theme */
@@ -120,8 +125,8 @@ body {
 }
 
 .react-flow__controls {
-  background: #0e1a30 !important;
-  border: 1px solid rgba(146, 238, 255, 0.25) !important;
+  background: #171a36 !important;
+  border: 1px solid rgba(161, 234, 251, 0.25) !important;
   border-radius: 12px !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
   overflow: hidden !important;
@@ -132,8 +137,8 @@ body {
 }
 
 .react-flow__controls-button {
-  background-color: #142340 !important;
-  border: 1px solid rgba(146, 238, 255, 0.15) !important;
+  background-color: #1f2348 !important;
+  border: 1px solid rgba(161, 234, 251, 0.15) !important;
   border-radius: 8px !important;
   width: 32px !important;
   height: 32px !important;
@@ -146,20 +151,20 @@ body {
 }
 
 .react-flow__controls-button:hover {
-  background-color: #1d3158 !important;
-  border-color: rgba(146, 238, 255, 0.6) !important;
+  background-color: #2d3366 !important;
+  border-color: rgba(161, 234, 251, 0.6) !important;
   transform: scale(1.04);
 }
 
 .react-flow__controls-button svg {
-  fill: #92eeff !important;
+  fill: #a1eafb !important;
   width: 14px !important;
   height: 14px !important;
   transition: fill 0.2s ease !important;
 }
 
 .react-flow__controls-button:hover svg {
-  fill: #d8ffc5 !important;
+  fill: #ffcef3 !important;
 }
 
 .react-flow__controls-button:disabled {
@@ -168,9 +173,9 @@ body {
 }
 
 .react-flow__minimap {
-  background-color: #091222 !important;
+  background-color: #101226 !important;
   border-radius: 12px !important;
-  border: 1px solid rgba(146, 238, 255, 0.2) !important;
+  border: 1px solid rgba(161, 234, 251, 0.2) !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
   overflow: hidden !important;
 }
@@ -188,5 +193,5 @@ body {
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #294477;
+  background: #3f478a;
 }

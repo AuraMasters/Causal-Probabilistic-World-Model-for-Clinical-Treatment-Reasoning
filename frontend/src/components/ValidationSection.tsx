@@ -872,10 +872,10 @@ function SimpleRocCurve({ points }: { points: CurvePoint[] }) {
 
   return (
     <svg width={width} height={height} className="overflow-visible">
-      <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#334155" strokeWidth="1" />
-      <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#334155" strokeWidth="1" />
+      <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#282e56" strokeWidth="1" />
+      <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#282e56" strokeWidth="1" />
       <line x1={padding} y1={height - padding} x2={width - padding} y2={padding} stroke="#475569" strokeDasharray="3 3" strokeWidth="1.2" />
-      <path d={pathD} fill="none" stroke="#92eeff" strokeWidth="2.5" />
+      <path d={pathD} fill="none" stroke="#a1eafb" strokeWidth="2.5" />
       <text x={width / 2} y={height - 5} fill="#94a3b8" fontSize="9" textAnchor="middle" fontFamily="monospace">FPR (1 - Specificity)</text>
       <text x={8} y={height / 2} fill="#94a3b8" fontSize="9" textAnchor="middle" transform={`rotate(-90 8 ${height/2})`} fontFamily="monospace">TPR (Recall)</text>
     </svg>
@@ -899,10 +899,10 @@ function SimplePrCurve({ points, baselineRate }: { points: CurvePoint[]; baselin
 
   return (
     <svg width={width} height={height} className="overflow-visible">
-      <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#334155" strokeWidth="1" />
-      <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#334155" strokeWidth="1" />
-      <line x1={padding} y1={baselineY} x2={width - padding} y2={baselineY} stroke="#f43f5e" strokeDasharray="3 3" strokeWidth="1" />
-      <path d={pathD} fill="none" stroke="#d8ffc5" strokeWidth="2.5" />
+      <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#282e56" strokeWidth="1" />
+      <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#282e56" strokeWidth="1" />
+      <line x1={padding} y1={baselineY} x2={width - padding} y2={baselineY} stroke="#f472b6" strokeDasharray="3 3" strokeWidth="1" />
+      <path d={pathD} fill="none" stroke="#ffcef3" strokeWidth="2.5" />
       <text x={width / 2} y={height - 5} fill="#94a3b8" fontSize="9" textAnchor="middle" fontFamily="monospace">Recall</text>
       <text x={8} y={height / 2} fill="#94a3b8" fontSize="9" textAnchor="middle" transform={`rotate(-90 8 ${height/2})`} fontFamily="monospace">Precision</text>
     </svg>
@@ -918,15 +918,15 @@ function SimpleCalibrationPlot({ bins }: { bins: CalibrationBin[] }) {
 
   return (
     <svg width={width} height={height} className="overflow-visible">
-      <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#334155" strokeWidth="1" />
-      <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#334155" strokeWidth="1" />
+      <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#282e56" strokeWidth="1" />
+      <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#282e56" strokeWidth="1" />
       <line x1={padding} y1={height - padding} x2={width - padding} y2={padding} stroke="#64748b" strokeDasharray="4 4" strokeWidth="1.2" />
       {populated.map((b) => {
         const x = padding + (b.mean_predicted || 0) * (width - 2 * padding)
         const y = height - padding - (b.observed_rate || 0) * (height - 2 * padding)
         return (
           <g key={b.bin}>
-            <circle cx={x} cy={y} r="5" fill="#30afff" stroke="#92eeff" strokeWidth="2" />
+            <circle cx={x} cy={y} r="5" fill="#cabbe9" stroke="#a1eafb" strokeWidth="2" />
           </g>
         )
       })}
@@ -961,22 +961,22 @@ function SimpleDcaPlot({ points }: { points: DcaPoint[] }) {
 
   return (
     <svg width={width} height={height} className="overflow-visible">
-      <line x1={padding} y1={yZero} x2={width - padding} y2={yZero} stroke="#f43f5e" strokeWidth="2" strokeDasharray="3 3" />
+      <line x1={padding} y1={yZero} x2={width - padding} y2={yZero} stroke="#f472b6" strokeWidth="2" strokeDasharray="3 3" />
       <path d={pathAll} fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="4 4" />
-      <path d={pathModel} fill="none" stroke="#30afff" strokeWidth="3" />
+      <path d={pathModel} fill="none" stroke="#a1eafb" strokeWidth="3" />
       {points.map((p) => (
         <circle
           key={p.threshold_probability}
           cx={scaleX(p.threshold_probability)}
           cy={scaleY(p.net_benefit_model)}
           r="3.5"
-          fill="#30afff"
-          stroke="#92eeff"
+          fill="#a1eafb"
+          stroke="#cabbe9"
           strokeWidth="1.5"
         />
       ))}
-      <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#334155" strokeWidth="1" />
-      <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#334155" strokeWidth="1" />
+      <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#282e56" strokeWidth="1" />
+      <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#282e56" strokeWidth="1" />
       <text x={width / 2} y={height - 8} fill="#94a3b8" fontSize="10" textAnchor="middle" fontFamily="monospace">Threshold Probability (pt)</text>
       <text x={12} y={height / 2} fill="#94a3b8" fontSize="10" textAnchor="middle" transform={`rotate(-90 12 ${height/2})`} fontFamily="monospace">Net Benefit</text>
     </svg>
@@ -1002,12 +1002,12 @@ function SimpleThresholdSweepPlot({ sweep, optimal }: { sweep: ThresholdSweepIte
 
   return (
     <svg width={width} height={height} className="overflow-visible">
-      <line x1={xOptimal} y1={padding} x2={xOptimal} y2={height - padding} stroke="#ffffff" strokeWidth="1.5" strokeDasharray="3 3" />
-      <path d={pathSens} fill="none" stroke="#d8ffc5" strokeWidth="2.5" />
-      <path d={pathSpec} fill="none" stroke="#30afff" strokeWidth="2.5" />
-      <path d={pathF1} fill="none" stroke="#f59e0b" strokeWidth="2.5" />
-      <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#334155" strokeWidth="1" />
-      <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#334155" strokeWidth="1" />
+      <line x1={xOptimal} y1={padding} x2={xOptimal} y2={height - padding} stroke="#fdfdfd" strokeWidth="1.5" strokeDasharray="3 3" />
+      <path d={pathSens} fill="none" stroke="#ffcef3" strokeWidth="2.5" />
+      <path d={pathSpec} fill="none" stroke="#a1eafb" strokeWidth="2.5" />
+      <path d={pathF1} fill="none" stroke="#cabbe9" strokeWidth="2.5" />
+      <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#282e56" strokeWidth="1" />
+      <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#282e56" strokeWidth="1" />
       <text x={width / 2} y={height - 8} fill="#94a3b8" fontSize="10" textAnchor="middle" fontFamily="monospace">Decision Threshold (τ)</text>
       <text x={12} y={height / 2} fill="#94a3b8" fontSize="10" textAnchor="middle" transform={`rotate(-90 12 ${height/2})`} fontFamily="monospace">Metric Score</text>
     </svg>
