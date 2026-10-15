@@ -5,45 +5,42 @@
   --font-display: "Outfit", "Plus Jakarta Sans", ui-sans-serif, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Color Hunt Palette: #086288, #4D8DBA, #97D7FF, #FFEFC4 */
-  --color-palette-marine: #086288;
-  --color-palette-steel: #4d8dba;
-  --color-palette-sky: #97d7ff;
-  --color-palette-cream: #ffefc4;
+  /* Minimalist Monochromatic Dark Palette */
+  --color-palette-marine: #ffffff;
+  --color-palette-steel: #a1a1aa;
+  --color-palette-sky: #e4e4e7;
+  --color-palette-cream: #f4f4f5;
 
-  /* Deep Oceanic Medical Base (Derived from #086288) */
-  --color-ink-950: #031722;
-  --color-ink-900: #062232;
-  --color-ink-850: #092c40;
-  --color-ink-800: #0c374f;
-  --color-ink-700: #114562;
-  --color-ink-600: #185577;
+  /* Stark Neutral Blacks & Charcoals */
+  --color-ink-950: #09090b;
+  --color-ink-900: #121214;
+  --color-ink-850: #18181b;
+  --color-ink-800: #202024;
+  --color-ink-700: #27272a;
+  --color-ink-600: #3f3f46;
 
-  /* Semantic UI color mappings based on Color Hunt Palette */
-  /* Cyan / Steel / Sky -> #97D7FF & #4D8DBA */
-  --color-cyan-100: #f0f9ff;
-  --color-cyan-200: #d3edff;
-  --color-cyan-300: #97d7ff;
-  --color-cyan-400: #4d8dba;
-  --color-cyan-500: #086288;
-  --color-cyan-600: #054662;
+  /* Neutral scale mapping for legacy cyan/mint/violet utility classes */
+  --color-cyan-100: #f4f4f5;
+  --color-cyan-200: #e4e4e7;
+  --color-cyan-300: #ffffff;
+  --color-cyan-400: #d4d4d8;
+  --color-cyan-500: #a1a1aa;
+  --color-cyan-600: #71717a;
 
-  /* Mint / Warm Cream Vanilla -> #FFEFC4 */
-  --color-mint-100: #fffbf0;
-  --color-mint-200: #ffefc4;
-  --color-mint-300: #f7df9e;
-  --color-mint-400: #eed078;
-  --color-mint-500: #deb84f;
+  --color-mint-100: #f4f4f5;
+  --color-mint-200: #ffffff;
+  --color-mint-300: #e4e4e7;
+  --color-mint-400: #a1a1aa;
+  --color-mint-500: #71717a;
 
-  /* Violet / Steel Marine -> #4D8DBA & #086288 */
-  --color-violet-100: #f0f7ff;
-  --color-violet-200: #d3edff;
-  --color-violet-300: #97d7ff;
-  --color-violet-400: #4d8dba;
-  --color-violet-500: #086288;
+  --color-violet-100: #f4f4f5;
+  --color-violet-200: #ffffff;
+  --color-violet-300: #e4e4e7;
+  --color-violet-400: #a1a1aa;
+  --color-violet-500: #71717a;
 
-  --color-rose-risk: #f43f5e;
-  --color-amber-warn: #ffefc4;
+  --color-rose-risk: #d4d4d8;
+  --color-amber-warn: #a1a1aa;
 }
 
 html {
@@ -51,8 +48,8 @@ html {
 }
 
 body {
-  background-color: var(--color-ink-950);
-  color: #f1f5f9;
+  background-color: #09090b;
+  color: #f4f4f5;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -60,84 +57,59 @@ body {
   overflow-x: hidden;
 }
 
-/* Ambient glowing backdrop using #086288, #4D8DBA, #97D7FF, #FFEFC4 */
+/* Minimalist pure dark canvas with no neon ambient blur */
 .app-bg {
-  background:
-    radial-gradient(
-      1200px 650px at 75% -10%,
-      rgba(77, 141, 186, 0.35),
-      transparent 60%
-    ),
-    radial-gradient(
-      1000px 500px at 5% 15%,
-      rgba(8, 98, 136, 0.55),
-      transparent 55%
-    ),
-    radial-gradient(
-      900px 500px at 50% 105%,
-      rgba(151, 215, 255, 0.22),
-      transparent 60%
-    ),
-    radial-gradient(
-      700px 350px at 85% 80%,
-      rgba(255, 239, 196, 0.10),
-      transparent 50%
-    ),
-    var(--color-ink-950);
+  background-color: #09090b;
 }
 
-/* Subtle modern grid backdrop */
+/* Subtle, crisp monochromatic grid */
 .app-grid {
   background-image:
-    linear-gradient(rgba(151, 215, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(151, 215, 255, 0.06) 1px, transparent 1px);
-  background-size: 40px 40px;
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
 .glass {
-  background: rgba(6, 34, 50, 0.82);
+  background: rgba(18, 18, 20, 0.85);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(151, 215, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .card-surface {
-  background: linear-gradient(180deg, rgba(9, 44, 64, 0.92), rgba(6, 34, 50, 0.98));
-  border: 1px solid rgba(151, 215, 255, 0.18);
-  box-shadow: 0 4px 24px -2px rgba(3, 23, 34, 0.75);
+  background-color: #121214;
+  border: 1px solid #27272a;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
 }
 
 .card-surface:hover {
-  border-color: rgba(151, 215, 255, 0.45);
+  border-color: #3f3f46;
 }
 
 .text-gradient-title {
-  background: linear-gradient(135deg, #ffffff 0%, #ffefc4 35%, #97d7ff 70%, #4d8dba 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #ffffff;
 }
 
 .text-gradient-brand {
-  background: linear-gradient(135deg, #ffffff 0%, #ffefc4 45%, #97d7ff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #ffffff;
 }
 
 .ring-focus:focus {
   outline: none;
-  border-color: rgba(151, 215, 255, 0.85);
-  box-shadow: 0 0 0 3px rgba(8, 98, 136, 0.45);
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
 }
 
-/* React Flow dark theme */
+/* React Flow minimalist monochrome theme */
 .react-flow__attribution {
   display: none;
 }
 
 .react-flow__controls {
-  background: #092c40 !important;
-  border: 1px solid rgba(151, 215, 255, 0.30) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
+  background: #121214 !important;
+  border: 1px solid #27272a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.7) !important;
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
@@ -146,61 +118,59 @@ body {
 }
 
 .react-flow__controls-button {
-  background-color: #0c374f !important;
-  border: 1px solid rgba(151, 215, 255, 0.18) !important;
-  border-radius: 8px !important;
-  width: 32px !important;
-  height: 32px !important;
+  background-color: #18181b !important;
+  border: 1px solid #27272a !important;
+  border-radius: 6px !important;
+  width: 30px !important;
+  height: 30px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   cursor: pointer !important;
-  transition: all 0.2s ease !important;
+  transition: all 0.15s ease !important;
   box-sizing: border-box !important;
 }
 
 .react-flow__controls-button:hover {
-  background-color: #185577 !important;
-  border-color: rgba(151, 215, 255, 0.70) !important;
-  transform: scale(1.04);
+  background-color: #27272a !important;
+  border-color: #52525b !important;
 }
 
 .react-flow__controls-button svg {
-  fill: #97d7ff !important;
-  width: 14px !important;
-  height: 14px !important;
-  transition: fill 0.2s ease !important;
+  fill: #e4e4e7 !important;
+  width: 13px !important;
+  height: 13px !important;
 }
 
 .react-flow__controls-button:hover svg {
-  fill: #ffefc4 !important;
+  fill: #ffffff !important;
 }
 
 .react-flow__controls-button:disabled {
-  opacity: 0.4 !important;
+  opacity: 0.3 !important;
   cursor: not-allowed !important;
 }
 
 .react-flow__minimap {
-  background-color: #062232 !important;
-  border-radius: 12px !important;
-  border: 1px solid rgba(151, 215, 255, 0.25) !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+  background-color: #121214 !important;
+  border-radius: 8px !important;
+  border: 1px solid #27272a !important;
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.7) !important;
   overflow: hidden !important;
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-ink-950);
+  background: #09090b;
 }
 ::-webkit-scrollbar-thumb {
-  background: #114562;
-  border-radius: 8px;
+  background: #27272a;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #185577;
+  background: #3f3f46;
 }

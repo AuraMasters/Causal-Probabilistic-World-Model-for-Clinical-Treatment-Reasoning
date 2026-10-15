@@ -15,7 +15,7 @@ export function OutcomeSection({ result }: { result?: AnalyzeResult }) {
         title="Progression-Free Survival"
         meaning="Preserved CD4 counts & absence of clinical AIDS endpoints"
         probability={p0}
-        accent="mint"
+        isSurvival={true}
         icon={ShieldCheck}
       />
       <OutcomeCard
@@ -23,12 +23,12 @@ export function OutcomeSection({ result }: { result?: AnalyzeResult }) {
         title="Disease Progression"
         meaning="50% CD4 decline, clinical AIDS-defining event, or mortality"
         probability={p1}
-        accent="rose"
+        isSurvival={false}
         icon={ShieldAlert}
       />
       <div className="sm:col-span-2">
-        <div className="rounded-xl border border-slate-700/60 bg-ink-950/70 px-4 py-3 text-xs leading-relaxed text-slate-300 flex items-center gap-2">
-          <HeartPulse className="h-4 w-4 text-cyan-300 shrink-0" />
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-xs leading-relaxed text-zinc-400 flex items-center gap-2">
+          <HeartPulse className="h-4 w-4 text-zinc-300 shrink-0" />
           <p>
             Predicted under <strong className="text-white">{trtName}</strong> (Arm {trtNum}). Probabilities sum strictly to 1.0000 by normalization.
           </p>
@@ -43,47 +43,44 @@ function OutcomeCard({
   title,
   meaning,
   probability,
-  accent,
+  isSurvival,
   icon: Icon,
 }: {
   label: string
   title: string
   meaning: string
   probability: number
-  accent: 'mint' | 'rose'
+  isSurvival: boolean
   icon: React.ComponentType<{ className?: string }>
 }) {
-  const isMint = accent === 'mint'
-  const borderColor = isMint ? 'border-mint-300/30' : 'border-rose-500/30'
-  const textColor = isMint ? 'text-mint-200' : 'text-rose-300'
-  const iconBg = isMint ? 'bg-mint-300/10 text-mint-300' : 'bg-rose-500/10 text-rose-400'
-  const progressBg = isMint ? 'bg-mint-300' : 'bg-rose-500'
-
   return (
-    <div className={`card-surface rounded-2xl border ${borderColor} p-6 shadow-md`}>
+    <div className="card-surface rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-md">
       <div className="flex items-start justify-between">
         <div>
-          <span className="font-mono text-xs font-bold uppercase text-slate-400">{label}</span>
+          <span className="font-mono text-xs font-bold uppercase text-zinc-400">{label}</span>
           <h4 className="mt-1 font-display text-lg font-bold text-white">{title}</h4>
         </div>
-        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBg}`}>
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800 text-white">
           <Icon className="h-5 w-5" />
         </div>
       </div>
 
-      <p className="mt-2 text-xs text-slate-400">{meaning}</p>
+      <p className="mt-2 text-xs text-zinc-400">{meaning}</p>
 
       <div className="mt-4 flex items-baseline justify-between">
-        <span className={`font-display text-3xl font-extrabold ${textColor}`}>
+        <span className={`font-display text-3xl font-extrabold ${isSurvival ? 'text-white' : 'text-zinc-300'}`}>
           {formatPercent(probability, 1)}
         </span>
-        <span className="font-mono text-xs text-slate-400">
+        <span className="font-mono text-xs text-zinc-500">
           P = {formatProbability(probability, 4)}
         </span>
       </div>
 
-      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-ink-950">
-        <div className={`h-full ${progressBg} rounded-full`} style={{ width: `${probability * 100}%` }} />
+      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-black border border-zinc-800">
+        <div
+          className={`h-full ${isSurvival ? 'bg-white' : 'bg-zinc-500'} rounded-full`}
+          style={{ width: `${probability * 100}%` }}
+        />
       </div>
     </div>
   )

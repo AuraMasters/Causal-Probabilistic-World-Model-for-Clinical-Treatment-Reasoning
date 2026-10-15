@@ -47,62 +47,39 @@ const NODE_DESCRIPTIONS: Record<string, { name: string; category: string; desc: 
   label: { name: 'Primary Trial Outcome (Label)', category: 'Outcome', desc: '50% CD4 decline, AIDS endpoint, or death' },
 }
 
-const NODE_ACCENTS: Record<string, string> = {
-  trt: 'mint',
-  label: 'rose',
-  cd40: 'cyan',
-  cd80: 'cyan',
-  karnof: 'cyan',
-  preanti: 'cyan',
-  z30: 'cyan',
-}
-
 type DagNodeData = {
   label: string
   name: string
   category: string
-  accent: string
   dimmed: boolean
   isTarget: boolean
   isSource: boolean
 }
 
 function DagNode({ data, selected }: NodeProps) {
-  const { label, name, category, accent, dimmed, isTarget, isSource } = data as DagNodeData
-
-  const borderClass =
-    accent === 'mint'
-      ? 'border-mint-400/60 shadow-mint-400/20'
-      : accent === 'rose'
-        ? 'border-rose-400/60 shadow-rose-400/20'
-        : 'border-cyan-400/40 shadow-cyan-400/15'
-
-  const badgeBg =
-    accent === 'mint'
-      ? 'bg-mint-400/20 text-mint-200'
-      : accent === 'rose'
-        ? 'bg-rose-400/20 text-rose-200'
-        : 'bg-cyan-400/20 text-cyan-200'
+  const { label, name, category, dimmed, isTarget, isSource } = data as DagNodeData
 
   return (
     <div
-      className={`relative w-[170px] rounded-2xl border bg-ink-900/95 p-3 shadow-xl backdrop-blur transition-all duration-200 ${borderClass} ${
-        selected ? 'ring-2 ring-cyan-300 shadow-cyan-400/40 scale-105' : ''
-      } ${dimmed ? 'opacity-30' : 'opacity-100'} ${
-        isSource ? 'ring-2 ring-cyan-400 animate-pulse' : ''
-      } ${isTarget ? 'ring-2 ring-mint-300' : ''}`}
+      className={`relative w-[170px] rounded-xl border bg-zinc-950 p-3 shadow-md backdrop-blur transition-all duration-150 ${
+        selected
+          ? 'border-white ring-2 ring-white bg-zinc-900 scale-105'
+          : isSource || isTarget
+            ? 'border-zinc-400 bg-zinc-900'
+            : 'border-zinc-800'
+      } ${dimmed ? 'opacity-30' : 'opacity-100'}`}
     >
-      <Handle type="target" position={Position.Left} className="!h-2 !w-2 !border-0 !bg-cyan-400" />
+      <Handle type="target" position={Position.Left} className="!h-2 !w-2 !border-0 !bg-white" />
       <div className="flex items-center justify-between">
-        <span className={`rounded-md px-1.5 py-0.5 font-mono text-[11px] font-extrabold ${badgeBg}`}>
+        <span className="rounded bg-zinc-800 border border-zinc-700 px-1.5 py-0.5 font-mono text-[11px] font-bold text-white">
           {label}
         </span>
-        <span className="font-mono text-[9px] text-slate-400 uppercase">{category}</span>
+        <span className="font-mono text-[9px] text-zinc-500 uppercase">{category}</span>
       </div>
       <div className="mt-1 font-display text-xs font-bold text-white truncate" title={name}>
         {name}
       </div>
-      <Handle type="source" position={Position.Right} className="!h-2 !w-2 !border-0 !bg-cyan-400" />
+      <Handle type="source" position={Position.Right} className="!h-2 !w-2 !border-0 !bg-white" />
     </div>
   )
 }
@@ -163,7 +140,6 @@ function DagGraphInner({ overview }: { overview: Overview }) {
           label: id,
           name: nodeMeta.name,
           category: nodeMeta.category,
-          accent: NODE_ACCENTS[id] || 'cyan',
           dimmed: false,
           isTarget: false,
           isSource: false,
@@ -227,18 +203,18 @@ function DagGraphInner({ overview }: { overview: Overview }) {
       const isHighlighted = highlight !== null && (edge.source === highlight || edge.target === highlight)
       const data = edge.data as { stability: number; isIntervention: boolean; isVeryStable: boolean; isWeak: boolean }
 
-      let strokeColor = '#092c40' // deep oceanic navy base
+      let strokeColor = '#52525b'
       let strokeDash = undefined
 
       if (data.isIntervention) {
-        strokeColor = isHighlighted ? '#ffffff' : '#97d7ff'
+        strokeColor = '#ffffff'
       } else if (data.isVeryStable) {
-        strokeColor = isHighlighted ? '#ffffff' : '#4d8dba'
+        strokeColor = isHighlighted ? '#ffffff' : '#a1a1aa'
       } else if (data.isWeak) {
-        strokeColor = isHighlighted ? '#ffffff' : '#062232'
-        strokeDash = '5 5'
+        strokeColor = isHighlighted ? '#ffffff' : '#27272a'
+        strokeDash = '4 4'
       } else {
-        strokeColor = isHighlighted ? '#ffffff' : '#086288'
+        strokeColor = isHighlighted ? '#ffffff' : '#71717a'
       }
 
       return {
@@ -246,7 +222,7 @@ function DagGraphInner({ overview }: { overview: Overview }) {
         animated: isHighlighted || data.isIntervention,
         style: {
           stroke: strokeColor,
-          strokeWidth: isHighlighted ? 2.8 : data.isIntervention ? 2.4 : 1.6,
+          strokeWidth: isHighlighted ? 2.5 : data.isIntervention ? 2.2 : 1.4,
           strokeDasharray: strokeDash,
         },
       }
@@ -278,30 +254,30 @@ function DagGraphInner({ overview }: { overview: Overview }) {
   return (
     <div className="space-y-4">
       {/* Top Filter and Controls Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-cyan-400/20 bg-ink-900/90 p-3.5 shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-800 bg-zinc-950/90 p-3 shadow-md">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="font-mono text-xs font-bold text-slate-400 uppercase mr-2 flex items-center gap-1.5">
-            <GitBranch className="h-4 w-4 text-cyan-300" /> Focus View:
+          <span className="font-mono text-xs font-bold text-zinc-400 uppercase mr-2 flex items-center gap-1.5">
+            <GitBranch className="h-4 w-4 text-zinc-300" /> Focus View:
           </span>
           <button
             onClick={() => {
               setActiveFilter('all')
               setSelectedNode(null)
             }}
-            className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
+            className={`rounded-md px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
               activeFilter === 'all' && !selectedNode
-                ? 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/40 shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             All 17 Nodes
           </button>
           <button
             onClick={handleFocusTrtPath}
-            className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
+            className={`rounded-md px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
               selectedNode === 'trt'
-                ? 'bg-mint-300/20 text-mint-200 border border-mint-300/40 shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             Treatment Pathway (trt &rarr; label)
@@ -311,10 +287,10 @@ function DagGraphInner({ overview }: { overview: Overview }) {
               setActiveFilter('biomarkers')
               setSelectedNode('cd40')
             }}
-            className={`rounded-lg px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
+            className={`rounded-md px-3 py-1 text-xs font-semibold transition-all cursor-pointer ${
               activeFilter === 'biomarkers'
-                ? 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/40 shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-black shadow-sm'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             Key Biomarkers
@@ -324,21 +300,21 @@ function DagGraphInner({ overview }: { overview: Overview }) {
         <div className="flex items-center gap-1">
           <button
             onClick={handleZoomIn}
-            className="rounded-lg border border-slate-700 bg-ink-850 p-1.5 text-slate-300 hover:text-white hover:border-cyan-400 cursor-pointer"
+            className="rounded-md border border-zinc-800 bg-zinc-900 p-1.5 text-zinc-300 hover:text-white hover:border-zinc-700 cursor-pointer"
             title="Zoom In"
           >
             <Maximize2 className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={handleZoomOut}
-            className="rounded-lg border border-slate-700 bg-ink-850 p-1.5 text-slate-300 hover:text-white hover:border-cyan-400 cursor-pointer"
+            className="rounded-md border border-zinc-800 bg-zinc-900 p-1.5 text-zinc-300 hover:text-white hover:border-zinc-700 cursor-pointer"
             title="Zoom Out"
           >
             <Minimize2 className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={handleFitView}
-            className="rounded-lg border border-slate-700 bg-ink-850 p-1.5 text-slate-300 hover:text-white hover:border-cyan-400 cursor-pointer"
+            className="rounded-md border border-zinc-800 bg-zinc-900 p-1.5 text-zinc-300 hover:text-white hover:border-zinc-700 cursor-pointer"
             title="Fit View"
           >
             <RefreshCw className="h-3.5 w-3.5" />
@@ -349,7 +325,7 @@ function DagGraphInner({ overview }: { overview: Overview }) {
       {/* Main Graph + Inspector Grid */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
         {/* Flow Canvas */}
-        <div className="h-[540px] overflow-hidden rounded-2xl border border-cyan-400/25 bg-ink-900/90 shadow-xl relative">
+        <div className="h-[540px] overflow-hidden rounded-xl border border-zinc-800 bg-black shadow-xl relative">
           <ReactFlow
             nodes={renderNodes}
             edges={renderEdges}
@@ -366,44 +342,44 @@ function DagGraphInner({ overview }: { overview: Overview }) {
             onPaneClick={() => setSelectedNode(null)}
             proOptions={{ hideAttribution: true }}
           >
-            <Background gap={24} size={1} color="#0e1a30" />
+            <Background gap={24} size={1} color="#27272a" />
             <MiniMap
               pannable
               zoomable
-              nodeColor="#142340"
-              maskColor="rgba(5, 10, 20, 0.75)"
-              className="!bg-ink-900/90"
+              nodeColor="#27272a"
+              maskColor="rgba(0, 0, 0, 0.85)"
+              className="!bg-zinc-950"
             />
             <Controls
               showInteractive={false}
-              className="!border-cyan-400/25 !bg-ink-850"
+              className="!border-zinc-800 !bg-zinc-900"
             />
           </ReactFlow>
 
           {/* Edge Stability Legend Bar */}
-          <div className="pointer-events-none absolute top-3 right-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-700/60 bg-ink-950/90 px-3 py-1.5 text-[10px] font-mono text-slate-300 shadow-md">
-            <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-cyan-400 inline-block" /> Solid: High Stability (&ge;75%)
+          <div className="pointer-events-none absolute top-3 right-3 flex flex-wrap items-center gap-2.5 rounded-lg border border-zinc-800 bg-zinc-950/90 px-3 py-1.5 text-[10px] font-mono text-zinc-300 shadow-md">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-white inline-block" /> Intervention
             </span>
-            <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-blue-400 inline-block" /> Blue: Stable (50–74%)
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-zinc-400 inline-block" /> Solid: High Stability (&ge;75%)
             </span>
-            <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-slate-500 inline-block" /> Dashed: Exploratory (&lt;50%)
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-zinc-600 inline-block" /> Gray: Stable (50–74%)
             </span>
-            <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-mint-300 inline-block" /> Mint: Intervention
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-zinc-800 inline-block" /> Dashed: Exploratory
             </span>
           </div>
 
           {/* Quick Helper Floating Tip */}
-          <div className="pointer-events-none absolute bottom-3 left-3 rounded-lg border border-slate-700/60 bg-ink-950/90 px-3 py-1.5 text-[11px] font-mono text-slate-400 shadow-md">
+          <div className="pointer-events-none absolute bottom-3 left-3 rounded-md border border-zinc-800 bg-zinc-950/90 px-3 py-1.5 text-[11px] font-mono text-zinc-500 shadow-md">
             Click any node to inspect causal parents, edge stability &amp; state space
           </div>
         </div>
 
         {/* Node Inspector Drawer */}
-        <div className="rounded-2xl border border-cyan-400/25 bg-ink-900/95 p-5 shadow-xl flex flex-col justify-between">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-5 shadow-xl flex flex-col justify-between">
           <AnimatePresence mode="wait">
             {selectedNode && selectedNodeMeta ? (
               <motion.div
@@ -413,54 +389,54 @@ function DagGraphInner({ overview }: { overview: Overview }) {
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-4"
               >
-                <div className="flex items-start justify-between border-b border-slate-700/70 pb-3">
+                <div className="flex items-start justify-between border-b border-zinc-800 pb-3">
                   <div>
-                    <span className="rounded-md bg-cyan-400/20 border border-cyan-400/35 px-2 py-0.5 font-mono text-xs font-bold text-mint-200">
+                    <span className="rounded bg-white text-black font-bold px-2 py-0.5 font-mono text-xs">
                       {selectedNode}
                     </span>
                     <h4 className="mt-2 font-display text-base font-bold text-white">
                       {selectedNodeMeta.name}
                     </h4>
-                    <p className="font-mono text-xs text-slate-400">{selectedNodeMeta.category}</p>
+                    <p className="font-mono text-xs text-zinc-400">{selectedNodeMeta.category}</p>
                   </div>
                   <button
                     onClick={() => setSelectedNode(null)}
-                    className="rounded-lg p-1 text-slate-400 hover:text-white cursor-pointer"
+                    className="rounded p-1 text-zinc-400 hover:text-white cursor-pointer"
                   >
                     <X className="h-4 w-4" />
                   </button>
                 </div>
 
-                <p className="text-xs text-slate-300 leading-relaxed">{selectedNodeMeta.desc}</p>
+                <p className="text-xs text-zinc-300 leading-relaxed">{selectedNodeMeta.desc}</p>
 
                 {/* Causal Dependencies with Edge Stability */}
                 <div className="space-y-2">
-                  <p className="font-mono text-[11px] font-bold text-cyan-300 uppercase">
+                  <p className="font-mono text-[11px] font-bold text-zinc-300 uppercase">
                     Causal Relationships &amp; Edge Stability:
                   </p>
                   <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                    <div className="rounded-xl border border-slate-700/60 bg-ink-950 p-2.5">
-                      <span className="text-[10px] text-slate-400 block">Parents (In-Degree):</span>
-                      <span className="font-bold text-cyan-200 text-sm">{incomingEdges.length}</span>
+                    <div className="rounded-lg border border-zinc-800 bg-black p-2.5">
+                      <span className="text-[10px] text-zinc-500 block">Parents (In-Degree):</span>
+                      <span className="font-bold text-white text-sm">{incomingEdges.length}</span>
                       <div className="mt-1 space-y-1 max-h-24 overflow-y-auto">
                         {incomingEdges.map((e) => (
-                          <div key={e.source} className="text-[10px] text-slate-300 truncate">
+                          <div key={e.source} className="text-[10px] text-zinc-400 truncate">
                             &larr; <strong className="text-white">{e.source}</strong> ({e.support_category || 'DAG'})
                           </div>
                         ))}
-                        {incomingEdges.length === 0 && <span className="text-[10px] text-slate-500">Root Node</span>}
+                        {incomingEdges.length === 0 && <span className="text-[10px] text-zinc-600">Root Node</span>}
                       </div>
                     </div>
-                    <div className="rounded-xl border border-slate-700/60 bg-ink-950 p-2.5">
-                      <span className="text-[10px] text-slate-400 block">Children (Out-Degree):</span>
-                      <span className="font-bold text-mint-200 text-sm">{outgoingEdges.length}</span>
+                    <div className="rounded-lg border border-zinc-800 bg-black p-2.5">
+                      <span className="text-[10px] text-zinc-500 block">Children (Out-Degree):</span>
+                      <span className="font-bold text-white text-sm">{outgoingEdges.length}</span>
                       <div className="mt-1 space-y-1 max-h-24 overflow-y-auto">
                         {outgoingEdges.map((e) => (
-                          <div key={e.target} className="text-[10px] text-slate-300 truncate">
+                          <div key={e.target} className="text-[10px] text-zinc-400 truncate">
                             &rarr; <strong className="text-white">{e.target}</strong> ({e.support_category || 'DAG'})
                           </div>
                         ))}
-                        {outgoingEdges.length === 0 && <span className="text-[10px] text-slate-500">Terminal Node</span>}
+                        {outgoingEdges.length === 0 && <span className="text-[10px] text-zinc-600">Terminal Node</span>}
                       </div>
                     </div>
                   </div>
@@ -468,14 +444,14 @@ function DagGraphInner({ overview }: { overview: Overview }) {
 
                 {/* Discretized Domain States */}
                 <div>
-                  <p className="font-mono text-[11px] font-bold text-cyan-300 uppercase mb-1.5">
+                  <p className="font-mono text-[11px] font-bold text-zinc-300 uppercase mb-1.5">
                     CPT State Space ({selectedStates.length} states):
                   </p>
                   <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1">
                     {selectedStates.map((state) => (
                       <span
                         key={state}
-                        className="rounded-lg border border-slate-700/80 bg-ink-950 px-2 py-1 font-mono text-[11px] text-slate-200"
+                        className="rounded border border-zinc-800 bg-black px-2 py-1 font-mono text-[11px] text-zinc-300"
                       >
                         {state}
                       </span>
@@ -484,19 +460,19 @@ function DagGraphInner({ overview }: { overview: Overview }) {
                 </div>
               </motion.div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-16 text-center text-slate-400">
-                <Info className="h-8 w-8 text-cyan-400/60 mb-2" />
+              <div className="flex flex-col items-center justify-center py-16 text-center text-zinc-500">
+                <Info className="h-8 w-8 text-zinc-600 mb-2" />
                 <p className="font-display text-sm font-bold text-white">Select a Graph Node</p>
-                <p className="text-xs text-slate-400 mt-1 max-w-[220px]">
+                <p className="text-xs text-zinc-500 mt-1 max-w-[220px]">
                   Click any node in the Bayesian Network to view its parents, children, bootstrap stability, and state spaces.
                 </p>
               </div>
             )}
           </AnimatePresence>
 
-          <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-400 font-mono flex items-center justify-between">
+          <div className="mt-4 pt-3 border-t border-zinc-800 text-[11px] text-zinc-500 font-mono flex items-center justify-between">
             <span>23 Causal Edges</span>
-            <span className="text-mint-300">BDeu (ESS=10)</span>
+            <span className="text-zinc-400">BDeu (ESS=10)</span>
           </div>
         </div>
       </div>

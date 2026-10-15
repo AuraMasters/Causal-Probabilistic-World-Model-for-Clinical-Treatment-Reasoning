@@ -107,15 +107,15 @@ export default function App() {
   }
 
   return (
-    <div className="app-bg min-h-screen text-slate-100 selection:bg-cyan-400 selection:text-ink-950">
+    <div className="app-bg min-h-screen text-zinc-100 selection:bg-white selection:text-black">
       <Header activeModel={activeModel} onSelectModel={handleModelSelect} />
 
-      {/* Sticky intelligence navigation */}
-      <nav className="sticky top-0 z-50 border-b border-cyan-400/15 bg-ink-950/85 backdrop-blur-xl shadow-lg shadow-black/30">
+      {/* Sticky minimalist intelligence navigation */}
+      <nav className="sticky top-0 z-50 border-b border-zinc-800 bg-black/90 backdrop-blur-xl shadow-lg shadow-black/50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-400/15 border border-cyan-400/30">
-              <BrainCircuit className="h-4 w-4 text-cyan-300 animate-pulse" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-900 border border-zinc-800">
+              <BrainCircuit className="h-4 w-4 text-zinc-200" />
             </div>
             <span className="hidden font-display text-sm font-bold tracking-tight text-white md:inline-block">
               ACTG175 Clinical World Model
@@ -132,11 +132,11 @@ export default function App() {
                   onClick={() => scrollTo(item.id)}
                   className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-mono text-xs font-semibold tracking-wide transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/40 shadow-sm shadow-cyan-400/20'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-ink-850'
+                      ? 'bg-white text-black shadow-sm'
+                      : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
                   }`}
                 >
-                  <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-cyan-300' : 'text-slate-400'}`} />
+                  <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-black' : 'text-zinc-400'}`} />
                   <span>{item.label}</span>
                 </button>
               )
@@ -146,7 +146,7 @@ export default function App() {
       </nav>
 
       <main className="mx-auto max-w-7xl px-4 pb-24 sm:px-8">
-        <div className="space-y-20 pt-8 sm:pt-12">
+        <div className="space-y-16 pt-8 sm:pt-12">
           {/* SECTION 1: SYSTEM OVERVIEW */}
           <Section
             id="overview"
@@ -236,15 +236,15 @@ export default function App() {
             subtitle="Predicted progression probabilities, progression-free survival, and expected utilities across all four arms."
           >
             {state.status === 'success' ? (
-              <div className="space-y-12">
+              <div className="space-y-10">
                 <TreatmentRanking ranking={state.result.ranking} />
                 <TreatmentComparison treatments={state.result.treatments} />
               </div>
             ) : (
-              <div className="card-surface rounded-2xl p-12 text-center text-slate-400">
-                <Stethoscope className="mx-auto h-12 w-12 text-cyan-400/60 mb-3 animate-pulse" />
+              <div className="card-surface rounded-2xl p-12 text-center text-zinc-400">
+                <Stethoscope className="mx-auto h-12 w-12 text-zinc-500 mb-3" />
                 <p className="font-display text-base font-bold text-white">No Active Patient Inferences</p>
-                <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                <p className="text-xs text-zinc-400 mt-1 max-w-sm mx-auto">
                   Submit a clinical profile above to simulate interventional outcomes across all 4 treatment arms.
                 </p>
               </div>
@@ -281,12 +281,12 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-ink-950 py-10 text-center font-mono text-xs text-slate-400">
+      <footer className="border-t border-zinc-800 bg-black py-10 text-center font-mono text-xs text-zinc-500">
         <div className="mx-auto max-w-7xl px-4 space-y-2">
-          <p className="font-bold text-slate-300">
+          <p className="font-bold text-zinc-300">
             ACTG175 Clinical AI Decision Support System &middot; Causal World Model
           </p>
-          <p className="text-[11px] text-slate-500 max-w-2xl mx-auto">
+          <p className="text-[11px] text-zinc-500 max-w-2xl mx-auto">
             Research and educational decision-support prototype. Evaluated under strict 80/20 train/test partition without test set leakage.
           </p>
         </div>
@@ -300,25 +300,25 @@ function LoadingState({ label }: { label: string }) {
     <div className="card-surface flex flex-col items-center justify-center rounded-2xl py-16 text-center shadow-lg">
       <motion.div
         animate={{ rotate: 360 }}
-        transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
-        className="h-10 w-10 rounded-full border-3 border-cyan-400/20 border-t-cyan-400 mb-4"
+        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+        className="h-9 w-9 rounded-full border-2 border-zinc-800 border-t-white mb-4"
       />
       <p className="font-display text-sm font-bold text-white">{label}</p>
-      <p className="font-mono text-xs text-cyan-300/70 mt-1">Executing mathematical pipeline...</p>
+      <p className="font-mono text-xs text-zinc-400 mt-1">Executing mathematical pipeline...</p>
     </div>
   )
 }
 
 function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-8 text-center shadow-xl">
-      <AlertCircle className="mx-auto h-10 w-10 text-rose-400 mb-3" />
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-8 text-center shadow-xl">
+      <AlertCircle className="mx-auto h-10 w-10 text-zinc-400 mb-3" />
       <h3 className="font-display text-base font-bold text-white">Pipeline Execution Error</h3>
-      <p className="font-mono text-xs text-rose-200/90 mt-1 max-w-md mx-auto">{message}</p>
+      <p className="font-mono text-xs text-zinc-400 mt-1 max-w-md mx-auto">{message}</p>
       {onRetry && (
         <button
           onClick={onRetry}
-          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-rose-500/20 border border-rose-500/40 px-4 py-2 font-mono text-xs font-bold text-rose-200 hover:bg-rose-500/30 transition-colors cursor-pointer"
+          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-2 font-mono text-xs font-bold text-white hover:bg-zinc-800 transition-colors cursor-pointer"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           <span>Retry Connection</span>
