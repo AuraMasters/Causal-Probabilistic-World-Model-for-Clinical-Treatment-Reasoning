@@ -35,31 +35,31 @@ The system is trained and evaluated on the landmark **AIDS Clinical Trials Group
 ```mermaid
 flowchart TD
     subgraph DataCohort["1. Clinical Trial Cohort & Partition"]
-        Cohort["ACTG 175 Randomized Trial Cohort (N = 2,139 Patients)\n• Biomarkers: CD4, CD8, Karnofsky, Age, Weight, Pre-ART\n• History & Demographics: Hemophilia, Homosexuality, IV Drugs, ZDV30, Symptoms"]
-        Split{"Strict 80/20 Partition\n(Zero Leakage Protocol, Seed = 42)"}
-        Dev["Development Cohort (N = 1,711)\n• 5-Fold Stratified Cross-Validation\n• Structure & Parameter Estimation"]
-        Test["Held-Out Test Set (N = 428)\n• Single Final Evaluation\n• Non-Parametric Bootstrap (B = 1,000)"]
+        Cohort["ACTG 175 Randomized Trial Cohort (N = 2,139 Patients)<br/>Biomarkers: CD4, CD8, Karnofsky, Age, Weight, Pre-ART<br/>History & Demographics: Hemophilia, Homosexuality, IV Drugs, ZDV30, Symptoms"]
+        Split{"Strict 80/20 Partition<br/>Zero Leakage Protocol, Seed = 42"}
+        Dev["Development Cohort (N = 1,711)<br/>5-Fold Stratified Cross-Validation<br/>Structure & Parameter Estimation"]
+        Test["Held-Out Test Set (N = 428)<br/>Single Final Evaluation<br/>Non-Parametric Bootstrap (B = 1,000)"]
         
         Cohort --> Split
-        Split -->|Training & Validation| Dev
+        Split -->|Training and Validation| Dev
         Split -->|Generalization Benchmark| Test
     end
 
     subgraph DualEngines["2. Dual Causal Inference Engines"]
-        Dev --> ModelA["Model A: Discretized Bayesian Network\n• 23 Learned Causal DAG Edges\n• BDeu Parameter Learning (ESS = 10)\n• 3-Bin Quantile Discretization"]
-        Dev --> ModelB["Model B: Continuous / Hybrid SCM (Primary)\n• Exact Continuous Biomarkers (No Binning Loss)\n• L2-Regularized G-Computation Surfaces\n• Analytical Partial Risk Gradients ∂P/∂X"]
+        Dev --> ModelA["Model A: Discretized Bayesian Network<br/>23 Learned Causal DAG Edges<br/>BDeu Parameter Learning (ESS = 10)<br/>3-Bin Quantile Discretization"]
+        Dev --> ModelB["Model B: Continuous / Hybrid SCM (Primary)<br/>Exact Continuous Biomarkers (No Binning Loss)<br/>L2-Regularized G-Computation Surfaces<br/>Analytical Partial Risk Gradients dP/dX"]
     end
 
     subgraph InterventionalReasoning["3. Pearlian Intervention & Decision Reasoning"]
-        ModelA --> Intervene["Pearlian Graph Mutilation: do(trt = k)\nSimulates Potential Outcomes Across 4 Arms\nP(Progression | do(trt = k), X = x)"]
+        ModelA --> Intervene["Pearlian Graph Mutilation: do(trt = k)<br/>Simulates Potential Outcomes Across 4 Arms<br/>P(Progression | do(trt = k), X = x)"]
         ModelB --> Intervene
-        Intervene --> Utility["Expected Clinical Utility Maximization\n• U(Progression-Free) = 1.0, U(Progression) = 0.0\n• Selects Optimal Patient-Specific Regimen"]
+        Intervene --> Utility["Expected Clinical Utility Maximization<br/>U(Progression-Free) = 1.0, U(Progression) = 0.0<br/>Selects Optimal Patient-Specific Regimen"]
     end
 
     subgraph VerificationSafeguards["4. Clinical Rigor & Sensitivity Safeguards"]
-        Utility --> EVal["VanderWeele & Ding E-Value\nQuantifies Robustness to Unmeasured Confounders"]
-        Utility --> CATE["Individual Treatment Benefit (CATE ARR)\nPercentile Ranking vs ZDV Monotherapy"]
-        Utility --> Cox["Cox Proportional Hazards Benchmark\nPreserves Time-to-Event Hazard Ratios (C-index = 0.7203)"]
+        Utility --> EVal["VanderWeele & Ding E-Value<br/>Quantifies Robustness to Unmeasured Confounders"]
+        Utility --> CATE["Individual Treatment Benefit (CATE ARR)<br/>Percentile Ranking vs ZDV Monotherapy"]
+        Utility --> Cox["Cox Proportional Hazards Benchmark<br/>Preserves Time-to-Event Hazard Ratios (C-index = 0.7203)"]
         Test -.-> VerificationSafeguards
     end
 ```
@@ -92,8 +92,8 @@ flowchart LR
     end
 
     subgraph DecisionOutcome["Intervention & Endpoint"]
-        trt["Treatment Regimen\n(trt: Arm 0, 1, 2, 3)"]
-        label["Severe Disease Progression\n(label: 0 = Free, 1 = Event)"]
+        trt["Treatment Regimen (trt: Arm 0, 1, 2, 3)"]
+        label["Severe Disease Progression (label: 0 = Free, 1 = Event)"]
     end
 
     %% Exposure & Demographic Dependencies
@@ -123,7 +123,7 @@ flowchart LR
     %% Clinical Endpoint Determinations
     cd40 --> label
     z30 --> label
-    trt ==>|Pearlian Intervention: do(trt = k)| label
+    trt ==>|Pearlian Intervention| label
 ```
 
 ---
@@ -164,10 +164,10 @@ Evaluated strictly on the held-out test cohort ($N = 428$) with $B = 1,000$ non-
 ```mermaid
 flowchart TD
     subgraph ClientBrowser["Presentation Tier (Client Browser)"]
-        UI["Minimalist Black & White Interface\n(React 19 + Vite + Vanilla CSS)"]
-        State["Application State & Reactive Hooks\n(useOverview, useAnalyze)"]
-        AxiosClient["Axios API Client\n(Interceptors, Correlation Headers, Timeout)"]
-        OfflineEngine["Embedded Client-Side SCM\n(Zero-Downtime Offline Fallback)"]
+        UI["Minimalist Black & White Interface<br/>(React 19 + Vite + Vanilla CSS)"]
+        State["Application State & Reactive Hooks<br/>(useOverview, useAnalyze)"]
+        AxiosClient["Axios API Client<br/>(Interceptors, Correlation Headers, Timeout)"]
+        OfflineEngine["Embedded Client-Side SCM<br/>(Zero-Downtime Offline Fallback)"]
         
         UI --> State
         State --> AxiosClient
@@ -176,15 +176,15 @@ flowchart TD
     end
 
     subgraph Environment["Configuration"]
-        Env["Environment Variable\nVITE_API_BASE_URL (/api)"]
+        Env["Environment Variable<br/>VITE_API_BASE_URL (/api)"]
         Env --> AxiosClient
     end
 
     subgraph ApplicationServer["Application Tier (Python Flask Backend)"]
-        Flask["Flask REST Application\n(backend/app.py)"]
-        Service["Unified Inference & Overview Service\n(backend/service.py)"]
-        ModelB["Continuous Causal SCM\n(Exact Biomarkers, L2 G-Computation)"]
-        ModelA["Discretized Bayesian Network\n(23 DAG Edges, BDeu ESS = 10)"]
+        Flask["Flask REST Application<br/>(backend/app.py)"]
+        Service["Unified Inference & Overview Service<br/>(backend/service.py)"]
+        ModelB["Continuous Causal SCM<br/>(Exact Biomarkers, L2 G-Computation)"]
+        ModelA["Discretized Bayesian Network<br/>(23 DAG Edges, BDeu ESS = 10)"]
 
         AxiosClient -->|JSON / REST Over HTTP| Flask
         Flask --> Service
@@ -193,8 +193,8 @@ flowchart TD
     end
 
     subgraph DataStorage["Data & Artifact Tier"]
-        Artifacts["backend/artifacts/\n• continuous_causal_model.pkl\n• final_dag_edges.csv (23 edges)\n• final_dag_edge_support.csv\n• Research Benchmark JSONs"]
-        Data["data/processed/\n• actg175_development.csv (N = 1,711)\n• actg175_test.csv (N = 428)\n• sparse/development.csv"]
+        Artifacts["backend/artifacts/<br/>continuous_causal_model.pkl<br/>final_dag_edges.csv (23 edges)<br/>final_dag_edge_support.csv<br/>Research Benchmark JSONs"]
+        Data["data/processed/<br/>actg175_development.csv (N = 1,711)<br/>actg175_test.csv (N = 428)<br/>sparse/development.csv"]
         
         Service --> Artifacts
         Service --> Data
